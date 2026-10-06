@@ -3,3 +3,6 @@ verify_jwt = false
 
 [functions.import-2025]
 verify_jwt = false
+
+[functions.update-2026]
+verify_jwt = false

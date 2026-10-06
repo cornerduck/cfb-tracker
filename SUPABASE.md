@@ -132,3 +132,95 @@ order by started_at;
 The latest entry for each of the six stages should be successful. A clean pass
 uses 43 CFBD calls total; retries add their calls to the log. The values in
 `details` provide the imported row counts and endpoint names for each stage.
+
+## Enable 2026 live-season updates
+
+The live updater uses the CFBD key already configured as the `CFBD_API_KEY`
+Edge Function secret. It reads the imported 2026 calendar to select the current
+week, upserts games and scores, closing lines, box scores, rankings and season
+statistics, computes weekly awards and Heisman tracker scores, and recomputes
+current team records. Failed runs leave existing data intact and are recorded
+in `update_log`.
+
+After the Phase 5 changes are deployed:
+
+1. Run **Actions → Supabase → Run workflow** on `main` with **Import the 2026
+   FBS teams, conferences, and calendar after deployment** checked. This is
+   safe to repeat; the import preserves existing 2026 records and now seeds
+   season-specific conference membership.
+2. In Supabase **SQL Editor**, create the two Vault entries using the existing
+   public values from the repository's Actions variables. Store the project
+   root URL (not its `/rest/v1/` suffix) as `strdys_project_url`, and the
+   publishable/anon key as `strdys_publishable_key`:
+
+   ```sql
+   select vault.create_secret(
+     'https://<project-ref>.supabase.co',
+     'strdys_project_url'
+   );
+   select vault.create_secret(
+     '<VITE_SUPABASE_ANON_KEY>',
+     'strdys_publishable_key'
+   );
+   ```
+
+   The database migration creates the separate random scheduler token in Vault.
+   Do not put the CFBD API key or Supabase service-role key in these entries.
+   Create each named entry only once.
+3. Import 2026 results through the current week, including box scores, and
+   refresh current polls and season stats:
+
+   ```sql
+   select public.invoke_live_update('bootstrap');
+   ```
+
+   This queues the protected Edge Function through `pg_net`. Confirm it
+   completes before proceeding:
+
+   ```sql
+   select job, trigger, status, api_calls_used, error, started_at
+   from public.update_log
+   where job = 'live-2026-bootstrap'
+   order by started_at desc
+   limit 1;
+   ```
+
+   The initial backfill uses four CFBD requests per elapsed calendar week plus
+   three current-season polls/stat requests. Re-running it is safe but makes
+   additional CFBD calls.
+4. Register the Berlin-time jobs:
+
+   ```sql
+   select public.schedule_strdys_live_updates();
+   select jobname, schedule
+   from cron.job
+   where jobname like 'strdys-live-2026-%'
+   order by jobname;
+   ```
+
+   There should be eight jobs: Saturday 18:00–23:00 and Sunday 00:00–08:00
+   every two hours for live scores; 08:00 Friday/Saturday results; Sunday
+   10:00 box scores and lines; Monday 06:00 polls and season stats; Wednesday
+   06:00 CFP rankings in November/December; and daily 08:00 postseason refreshes
+   in December and January. All times use `Europe/Berlin`. Out-of-season
+   runs skip CFBD calls.
+5. Check that scheduled runs create successful `live-2026-*` entries:
+
+   ```sql
+   select job, trigger, status, api_calls_used, error, started_at
+   from public.update_log
+   where job like 'live-2026-%'
+   order by started_at desc
+   limit 20;
+   ```
+
+The 15-minute server-enforced cooldown is implemented for manual updates. The
+Edge Function requires an authenticated owner session for that route; the
+app's sign-in UI is Phase 6, so the in-app **Update now** action becomes
+operational when Phase 6 is implemented. The scheduled route uses its Vault
+token and does not depend on client authentication. The app status indicator
+reads only the latest update state and polls every five minutes.
+
+The routine schedule is expected to remain below the 400-call monthly target:
+the two-hour score pulls use one CFBD request each, with weekly box scores,
+polls and season stats fetched only on their scheduled jobs.
