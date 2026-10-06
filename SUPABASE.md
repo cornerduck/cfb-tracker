@@ -57,20 +57,21 @@ starting the next:
 |---|---:|---|
 | `setup` | 4 | 2025 teams (including FCS opponents), FBS classification, conferences, conference seasons, calendar |
 | `games` | 2 | Games involving FBS teams, closing lines, final team records |
-| `boxscores` | 18 | Team box scores plus player box scores requested week-by-week |
+| `boxscores` | 34 | Team and player box scores requested week-by-week |
 | `rankings` | 1 | AP, Coaches, and CFP rankings |
 | `season-stats` | 2 | Player and team season statistics |
 | `awards` | 1 | Heisman winner, weekly tracker history, weekly awards, champion; marks the season archived |
 
-The player-game-stats endpoint requires a week filter, so the box-score stage
-uses one team-stats call and one player-stats call per regular/postseason week
-in the imported calendar (17 weeks for 2025). A clean pass therefore uses 28
-CFBD calls total (2.8% of the 1,000-call monthly limit), run as six separate
-manual workflow runs. Each stage writes its own `update_log` entry with its
-exact call count, endpoint names, and row counts. All stages are safe to rerun:
-imports upsert existing data and do not delete it. Retries use additional
-calls. If a stage fails, fix the reported cause and rerun that stage before
-continuing. Only run `awards` last; that final stage marks 2025 as archived.
+Both game box-score endpoints require a week, team, or conference filter when
+querying a season. The box-score stage requests team and player stats for each
+regular/postseason week in the imported calendar (17 weeks for 2025). A clean
+pass therefore uses 44 CFBD calls total (4.4% of the 1,000-call monthly limit),
+run as six separate manual workflow runs. Each stage writes its own
+`update_log` entry with its exact call count, endpoint names, and row counts.
+All stages are safe to rerun: imports upsert existing data and do not delete
+it. Retries use additional calls. If a stage fails, fix the reported cause and
+rerun that stage before continuing. Only run `awards` last; that final stage
+marks 2025 as archived.
 
 Heisman weekly ranks are reconstructed from cumulative player box-score
 production and team results using the blueprint's 70% production / 30% team
@@ -124,5 +125,5 @@ order by started_at;
 ```
 
 The latest entry for each of the six stages should be successful. A clean pass
-uses 12 CFBD calls total; retries add their calls to the log. The values in
+uses 44 CFBD calls total; retries add their calls to the log. The values in
 `details` provide the imported row counts and endpoint names for each stage.
