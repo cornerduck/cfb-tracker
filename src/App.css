@@ -88,6 +88,11 @@
   gap: 10px;
 }
 
+.settings-account-actions {
+  display: flex;
+  gap: 10px;
+}
+
 .search-box {
   display: flex;
   align-items: center;
@@ -437,6 +442,13 @@
   gap: 6px;
 }
 
+.home-team-entry {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+}
+
 .rank-row,
 .heisman-row,
 .team-row,
@@ -449,6 +461,8 @@
 }
 
 .rank-row {
+  flex: 1;
+  min-width: 0;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -595,6 +609,28 @@
   justify-content: center;
 }
 
+.result-entry {
+  position: relative;
+  min-width: 0;
+}
+
+.result-entry .result-card {
+  width: 100%;
+  padding-right: 44px;
+}
+
+.result-favorites,
+.score-favorites {
+  position: absolute;
+  z-index: 1;
+  right: 3px;
+  top: 50%;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  transform: translateY(-50%);
+}
+
 .result-line {
   display: flex;
   align-items: center;
@@ -649,6 +685,8 @@
 }
 
 .team-row {
+  flex: 1;
+  min-width: 0;
   display: flex;
   align-items: center;
   gap: 14px;
@@ -1405,11 +1443,17 @@
 }
 
 .score-card {
+  width: 100%;
   min-width: 0;
-  padding: 10px 12px;
+  padding: 10px 44px 10px 12px;
   color: #F2F3F5;
   text-align: left;
   cursor: pointer;
+}
+
+.score-entry {
+  position: relative;
+  min-width: 0;
 }
 
 .score-row {
@@ -1582,6 +1626,14 @@
   padding: 8px 12px;
 }
 
+.ranking-entry,
+.stats-entry {
+  display: flex;
+  align-items: stretch;
+  min-width: 0;
+  border-bottom: 1px solid #23262B;
+}
+
 .ranking-header,
 .stats-header {
   position: sticky;
@@ -1606,14 +1658,21 @@
   width: 100%;
   min-height: 44px;
   border: 0;
-  border-bottom: 1px solid #23262B;
+  border-bottom: 0;
   background: transparent;
   color: #C9CDD3;
   text-align: left;
 }
 
 .ranking-row {
+  flex: 1;
+  min-width: 0;
   cursor: pointer;
+}
+
+.stats-row {
+  flex: 1;
+  min-width: 0;
 }
 
 .ranking-row:hover,
@@ -1798,7 +1857,7 @@
 
 .standings-row {
   display: grid;
-  grid-template-columns: 28px minmax(170px, 1.8fr) 58px 42px 72px 76px 48px 78px;
+  grid-template-columns: 28px minmax(170px, 1.8fr) 58px 42px 72px 76px 48px 78px 32px;
   align-items: center;
   gap: 8px;
   min-height: 43px;
@@ -1819,6 +1878,10 @@
   font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.08em;
+}
+
+.standings-row .team-favorite-button {
+  justify-self: center;
 }
 
 .standings-row.title-row {
@@ -2726,6 +2789,19 @@
   font-size: 13px;
 }
 
+.search-result-entry {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  border-bottom: 1px solid #23262B;
+}
+
+.search-result-entry .window-row {
+  flex: 1;
+  min-width: 0;
+  border-bottom: 0;
+}
+
 .window-record {
   margin-left: auto;
   color: #8E949C;
@@ -3232,25 +3308,37 @@
   align-items: flex-start;
 }
 
-.window-backdrop--settings {
-  z-index: 50;
+.desktop-main--settings {
+  padding: 0;
+  gap: 0;
 }
 
-.window-backdrop--settings > div {
-  width: min(1160px, 100%);
-  max-height: min(90dvh, 940px);
+.settings-page {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
 }
 
-.settings-panel {
-  max-height: min(90dvh, 940px);
+.settings-page-content {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
   padding: 18px 24px 22px;
+  overflow: auto;
 }
 
-.settings-header h2 {
+.settings-desktop-title {
   margin: 0;
   font-family: 'Barlow Condensed', 'Arial Narrow', sans-serif;
   font-size: 28px;
   letter-spacing: 0.06em;
+}
+
+.settings-mobile-header {
+  display: none;
 }
 
 .settings-grid {
@@ -3429,27 +3517,180 @@
     padding: 0;
   }
 
-  .window-backdrop--settings {
-    align-items: flex-end;
+  .desktop-main--settings {
     padding: 0;
+    overflow: hidden;
   }
 
-  .window-backdrop--settings > div {
-    width: 100%;
-    max-height: 96dvh;
+  .settings-page {
+    flex: 1;
+    overflow: auto;
+    padding-bottom: env(safe-area-inset-bottom);
   }
 
-  .window-panel.settings-panel {
-    max-height: 96dvh;
-    padding: 12px 16px max(20px, env(safe-area-inset-bottom));
-    border-radius: 16px 16px 0 0;
+  .settings-mobile-header {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 8px 12px 8px 4px;
+    border-bottom: 1px solid #23262B;
+    background: #0E1013;
+  }
+
+  .settings-mobile-header button {
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 0;
+    background: transparent;
+    color: #F2F3F5;
+  }
+
+  .settings-mobile-header svg {
+    width: 16px;
+    height: 16px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+  }
+
+  .settings-mobile-header h1 {
+    margin: 0;
+    font-family: 'Barlow Condensed', 'Arial Narrow', sans-serif;
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+  }
+
+  .settings-page-content {
+    flex: 0 0 auto;
+    padding: 16px;
+    overflow: visible;
+  }
+
+  .settings-desktop-title {
+    display: none;
   }
 
   .settings-grid {
     grid-template-columns: 1fr;
   }
 
-  .settings-header h2 {
+  .settings-column {
+    display: contents;
+  }
+
+  .settings-grid {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .settings-card.settings-account-card {
+    order: 5;
+  }
+
+  .settings-favorites-card {
+    order: 3;
+  }
+
+  .settings-data-card {
+    order: 4;
+  }
+
+  .settings-account-actions {
+    flex-wrap: wrap;
+  }
+
+}
+
+.team-favorite-button {
+  flex: 0 0 32px;
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: #8E949C;
+  font-size: 19px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.team-favorite-button:hover,
+.team-favorite-button.is-favorite {
+  color: #F2F3F5;
+}
+
+.team-favorite-button:disabled {
+  opacity: 0.55;
+  cursor: wait;
+}
+
+.team-favorite-button--unavailable:disabled {
+  cursor: not-allowed;
+}
+
+.team-favorite-button:focus-visible {
+  outline: 2px solid #C9CDD3;
+  outline-offset: 2px;
+}
+
+.game-side .team-favorite-button {
+  margin-top: 4px;
+}
+
+.settings-loading {
+  flex: 1;
+  padding: 24px;
+  color: #8E949C;
+}
+
+.account-error-banner {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 16px;
+  border-bottom: 1px solid #4A2A2A;
+  background: #241616;
+  color: #F28C82;
+  font-size: 13px;
+}
+
+.account-error-banner button {
+  width: 32px;
+  height: 32px;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+@media (max-width: 1023px) {
+  .star {
+    flex-basis: 44px;
+    width: 44px;
+    height: 44px;
+  }
+
+  .team-favorite-button {
+    flex-basis: 44px;
+    width: 44px;
+    height: 44px;
     font-size: 22px;
+  }
+
+  .result-entry--mobile {
+    flex: 0 0 236px;
   }
 }

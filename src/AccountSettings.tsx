@@ -24,7 +24,7 @@ type AccountSettingsProps = {
   updating: boolean
   notice: string
   error: string
-  onClose: () => void
+  onBack: () => void
   onGoTeams: () => void
   onSave: (displayName: string, timeZone: string) => Promise<void>
   onToggleFavorite: (teamId: number) => Promise<void>
@@ -53,7 +53,7 @@ function AccountSettings({
   updating,
   notice,
   error,
-  onClose,
+  onBack,
   onGoTeams,
   onSave,
   onToggleFavorite,
@@ -69,39 +69,55 @@ function AccountSettings({
   const usagePercent = apiCallsThisMonth === null ? 0 : Math.min(apiCallsThisMonth / 10, 100)
 
   return (
-    <div className="window-panel settings-panel" role="dialog" aria-modal="true" aria-labelledby="settings-heading">
-      <div className="window-header settings-header">
-        <h2 id="settings-heading" className="cond">SETTINGS</h2>
-        <button type="button" className="close-button" onClick={onClose} aria-label="Close settings">×</button>
-      </div>
-      <div className="settings-grid">
+    <div className="settings-page" aria-label="Settings">
+      <header className="settings-mobile-header">
+        <button type="button" onClick={onBack} aria-label="Back to the app">
+          <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3 5 8l5 5" /></svg>
+        </button>
+        <h1 className="cond">SETTINGS</h1>
+      </header>
+      <div className="settings-page-content">
+        <h1 className="settings-desktop-title cond">SETTINGS</h1>
+        <div className="settings-grid">
         <div className="settings-column">
           <section className="settings-card">
             <h3 className="cond">PROFILE</h3>
             <label className="form-label">Display name
-              <input value={displayName} maxLength={80} onChange={(event) => setDisplayName(event.target.value)} />
+              <input
+                value={displayName}
+                maxLength={80}
+                disabled={saving}
+                onChange={(event) => setDisplayName(event.target.value)}
+                onBlur={() => {
+                  if (displayName.trim() !== (profile.display_name ?? '')) void onSave(displayName.trim(), timeZone)
+                }}
+              />
             </label>
             <label className="form-label">Email
               <input type="email" value={email} readOnly aria-readonly="true" />
             </label>
-            <button className="outline-button cond" type="button" disabled={saving} onClick={() => void onSave(displayName.trim(), timeZone)}>
-              {saving ? 'SAVING…' : 'SAVE PROFILE'}
-            </button>
+            {saving && <span className="settings-saving" role="status">Saving profile…</span>}
           </section>
           <section className="settings-card">
             <h3 className="cond">TIME ZONE</h3>
             <p>All kickoff times are shown in this time zone.</p>
-            <select value={timeZone} onChange={(event) => setTimeZone(event.target.value)}>
+            <select value={timeZone} disabled={saving} onChange={(event) => {
+              const nextTimeZone = event.target.value
+              setTimeZone(nextTimeZone)
+              void onSave(displayName.trim(), nextTimeZone)
+            }}>
               {!timeZones.includes(timeZone) && <option value={timeZone}>{timeZone}</option>}
               {timeZones.map((zone) => <option key={zone} value={zone}>{zone}</option>)}
             </select>
           </section>
           <section className="settings-card settings-account-card">
             <h3 className="cond">ACCOUNT</h3>
-            <button className="outline-button cond" type="button" onClick={() => void onSignOut()}>SIGN OUT</button>
-            <button className="danger-button cond" type="button" onClick={() => { setDeleteOpen((current) => !current); setDeleteConfirmation('') }}>
-              {deleteOpen ? 'CANCEL DELETE' : 'DELETE ACCOUNT'}
-            </button>
+            <div className="settings-account-actions">
+              <button className="outline-button cond" type="button" onClick={() => void onSignOut()}>SIGN OUT</button>
+              <button className="danger-button cond" type="button" onClick={() => { setDeleteOpen((current) => !current); setDeleteConfirmation('') }}>
+                {deleteOpen ? 'CANCEL DELETE' : 'DELETE ACCOUNT'}
+              </button>
+            </div>
             {deleteOpen && (
               <div className="delete-confirm">
                 <p>This permanently deletes your account, profile, favorites, and picks. Enter your email address to confirm.</p>
@@ -114,7 +130,7 @@ function AccountSettings({
           </section>
         </div>
         <div className="settings-column">
-          <section className="settings-card">
+          <section className="settings-card settings-favorites-card">
             <div className="settings-card-heading">
               <h3 className="cond">FAVORITE TEAMS</h3>
               <button type="button" className="text-button" onClick={onGoTeams}>Manage in Teams →</button>
@@ -130,7 +146,7 @@ function AccountSettings({
           </section>
         </div>
         <div className="settings-column">
-          <section className="settings-card">
+          <section className="settings-card settings-data-card">
             <h3 className="cond">DATA AND UPDATES</h3>
             <div className="settings-data-row"><span>Last update</span><strong>{formatDate(liveUpdate.last_updated, timeZone)}</strong></div>
             <div className="settings-data-row"><span>Next update</span><strong>Automatic · game days</strong></div>
@@ -147,6 +163,7 @@ function AccountSettings({
         </div>
       </div>
       {(error || notice) && <p className={`settings-notice${error ? ' settings-notice--error' : ''}`} role={error ? 'alert' : 'status'}>{error || notice}</p>}
+      </div>
     </div>
   )
 }

@@ -253,6 +253,9 @@ retype their email before calling the function.
 The app creates the owner profile on first sign-in and stores the display
 name, time zone, favorite team IDs, and recent team/player searches in the
 existing owner-only `profiles` row. Those values are shared across devices.
+Favorite changes are applied atomically by the `toggle_favorite_team` database
+function, and the app refreshes the signed-in profile when a tab becomes
+visible, when the window regains focus, and every 30 seconds while open.
 Settings also reads the update log for the current month's CFBD request total.
 Manual **Update now** uses the signed-in session and the existing server
 cooldown.
