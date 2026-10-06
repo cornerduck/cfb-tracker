@@ -68,6 +68,8 @@ regular/postseason week in the imported calendar (17 weeks for 2025). A clean
 pass therefore uses 44 CFBD calls total (4.4% of the 1,000-call monthly limit),
 run as six separate manual workflow runs. Each stage writes its own
 `update_log` entry with its exact call count, endpoint names, and row counts.
+Poll rows are keyed by season, week, source, and team; equal rank positions
+within a poll are accepted.
 All stages are safe to rerun: imports upsert existing data and do not delete
 it. Retries use additional calls. If a stage fails, fix the reported cause and
 rerun that stage before continuing. Only run `awards` last; that final stage
