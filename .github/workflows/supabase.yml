@@ -118,6 +118,7 @@ jobs:
             exit 1
           fi
           token_response="$(curl --silent --show-error --get \
+            --retry 4 --retry-all-errors --retry-delay 2 --retry-max-time 30 \
             --write-out $'\n%{http_code}' \
             "$ACTIONS_ID_TOKEN_REQUEST_URL" \
             --data-urlencode 'audience=strdys-supabase-test-import' \
