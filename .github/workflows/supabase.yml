@@ -73,9 +73,11 @@ jobs:
         env:
           GITHUB_OIDC_TOKEN: ${{ steps.oidc.outputs.token }}
         run: |
+          supabase_project_url="${SUPABASE_URL%/}"
+          supabase_project_url="${supabase_project_url%/rest/v1}"
           curl --fail-with-body --silent --show-error \
             --request POST \
-            --url "${SUPABASE_URL%/}/functions/v1/test-import-2026" \
+            --url "${supabase_project_url}/functions/v1/test-import-2026" \
             --header "Authorization: Bearer $SUPABASE_ANON_KEY" \
             --header "apikey: $SUPABASE_ANON_KEY" \
             --header "x-github-oidc-token: $GITHUB_OIDC_TOKEN" \
