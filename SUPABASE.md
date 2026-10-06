@@ -188,7 +188,9 @@ After the Phase 5 changes are deployed:
    The initial backfill uses four CFBD requests per elapsed calendar week plus
    three current-season polls/stat requests. Re-running it is safe but makes
    additional CFBD calls.
-4. Register the Berlin-time jobs:
+4. Register the schedules (cron is left on its managed UTC default; the
+   updater checks `Europe/Berlin` local time and ignores the alternate UTC
+   hour, so the schedule remains correct across daylight-saving changes):
 
    ```sql
    select public.schedule_strdys_live_updates();
@@ -202,8 +204,8 @@ After the Phase 5 changes are deployed:
    every two hours for live scores; 08:00 Friday/Saturday results; Sunday
    10:00 box scores and lines; Monday 06:00 polls and season stats; Wednesday
    06:00 CFP rankings in November/December; and daily 08:00 postseason refreshes
-   in December and January. All times use `Europe/Berlin`. Out-of-season
-   runs skip CFBD calls.
+   in December and January. All target times are interpreted as
+   `Europe/Berlin`. Out-of-season runs skip CFBD calls.
 5. Check that scheduled runs create successful `live-2026-*` entries:
 
    ```sql

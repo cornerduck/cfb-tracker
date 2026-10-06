@@ -1,8 +1,6 @@
 create extension if not exists pg_cron with schema pg_catalog;
 create extension if not exists pg_net with schema extensions;
 
-alter database postgres set cron.timezone = 'Europe/Berlin';
-
 do $$
 begin
   if not exists (
@@ -163,42 +161,42 @@ begin
 
   perform cron.schedule(
     'strdys-live-2026-saturday',
-    '0 18-23 * * 6',
+    '0 16-23 * * 6',
     'select public.invoke_live_update(''near-live'');'
   );
   perform cron.schedule(
     'strdys-live-2026-sunday-morning',
-    '0 0-8 * * 0',
+    '0 0-7 * * 0',
     'select public.invoke_live_update(''near-live'');'
   );
   perform cron.schedule(
     'strdys-live-2026-thursday-friday-results',
-    '0 8 * * 5,6',
+    '0 6,7 * * 5,6',
     'select public.invoke_live_update(''daily-results'');'
   );
   perform cron.schedule(
     'strdys-live-2026-sunday-weekly',
-    '0 10 * * 0',
+    '0 8,9 * * 0',
     'select public.invoke_live_update(''weekly'');'
   );
   perform cron.schedule(
     'strdys-live-2026-monday',
-    '0 6 * * 1',
+    '0 4,5 * * 1',
     'select public.invoke_live_update(''monday'');'
   );
   perform cron.schedule(
     'strdys-live-2026-cfp',
-    '0 6 * 11,12 3',
+    '0 4,5 * 11,12 3',
     'select public.invoke_live_update(''cfp'');'
   );
   perform cron.schedule(
     'strdys-live-2026-december',
-    '0 8 1-31 12 *',
+    '0 6,7 1-31 12 *',
     'select public.invoke_live_update(''winter'');'
   );
   perform cron.schedule(
     'strdys-live-2026-january',
-    '0 8 1-31 1 *',
+    '0 6,7 1-31 1 *',
     'select public.invoke_live_update(''winter'');'
   );
 

@@ -223,6 +223,43 @@ const currentPeriodParams = (period: SeasonPeriod) => ({
   seasonType: period.seasonType,
 });
 
+const scheduledJobMatchesBerlinTime = (job: Job, date: Date) => {
+  const parts = new Intl.DateTimeFormat("en-GB", {
+    timeZone: "Europe/Berlin",
+    weekday: "short",
+    hour: "2-digit",
+    minute: "2-digit",
+    month: "2-digit",
+    hourCycle: "h23",
+  }).formatToParts(date);
+  const part = (type: string) => parts.find((item) => item.type === type)?.value;
+  const weekday = part("weekday");
+  const hour = Number(part("hour"));
+  const minute = Number(part("minute"));
+  const month = Number(part("month"));
+  if (minute !== 0) return false;
+
+  switch (job) {
+    case "near-live":
+      return (
+        (weekday === "Sat" && hour >= 18 && hour <= 22 && hour % 2 === 0) ||
+        (weekday === "Sun" && hour <= 8 && hour % 2 === 0)
+      );
+    case "daily-results":
+      return (weekday === "Fri" || weekday === "Sat") && hour === 8;
+    case "weekly":
+      return weekday === "Sun" && hour === 10;
+    case "monday":
+      return weekday === "Mon" && hour === 6;
+    case "cfp":
+      return weekday === "Wed" && hour === 6 && (month === 11 || month === 12);
+    case "winter":
+      return hour === 8 && (month === 12 || month === 1);
+    default:
+      return true;
+  }
+};
+
 const mapGame = (value: unknown, idByName: Map<string, number>) => {
   const game = asObject(value, "game");
   const homeId = integerValue(game.homeId) ??
@@ -1261,6 +1298,14 @@ Deno.serve(async (request) => {
         error: "Manual updates are limited to once every 15 minutes",
       }, 429);
     }
+  }
+
+  if (trigger === "schedule" && !scheduledJobMatchesBerlinTime(job, new Date())) {
+    return response({
+      status: "skipped",
+      job,
+      reason: "This UTC schedule slot does not match the Berlin local-time schedule.",
+    });
   }
 
   const { data: log, error: logError } = await supabase.from("update_log")
