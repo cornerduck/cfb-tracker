@@ -60,16 +60,19 @@ starting the next:
 | `boxscores` | 34 | Team and player box scores requested week-by-week |
 | `rankings` | 1 | AP, Coaches, and CFP rankings |
 | `season-stats` | 2 | Player and team season statistics |
-| `awards` | 1 | Heisman winner, weekly tracker history, weekly awards, champion; marks the season archived |
+| `awards` | 0 | Heisman winner, weekly tracker history, weekly awards, champion; marks the season archived |
 
 Both game box-score endpoints require a week, team, or conference filter when
 querying a season. The box-score stage requests team and player stats for each
 regular/postseason week in the imported calendar (17 weeks for 2025). A clean
-pass therefore uses 44 CFBD calls total (4.4% of the 1,000-call monthly limit),
+pass therefore uses 43 CFBD calls total (4.3% of the 1,000-call monthly limit),
 run as six separate manual workflow runs. Each stage writes its own
 `update_log` entry with its exact call count, endpoint names, and row counts.
 Poll rows are keyed by season, week, source, and team; equal rank positions
 within a poll are accepted.
+The 2025 Heisman winner (Fernando Mendoza, Indiana) is recorded directly because
+CFBD's current API does not expose an awards endpoint. The awards stage therefore
+makes no CFBD calls.
 All stages are safe to rerun: imports upsert existing data and do not delete
 it. Retries use additional calls. If a stage fails, fix the reported cause and
 rerun that stage before continuing. Only run `awards` last; that final stage
@@ -127,5 +130,5 @@ order by started_at;
 ```
 
 The latest entry for each of the six stages should be successful. A clean pass
-uses 44 CFBD calls total; retries add their calls to the log. The values in
+uses 43 CFBD calls total; retries add their calls to the log. The values in
 `details` provide the imported row counts and endpoint names for each stage.

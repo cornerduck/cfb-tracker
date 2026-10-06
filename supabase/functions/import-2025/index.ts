@@ -1,6 +1,7 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.117.2";
 
 const SEASON = 2025;
+const HEISMAN_WINNER = { name: "Fernando Mendoza", team: "Indiana" };
 const CFBD_BASE_URL = "https://api.collegefootballdata.com";
 const GITHUB_OIDC_AUDIENCE = "strdys-supabase-test-import";
 const GITHUB_REPOSITORY = "cornerduck/cfb-tracker";
@@ -1055,17 +1056,10 @@ const importHeismanHistory = async (
 
 const importAwardsAndArchive = async (
   supabase: ReturnType<typeof createClient>,
-  apiKey: string,
-  calls: CallCounter,
   counts: JsonObject,
 ) => {
-  const awards = await fetchCfbd("/awards", apiKey, calls);
-  const heisman = awards.map((value) => asObject(value, "award"))
-    .find((award) => /heisman/i.test(optionalString(award.name) ?? ""));
-  if (!heisman) throw new Error("CFBD returned no 2025 Heisman award record");
-  const winnerName = optionalString(heisman.player);
-  if (!winnerName) throw new Error("CFBD Heisman award record is missing its winner");
   const { teamByName } = await loadLookups(supabase);
+  const winnerName = HEISMAN_WINNER.name;
   const { data: games, error: gamesError } = await supabase.from("games").select(
     "id,week,season_type,home_team_id,away_team_id,home_points,away_points",
   ).eq("season", SEASON).not("home_points", "is", null).not("away_points", "is", null);
@@ -1096,11 +1090,11 @@ const importAwardsAndArchive = async (
   const winnerCandidate = finalTracker.find((player) =>
     normalizeName(String(player.player_name)) === normalizeName(winnerName)
   );
-  const winnerPlayerId = optionalIdentifier(heisman.playerId) ??
-    optionalIdentifier(heisman.athleteId) ??
-    String(winnerCandidate?.player_id ?? `heisman-${slugify(winnerName)}`);
+  const winnerPlayerId = String(
+    winnerCandidate?.player_id ?? `heisman-${slugify(winnerName)}`,
+  );
   if (!winnerCandidate) {
-    const winnerTeamId = teamIdFor(heisman.team ?? heisman.school, teamByName);
+    const winnerTeamId = teamIdFor(HEISMAN_WINNER.team, teamByName);
     finalTracker.push({
       season: SEASON,
       player_id: winnerPlayerId,
@@ -1281,7 +1275,7 @@ const runStage = async (
       await importSeasonStats(supabase, apiKey, calls, counts);
       break;
     case "awards":
-      await importAwardsAndArchive(supabase, apiKey, calls, counts);
+      await importAwardsAndArchive(supabase, counts);
       break;
   }
   return counts;
