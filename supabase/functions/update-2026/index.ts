@@ -1300,7 +1300,11 @@ Deno.serve(async (request) => {
     }
   }
 
-  if (trigger === "schedule" && !scheduledJobMatchesBerlinTime(job, new Date())) {
+  if (
+    trigger === "schedule" &&
+    job !== "bootstrap" &&
+    !scheduledJobMatchesBerlinTime(job, new Date())
+  ) {
     return response({
       status: "skipped",
       job,
