@@ -59,9 +59,9 @@ jobs:
       - name: Deploy Edge Functions
         run: supabase functions deploy --project-ref "$SUPABASE_PROJECT_REF"
 
-  test-import:
-    name: Run 2026 test import
-    if: github.event_name == 'workflow_dispatch' && inputs.run_test_import
+  manual-import:
+    name: Run selected manual import
+    if: github.event_name == 'workflow_dispatch' && (inputs.run_test_import || inputs.import_2025_stage != 'skip')
     needs: deploy
     runs-on: ubuntu-latest
     permissions:
@@ -70,6 +70,7 @@ jobs:
     env:
       SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL }}
       SUPABASE_ANON_KEY: ${{ vars.VITE_SUPABASE_ANON_KEY }}
+      IMPORT_STAGE: ${{ inputs.import_2025_stage }}
     steps:
       - name: Request GitHub Actions identity token
         id: oidc
@@ -83,6 +84,7 @@ jobs:
           echo "token=$token" >> "$GITHUB_OUTPUT"
 
       - name: Import 2026 teams, conferences, and calendar
+        if: inputs.run_test_import
         env:
           GITHUB_OIDC_TOKEN: ${{ steps.oidc.outputs.token }}
         run: |
@@ -97,45 +99,8 @@ jobs:
             --header 'Content-Type: application/json' \
             --data '{}'
 
-  import-2025:
-    name: Import 2025 season stage
-    if: github.event_name == 'workflow_dispatch' && inputs.import_2025_stage != 'skip'
-    needs: deploy
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      id-token: write
-    env:
-      SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL }}
-      SUPABASE_ANON_KEY: ${{ vars.VITE_SUPABASE_ANON_KEY }}
-      IMPORT_STAGE: ${{ inputs.import_2025_stage }}
-    steps:
-      - name: Request GitHub Actions identity token
-        id: oidc
-        run: |
-          if [[ -z "$ACTIONS_ID_TOKEN_REQUEST_URL" || -z "$ACTIONS_ID_TOKEN_REQUEST_TOKEN" ]]; then
-            echo "::error::GitHub did not provide the OIDC request URL/token. Confirm this job has id-token: write permission."
-            exit 1
-          fi
-          token_response="$(curl --silent --show-error --get \
-            --retry 4 --retry-all-errors --retry-delay 2 --retry-max-time 30 \
-            --write-out $'\n%{http_code}' \
-            "$ACTIONS_ID_TOKEN_REQUEST_URL" \
-            --data-urlencode 'audience=strdys-supabase-test-import' \
-            -H "Authorization: ******")"
-          http_status="${token_response##*$'\n'}"
-          token_body="${token_response%$'\n'*}"
-          if [[ "$http_status" != "200" ]]; then
-            error_message="$(printf '%s' "$token_body" | jq -r '.message // .error // empty')"
-            echo "::error::GitHub OIDC token request failed with HTTP $http_status: ${error_message:-no error details returned}"
-            exit 1
-          fi
-          token_response="$token_body"
-          token="$(printf '%s' "$token_response" | jq -er '.value')"
-          echo "::add-mask::$token"
-          echo "token=$token" >> "$GITHUB_OUTPUT"
-
       - name: Import 2025 season stage
+        if: inputs.import_2025_stage != 'skip'
         env:
           GITHUB_OIDC_TOKEN: ${{ steps.oidc.outputs.token }}
         run: |
