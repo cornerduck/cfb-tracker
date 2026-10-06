@@ -416,6 +416,23 @@ Deno.serve(async (request) => {
       );
     }
 
+    const conferenceIdByName = new Map<string, number>();
+    for (const conference of conferences) {
+      for (
+        const name of [
+          conference.name,
+          conference.short_name,
+          conference.abbreviation,
+        ]
+      ) {
+        if (name) {
+          conferenceIdByName.set(
+            normalizeConferenceName(name),
+            conference.id,
+          );
+        }
+      }
+    }
     const conferenceSeasons = conferences.map(({ id, divisions }) => ({
       season: SEASON,
       conference_id: id,
@@ -430,6 +447,49 @@ Deno.serve(async (request) => {
       );
     }
 
+    const { data: existingTeamSeasons, error: existingTeamSeasonsError } =
+      await supabase
+        .from("team_seasons")
+        .select("team_id,wins,losses,ties,final_ranking,postseason_result")
+        .eq("season", SEASON);
+    if (existingTeamSeasonsError) {
+      throw new Error(
+        `Could not load existing 2026 team seasons: ${existingTeamSeasonsError.message}`,
+      );
+    }
+    const existingByTeam = new Map(
+      (existingTeamSeasons ?? []).map((row) => [row.team_id, row]),
+    );
+    const teamSeasons = teamData.map((value) => {
+      const team = asObject(value, "FBS team");
+      const id = optionalInteger(team.id);
+      if (id === null) throw new Error("CFBD FBS team record is missing id");
+      const existing = existingByTeam.get(id);
+      const conferenceName = optionalString(team.conference);
+      return {
+        season: SEASON,
+        team_id: id,
+        conference_id: conferenceName
+          ? conferenceIdByName.get(normalizeConferenceName(conferenceName)) ??
+            null
+          : null,
+        division: optionalString(team.division),
+        wins: existing?.wins ?? 0,
+        losses: existing?.losses ?? 0,
+        ties: existing?.ties ?? 0,
+        final_ranking: existing?.final_ranking ?? null,
+        postseason_result: existing?.postseason_result ?? null,
+      };
+    });
+    const { error: teamSeasonsError } = await supabase
+      .from("team_seasons")
+      .upsert(teamSeasons, { onConflict: "season,team_id" });
+    if (teamSeasonsError) {
+      throw new Error(
+        `Could not import 2026 team seasons: ${teamSeasonsError.message}`,
+      );
+    }
+
     const { error: calendarError } = await supabase
       .from("calendar")
       .upsert(calendar, { onConflict: "season,week,season_type" });
@@ -440,6 +500,7 @@ Deno.serve(async (request) => {
     const details = {
       teams_imported: teams.length,
       conferences_imported: conferences.length,
+      team_seasons_imported: teamSeasons.length,
       calendar_weeks_imported: calendar.length,
     };
     const { error: finishError } = await supabase
