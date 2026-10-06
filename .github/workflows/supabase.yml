@@ -113,10 +113,23 @@ jobs:
       - name: Request GitHub Actions identity token
         id: oidc
         run: |
-          token_response="$(curl --fail --silent --show-error --get \
+          if [[ -z "$ACTIONS_ID_TOKEN_REQUEST_URL" || -z "$ACTIONS_ID_TOKEN_REQUEST_TOKEN" ]]; then
+            echo "::error::GitHub did not provide the OIDC request URL/token. Confirm this job has id-token: write permission."
+            exit 1
+          fi
+          token_response="$(curl --silent --show-error --get \
+            --write-out $'\n%{http_code}' \
             "$ACTIONS_ID_TOKEN_REQUEST_URL" \
             --data-urlencode 'audience=strdys-supabase-test-import' \
             -H "Authorization: ******")"
+          http_status="${token_response##*$'\n'}"
+          token_body="${token_response%$'\n'*}"
+          if [[ "$http_status" != "200" ]]; then
+            error_message="$(printf '%s' "$token_body" | jq -r '.message // .error // empty')"
+            echo "::error::GitHub OIDC token request failed with HTTP $http_status: ${error_message:-no error details returned}"
+            exit 1
+          fi
+          token_response="$token_body"
           token="$(printf '%s' "$token_response" | jq -er '.value')"
           echo "::add-mask::$token"
           echo "token=$token" >> "$GITHUB_OUTPUT"
