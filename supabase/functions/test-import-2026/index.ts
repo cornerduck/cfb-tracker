@@ -404,9 +404,12 @@ Deno.serve(async (request) => {
       throw new Error(`Could not import teams: ${teamsError.message}`);
     }
 
+    const conferenceRows = conferences.map((
+      { divisions: _divisions, ...row },
+    ) => row);
     const { error: conferencesError } = await supabase
       .from("conferences")
-      .upsert(conferences, { onConflict: "id" });
+      .upsert(conferenceRows, { onConflict: "id" });
     if (conferencesError) {
       throw new Error(
         `Could not import conferences: ${conferencesError.message}`,
