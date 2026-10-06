@@ -1,0 +1,83 @@
+name: Supabase
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'supabase/**'
+      - '.github/workflows/supabase.yml'
+  workflow_dispatch:
+    inputs:
+      run_test_import:
+        description: Import the 2026 FBS teams, conferences, and calendar after deployment
+        required: true
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+
+concurrency:
+  group: supabase-deployment
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Deploy database and Edge Functions
+    runs-on: ubuntu-latest
+    env:
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+      SUPABASE_PROJECT_REF: ${{ vars.SUPABASE_PROJECT_REF }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: supabase/setup-cli@v1
+        with:
+          version: 2.76.7
+
+      - name: Link project
+        run: supabase link --project-ref "$SUPABASE_PROJECT_REF" --password "$SUPABASE_DB_PASSWORD"
+
+      - name: Apply database migrations
+        run: supabase db push --linked --password "$SUPABASE_DB_PASSWORD"
+
+      - name: Deploy Edge Functions
+        run: supabase functions deploy --project-ref "$SUPABASE_PROJECT_REF"
+
+  test-import:
+    name: Run 2026 test import
+    if: github.event_name == 'workflow_dispatch' && inputs.run_test_import
+    needs: deploy
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    env:
+      SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL }}
+      SUPABASE_ANON_KEY: ${{ vars.VITE_SUPABASE_ANON_KEY }}
+    steps:
+      - name: Request GitHub Actions identity token
+        id: oidc
+        run: |
+          token_response="$(curl --fail --silent --show-error --get \
+            "$ACTIONS_ID_TOKEN_REQUEST_URL" \
+            --data-urlencode 'audience=strdys-supabase-test-import' \
+            -H "Authorization: Bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN")"
+          token="$(printf '%s' "$token_response" | jq -er '.value')"
+          echo "::add-mask::$token"
+          echo "token=$token" >> "$GITHUB_OUTPUT"
+
+      - name: Import 2026 teams, conferences, and calendar
+        env:
+          GITHUB_OIDC_TOKEN: ${{ steps.oidc.outputs.token }}
+        run: |
+          curl --fail-with-body --silent --show-error \
+            --request POST \
+            --url "${SUPABASE_URL%/}/functions/v1/test-import-2026" \
+            --header "Authorization: Bearer $SUPABASE_ANON_KEY" \
+            --header "apikey: $SUPABASE_ANON_KEY" \
+            --header "x-github-oidc-token: $GITHUB_OIDC_TOKEN" \
+            --header 'Content-Type: application/json' \
+            --data '{}'
