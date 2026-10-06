@@ -882,22 +882,46 @@ const importHeismanHistory = async (
   const completedGames = games.filter((game) =>
     game.week !== null && game.home_points !== null && game.away_points !== null
   );
-  const weeks = [...new Set(completedGames.map((game) => game.week)
-    .filter((week): week is number => week !== null))]
-    .sort((a, b) => a - b);
+  const gamesByWeek = new Map<number, typeof completedGames>();
+  const gameWeekById = new Map<number, number>();
+  for (const game of completedGames) {
+    const week = game.week!;
+    const weekGames = gamesByWeek.get(week) ?? [];
+    weekGames.push(game);
+    gamesByWeek.set(week, weekGames);
+    gameWeekById.set(game.id, week);
+  }
+  const weeks = [...gamesByWeek.keys()].sort((a, b) => a - b);
   if (!weeks.length) throw new Error("No completed 2025 games are available for Heisman history");
   const { data: polls, error: pollsError } = await supabase.from("polls")
     .select("week,rank,team_id")
     .eq("season", SEASON)
     .eq("source", "AP");
   if (pollsError) throw new Error(`Could not load AP polls for Heisman history: ${pollsError.message}`);
-  const gameById = new Map(completedGames.map((game) => [game.id, game]));
-  const pollRows = polls ?? [];
+  const pollRows = [...(polls ?? [])].sort((a, b) => a.week - b.week);
+  const playerRowsByWeek = new Map<number, typeof playerRows>();
+  for (const row of playerRows) {
+    const week = gameWeekById.get(row.game_id);
+    if (week === undefined) continue;
+    const weekRows = playerRowsByWeek.get(week) ?? [];
+    weekRows.push(row);
+    playerRowsByWeek.set(week, weekRows);
+  }
+  const cumulativePlayers = new Map<string, {
+    player_id: string;
+    player_name: string;
+    team_id: number;
+    passing: JsonObject;
+    rushing: JsonObject;
+    receiving: JsonObject;
+  }>();
+  const winsByTeam = new Map<number, { wins: number; games: number }>();
+  const latestApRankByTeam = new Map<number, number>();
+  let pollIndex = 0;
   const finalCandidates = new Map<string, JsonObject>();
   const weeklyRows: JsonObject[] = [];
   for (const week of weeks) {
-    const winsByTeam = new Map<number, { wins: number; games: number }>();
-    for (const game of completedGames.filter((item) => (item.week ?? 0) <= week)) {
+    for (const game of gamesByWeek.get(week) ?? []) {
       for (const teamId of [game.home_team_id, game.away_team_id]) {
         const record = winsByTeam.get(teamId) ?? { wins: 0, games: 0 };
         record.games += 1;
@@ -908,21 +932,9 @@ const importHeismanHistory = async (
         winsByTeam.set(teamId, record);
       }
     }
-    const cumulative = playerRows.filter((row) => {
-      const game = gameById.get(row.game_id);
-      return game !== undefined && (game.week ?? Number.MAX_SAFE_INTEGER) <= week;
-    });
-    const grouped = new Map<string, {
-      player_id: string;
-      player_name: string;
-      team_id: number;
-      passing: JsonObject;
-      rushing: JsonObject;
-      receiving: JsonObject;
-    }>();
-    for (const row of cumulative) {
+    for (const row of playerRowsByWeek.get(week) ?? []) {
       const key = row.player_id;
-      const candidate = grouped.get(key) ?? {
+      const candidate = cumulativePlayers.get(key) ?? {
         player_id: row.player_id,
         player_name: row.player_name,
         team_id: row.team_id,
@@ -948,9 +960,13 @@ const importHeismanHistory = async (
           bucket[stat] = (numberValue(bucket[stat]) ?? 0) + (numericValue ?? 0);
         }
       }
-      grouped.set(key, candidate);
+      cumulativePlayers.set(key, candidate);
     }
-    const candidates = [...grouped.values()].map((player) => {
+    while (pollIndex < pollRows.length && pollRows[pollIndex].week <= week) {
+      const poll = pollRows[pollIndex++];
+      latestApRankByTeam.set(poll.team_id, poll.rank);
+    }
+    const candidates = [...cumulativePlayers.values()].map((player) => {
       const passYards = metric(player.passing, ["yards", "yds", "passingyards"]);
       const passAttempts = metric(player.passing, ["attempts", "att", "passingattempts"]);
       const passTd = metric(player.passing, ["td", "touchdowns", "passingtouchdowns"]);
@@ -972,14 +988,13 @@ const importHeismanHistory = async (
       const attempts = isQuarterback ? passAttempts : isReceiver ? receptions : rushAttempts;
       const turnovers = interceptions +
         metric(player.rushing, ["fum", "fumbles", "lostfum", "lostfumbles"]);
-      const poll = pollRows.filter((row) =>
-        row.team_id === player.team_id && row.week <= week
-      ).sort((a, b) => b.week - a.week)[0];
       const record = winsByTeam.get(player.team_id) ?? { wins: 0, games: 0 };
       const teamSuccess = Math.min(
         1,
         (record.games ? record.wins / record.games : 0) * 0.8 +
-          (poll ? Math.max(0, 26 - poll.rank) / 25 : 0) * 0.2,
+          (latestApRankByTeam.has(player.team_id)
+            ? Math.max(0, 26 - latestApRankByTeam.get(player.team_id)!) / 25
+            : 0) * 0.2,
       );
       return {
         ...player,
@@ -994,18 +1009,47 @@ const importHeismanHistory = async (
       candidate.yards > 0 || candidate.touchdowns > 0
     );
     if (!candidates.length) continue;
-    const percentile = (value: number, values: number[], reverse = false) => {
-      const sorted = [...values].sort((a, b) => reverse ? a - b : b - a);
-      const index = sorted.findIndex((entry) => entry === value);
-      return sorted.length <= 1 ? 1 : 1 - index / (sorted.length - 1);
-    };
+    const candidatesByPosition = new Map<string, typeof candidates>();
+    for (const candidate of candidates) {
+      const positionGroup = candidatesByPosition.get(candidate.position) ?? [];
+      positionGroup.push(candidate);
+      candidatesByPosition.set(candidate.position, positionGroup);
+    }
+    const percentileIndexes = new Map<string, {
+      yards: Map<number, number>;
+      touchdowns: Map<number, number>;
+      efficiency: Map<number, number>;
+      turnovers: Map<number, number>;
+      size: number;
+    }>();
+    for (const [position, group] of candidatesByPosition) {
+      const indexes = {
+        yards: new Map<number, number>(),
+        touchdowns: new Map<number, number>(),
+        efficiency: new Map<number, number>(),
+        turnovers: new Map<number, number>(),
+        size: group.length,
+      };
+      for (const key of ["yards", "touchdowns", "efficiency", "turnovers"] as const) {
+        const ordered = group.map((candidate) => candidate[key]).sort((a, b) =>
+          key === "turnovers" ? a - b : b - a
+        );
+        const indexByValue = indexes[key];
+        ordered.forEach((value, index) => {
+          if (!indexByValue.has(value)) indexByValue.set(value, index);
+        });
+      }
+      percentileIndexes.set(position, indexes);
+    }
     const scored = candidates.map((candidate) => {
-      const samePosition = candidates.filter((item) => item.position === candidate.position);
+      const indexes = percentileIndexes.get(candidate.position)!;
+      const percentile = (values: Map<number, number>, value: number) =>
+        indexes.size <= 1 ? 1 : 1 - values.get(value)! / (indexes.size - 1);
       const production = (
-        percentile(candidate.yards, samePosition.map((item) => item.yards)) +
-        percentile(candidate.touchdowns, samePosition.map((item) => item.touchdowns)) +
-        percentile(candidate.efficiency, samePosition.map((item) => item.efficiency)) +
-        percentile(candidate.turnovers, samePosition.map((item) => item.turnovers), true)
+        percentile(indexes.yards, candidate.yards) +
+        percentile(indexes.touchdowns, candidate.touchdowns) +
+        percentile(indexes.efficiency, candidate.efficiency) +
+        percentile(indexes.turnovers, candidate.turnovers)
       ) / 4;
       return {
         ...candidate,
@@ -1234,7 +1278,6 @@ const importAwardsAndArchive = async (
   counts.champion_team_id = championId;
   counts.heisman_winner = winnerName;
   counts.heisman_finalists = finalistNames.length;
-  counts.cfbd_award_records = awards.length;
 };
 
 const runStage = async (
