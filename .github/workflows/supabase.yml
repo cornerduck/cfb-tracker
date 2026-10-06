@@ -14,6 +14,19 @@ on:
         required: true
         default: false
         type: boolean
+      import_2025_stage:
+        description: Run one resumable stage of the archived 2025 season import
+        required: true
+        default: skip
+        type: choice
+        options:
+          - skip
+          - setup
+          - games
+          - boxscores
+          - rankings
+          - season-stats
+          - awards
 
 permissions:
   contents: read
@@ -83,3 +96,42 @@ jobs:
             --header "x-github-oidc-token: $GITHUB_OIDC_TOKEN" \
             --header 'Content-Type: application/json' \
             --data '{}'
+
+  import-2025:
+    name: Import 2025 season stage
+    if: github.event_name == 'workflow_dispatch' && inputs.import_2025_stage != 'skip'
+    needs: deploy
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    env:
+      SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL }}
+      SUPABASE_ANON_KEY: ${{ vars.VITE_SUPABASE_ANON_KEY }}
+      IMPORT_STAGE: ${{ inputs.import_2025_stage }}
+    steps:
+      - name: Request GitHub Actions identity token
+        id: oidc
+        run: |
+          token_response="$(curl --fail --silent --show-error --get \
+            "$ACTIONS_ID_TOKEN_REQUEST_URL" \
+            --data-urlencode 'audience=strdys-supabase-test-import' \
+            -H "Authorization: ******")"
+          token="$(printf '%s' "$token_response" | jq -er '.value')"
+          echo "::add-mask::$token"
+          echo "token=$token" >> "$GITHUB_OUTPUT"
+
+      - name: Import 2025 season stage
+        env:
+          GITHUB_OIDC_TOKEN: ${{ steps.oidc.outputs.token }}
+        run: |
+          supabase_project_url="${SUPABASE_URL%/}"
+          supabase_project_url="${supabase_project_url%/rest/v1}"
+          curl --fail-with-body --silent --show-error \
+            --request POST \
+            --url "${supabase_project_url}/functions/v1/import-2025" \
+            --header "Authorization: ******" \
+            --header "apikey: $SUPABASE_ANON_KEY" \
+            --header "x-github-oidc-token: $GITHUB_OIDC_TOKEN" \
+            --header 'Content-Type: application/json' \
+            --data "{\"stage\":\"$IMPORT_STAGE\"}"
