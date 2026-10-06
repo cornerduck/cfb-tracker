@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Offseason Home desktop</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@500;600;700&family=Graduate&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#0B0C0E}
+a{color:#F2F3F5;text-decoration:none}a:hover{color:#FFFFFF}
+.cond{font-family:"Barlow Condensed","Arial Narrow",sans-serif;letter-spacing:0.02em}
+.varsity{font-family:Graduate,"Rockwell","Courier New",serif}
+.num{font-variant-numeric:tabular-nums}
+</style>
+</helmet>
+<div style="width: 1440px; height: 900px; box-sizing: border-box; background: #0B0C0E; color: #F2F3F5; font-family: Barlow, 'Helvetica Neue', sans-serif; font-size: 14px; display: flex; flex-direction: column; overflow: hidden">
+<header style="height: 56px; flex-shrink: 0; display: flex; align-items: center; gap: 24px; padding: 0 24px; border-bottom: 1px solid #23262B; background: #0E1013">
+<div class="cond" style="font-size: 20px; font-weight: 700; letter-spacing: 0.08em"><span style="display: inline-flex; align-items: center; gap: 9px"><span class="varsity" style="width: 30px; height: 30px; box-sizing: border-box; border-radius: 7px; background: #0B0C0E; border: 2px solid #F2F3F5; color: #F2F3F5; display: inline-flex; align-items: center; justify-content: center; font-family: Graduate, serif; font-size: 17px; letter-spacing: 0">S</span>STRDYS</span></div>
+<nav aria-label="Main" style="display: flex; gap: 2px; height: 100%">
+<sc-for list="{{ nav }}" as="n" hint-placeholder-count="8">
+<a href="#" class="cond" style="{{ n.style }}">{{ n.label }}</a>
+</sc-for>
+</nav>
+<div style="flex: 1"></div>
+<label style="display: flex; align-items: center; gap: 8px; width: 170px; height: 32px; padding: 0 10px; box-sizing: border-box; background: #15171A; border: 1px solid #2A2E34; border-radius: 6px; color: #8E949C">
+<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="7" cy="7" r="5"></circle><path d="M11 11l3.5 3.5"></path></svg>
+<input type="text" placeholder="Search" aria-label="Search teams or players" style="flex: 1; min-width: 0; background: transparent; border: 0; outline: 0; color: #F2F3F5; font: inherit; font-size: 13px">
+</label>
+<button type="button" class="cond" style="height: 32px; padding: 0 12px; background: #15171A; border: 1px solid #2A2E34; border-radius: 6px; color: #F2F3F5; font-size: 14px; font-weight: 600; letter-spacing: 0.04em">WEEK 6 <span style="color: #8E949C">▾</span></button>
+<button type="button" aria-label="Favorite teams" style="width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; background: #15171A; border: 1px solid #2A2E34; border-radius: 6px; color: #F2F3F5"><svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><path d="M8 1.8l1.9 3.9 4.3.6-3.1 3 .7 4.3L8 11.6l-3.8 2 .7-4.3-3.1-3 4.3-.6z"></path></svg></button>
+<div aria-label="Updated Monday 06:02" style="width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border: 1px solid #23462F; background: #0F1D15; border-radius: 6px"><span style="width: 8px; height: 8px; border-radius: 50%; background: #4CC38A"></span></div>
+<button type="button" aria-label="Account" class="cond" style="width: 32px; height: 32px; border-radius: 50%; border: 1px solid #2A2E34; background: #1C1F23; color: #F2F3F5; font-size: 14px; font-weight: 600">B</button>
+</header>
+<main style="flex: 1; min-height: 0; padding: 20px 28px 24px; display: flex; flex-direction: column; gap: 16px">
+<div style="display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 16px; height: 270px"><section style="position: relative; border-radius: 8px; overflow: hidden; background: #15171A; border: 1px solid #2A2E34; padding: 26px 30px; display: flex; flex-direction: column; justify-content: center; gap: 10px">
+<span class="cond" style="font-size: 15px; font-weight: 700; letter-spacing: 0.16em; color: #8E949C">OFFSEASON · 2027 KICKOFF IN</span>
+<div style="display: flex; gap: 12px"><span style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 14px 8px; background: #0F1114; border: 1px solid #23262B; border-radius: 8px"><span class="cond num" style="font-size: 64px; font-weight: 700; line-height: 1">132</span><span class="cond" style="font-size: 13px; letter-spacing: 0.16em; color: #8E949C">DAYS</span></span><span style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 14px 8px; background: #0F1114; border: 1px solid #23262B; border-radius: 8px"><span class="cond num" style="font-size: 64px; font-weight: 700; line-height: 1">14</span><span class="cond" style="font-size: 13px; letter-spacing: 0.16em; color: #8E949C">HOURS</span></span><span style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 14px 8px; background: #0F1114; border: 1px solid #23262B; border-radius: 8px"><span class="cond num" style="font-size: 64px; font-weight: 700; line-height: 1">06</span><span class="cond" style="font-size: 13px; letter-spacing: 0.16em; color: #8E949C">MINUTES</span></span></div>
+<span style="color: #8E949C">First game: Week 0 · Saturday 28 August 2027</span>
+</section><a href="#" style="border-radius: 8px; overflow: hidden; background: #1C1F23; border: 1px dashed #3A3F46; display: flex; flex-direction: column; justify-content: flex-end; gap: 4px; padding: 20px 24px">
+<span style="font-size: 11px; color: #8E949C; letter-spacing: 0.08em">IN THE CHAMPION'S COLORS ONCE THE SEASON ENDS</span>
+<span class="varsity" style="font-size: 14px; letter-spacing: 0.16em; color: #C9CDD3">2026 NATIONAL CHAMPIONS</span>
+<span class="varsity" style="font-size: 40px; line-height: 1; color: #6F757D">[CHAMPION]</span>
+<span class="cond" style="font-size: 14px; letter-spacing: 0.1em; color: #8E949C">SEASON RECAP IN THE ARCHIVE →</span>
+</a></div>
+<div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px"><a href="#" style="background: #15171A; border: 1px solid #23262B; border-radius: 8px; padding: 16px 18px; display: flex; flex-direction: column; gap: 10px; gap: 4px"><span class="cond" style="font-size: 12px; font-weight: 700; letter-spacing: 0.12em; color: #8E949C">NATIONAL CHAMPION</span><span class="cond" style="font-size: 22px; font-weight: 700; color: #6F757D">[2026 champion]</span></a><a href="#" style="background: #15171A; border: 1px solid #23262B; border-radius: 8px; padding: 16px 18px; display: flex; flex-direction: column; gap: 10px; gap: 4px"><span class="cond" style="font-size: 12px; font-weight: 700; letter-spacing: 0.12em; color: #8E949C">HEISMAN WINNER</span><span class="cond" style="font-size: 22px; font-weight: 700; color: #6F757D">[winner]</span></a><a href="#" style="background: #15171A; border: 1px solid #23262B; border-radius: 8px; padding: 16px 18px; display: flex; flex-direction: column; gap: 10px; gap: 4px"><span class="cond" style="font-size: 12px; font-weight: 700; letter-spacing: 0.12em; color: #8E949C">UPSET OF THE YEAR</span><span class="cond" style="font-size: 22px; font-weight: 700; color: #6F757D">[game · spread]</span></a><a href="#" style="background: #15171A; border: 1px solid #23262B; border-radius: 8px; padding: 16px 18px; display: flex; flex-direction: column; gap: 10px; gap: 4px"><span class="cond" style="font-size: 12px; font-weight: 700; letter-spacing: 0.12em; color: #8E949C">LAST UNBEATEN</span><span class="cond" style="font-size: 22px; font-weight: 700; color: #6F757D">[team]</span></a></div>
+<div style="flex: 1; min-height: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px">
+<section style="background: #15171A; border: 1px solid #23262B; border-radius: 8px; padding: 16px 18px; display: flex; flex-direction: column; gap: 10px"><div style="display: flex; justify-content: space-between; align-items: baseline"><h2 class="cond" style="margin: 0; font-size: 15px; font-weight: 700; letter-spacing: 0.1em; color: #C9CDD3">MY TEAMS · 2026 FINAL</h2><a href="#" style="font-size: 13px; color: #8E949C">Edit</a></div><a href="#" style="display: flex; align-items: center; gap: 12px; min-height: 52px; border-bottom: 1px solid #1E2125"><span class="cond" style="width: 36px; height: 36px; border-radius: 6px; background: #D9DCE0; color: #990000; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700">IND</span><span style="flex: 1; display: flex; flex-direction: column"><span class="cond" style="font-size: 17px; font-weight: 700">INDIANA</span><span style="font-size: 12px; color: #8E949C">Opener: [opponent] · [date]</span></span><span class="cond" style="color: #C9CDD3">[final record]</span></a><a href="#" style="display: flex; align-items: center; gap: 12px; min-height: 52px; border-bottom: 1px solid #1E2125"><span class="cond" style="width: 36px; height: 36px; border-radius: 6px; background: #D9DCE0; color: #BF5700; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700">TEX</span><span style="flex: 1; display: flex; flex-direction: column"><span class="cond" style="font-size: 17px; font-weight: 700">TEXAS</span><span style="font-size: 12px; color: #8E949C">Opener: [opponent] · [date]</span></span><span class="cond" style="color: #C9CDD3">[final record]</span></a><a href="#" style="display: flex; align-items: center; gap: 12px; min-height: 52px; border-bottom: 1px solid #1E2125"><span class="cond" style="width: 36px; height: 36px; border-radius: 6px; background: #D9DCE0; color: #0033A0; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700">BSU</span><span style="flex: 1; display: flex; flex-direction: column"><span class="cond" style="font-size: 17px; font-weight: 700">BOISE STATE</span><span style="font-size: 12px; color: #8E949C">Opener: [opponent] · [date]</span></span><span class="cond" style="color: #C9CDD3">[final record]</span></a></section>
+<section style="background: #15171A; border: 1px solid #23262B; border-radius: 8px; padding: 16px 18px; display: flex; flex-direction: column; gap: 10px"><h2 class="cond" style="margin: 0; font-size: 15px; font-weight: 700; letter-spacing: 0.1em; color: #C9CDD3">OFFSEASON CALENDAR</h2><div style="display: flex; align-items: center; gap: 12px; min-height: 44px; border-bottom: 1px solid #1E2125"><span class="cond" style="width: 40px; font-size: 14px; font-weight: 700; color: #8E949C">APR</span><span style="flex: 1; display: flex; flex-direction: column"><span>Spring games</span><span style="font-size: 12px; color: #8E949C">Most programs, through 25 Apr</span></span></div><div style="display: flex; align-items: center; gap: 12px; min-height: 44px; border-bottom: 1px solid #1E2125"><span class="cond" style="width: 40px; font-size: 14px; font-weight: 700; color: #8E949C">APR</span><span style="flex: 1; display: flex; flex-direction: column"><span>NFL Draft</span><span style="font-size: 12px; color: #8E949C">24–26 Apr</span></span></div><div style="display: flex; align-items: center; gap: 12px; min-height: 44px; border-bottom: 1px solid #1E2125"><span class="cond" style="width: 40px; font-size: 14px; font-weight: 700; color: #8E949C">JUL</span><span style="flex: 1; display: flex; flex-direction: column"><span>Conference media days</span><span style="font-size: 12px; color: #8E949C">Mid July</span></span></div><div style="display: flex; align-items: center; gap: 12px; min-height: 44px; border-bottom: 1px solid #1E2125"><span class="cond" style="width: 40px; font-size: 14px; font-weight: 700; color: #8E949C">AUG</span><span style="flex: 1; display: flex; flex-direction: column"><span>Preseason AP Poll</span><span style="font-size: 12px; color: #8E949C">Mid August</span></span></div><div style="display: flex; align-items: center; gap: 12px; min-height: 44px; border-bottom: 1px solid #1E2125"><span class="cond" style="width: 40px; font-size: 14px; font-weight: 700; color: #8E949C">AUG</span><span style="flex: 1; display: flex; flex-direction: column"><span>Week 0 kickoff</span><span style="font-size: 12px; color: #8E949C">Sat 28 Aug</span></span></div></section>
+</div></main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var active = 'display: flex; align-items: center; padding: 0 10px; height: 100%; border-bottom: 2px solid #F2F3F5; color: #F2F3F5; font-size: 15px; font-weight: 600; letter-spacing: 0.08em';
+    var idle = 'display: flex; align-items: center; padding: 0 10px; height: 100%; border-bottom: 2px solid transparent; color: #8E949C; font-size: 15px; font-weight: 600; letter-spacing: 0.08em';
+    return { nav: ['HOME', 'SCORES', 'RANKINGS', 'STANDINGS', 'STATS', 'TEAMS', "PICK'EM", 'ARCHIVE'].map(function (l, i) { return { label: l, style: i === 0 ? active : idle }; }) };
+  }
+}
+</script>
+</body>
+</html>

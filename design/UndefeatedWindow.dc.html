@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Undefeated Watch window</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@500;600;700&family=Graduate&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#050607}
+a{color:#F2F3F5;text-decoration:none}a:hover{color:#FFFFFF}
+.cond{font-family:"Barlow Condensed","Arial Narrow",sans-serif;letter-spacing:0.02em}
+.num{font-variant-numeric:tabular-nums}
+</style>
+</helmet>
+<div style="width: 1440px; height: 900px; box-sizing: border-box; background: #050607; color: #F2F3F5; font-family: Barlow, 'Helvetica Neue', sans-serif; font-size: 14px; display: flex; align-items: center; justify-content: center">
+<div role="dialog" aria-label="Undefeated Watch" style="width: 1000px; height: 780px; box-sizing: border-box; background: #15171A; border: 1px solid #2A2E34; border-radius: 12px; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6)">
+
+<div style="display: flex; align-items: center; gap: 16px; padding: 20px 24px 16px; border-bottom: 1px solid #23262B">
+<h2 class="cond" style="margin: 0; font-size: 30px; font-weight: 700; letter-spacing: 0.04em">UNDEFEATED WATCH</h2>
+<span style="flex: 1"></span>
+<button type="button" aria-label="Close" style="width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; background: #1C1F23; border: 1px solid #2A2E34; border-radius: 50%; color: #F2F3F5"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M3 3l10 10M13 3L3 13"></path></svg></button>
+</div>
+
+<div style="display: flex; gap: 28px; padding: 20px 24px; border-bottom: 1px solid #23262B">
+<div style="display: flex; flex-direction: column; justify-content: center; gap: 4px; width: 200px">
+<span class="cond num" style="font-size: 84px; font-weight: 700; line-height: 0.85">14</span>
+<span style="color: #8E949C">of 138 FBS teams are still unbeaten after week 6</span>
+</div>
+<div style="flex: 1; display: flex; flex-direction: column; gap: 6px">
+<span class="cond" style="font-size: 13px; font-weight: 700; letter-spacing: 0.12em; color: #C9CDD3">UNBEATEN TEAMS AFTER EACH WEEK</span>
+<div style="flex: 1; display: flex; align-items: flex-end; gap: 14px; height: 150px">
+<sc-for list="{{ bars }}" as="b" hint-placeholder-count="7">
+<div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; height: 100%; justify-content: flex-end">
+<span class="cond num" style="font-size: 14px; font-weight: 700">{{ b.n }}</span>
+<span style="{{ b.style }}"></span>
+<span class="cond" style="font-size: 12px; color: #8E949C; letter-spacing: 0.08em">{{ b.label }}</span>
+</div>
+</sc-for>
+</div>
+</div>
+</div>
+
+<div style="flex: 1; min-height: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr))">
+<div style="padding: 18px 24px; display: flex; flex-direction: column; gap: 10px; border-right: 1px solid #23262B; min-height: 0">
+<h3 class="cond" style="margin: 0; font-size: 14px; font-weight: 700; letter-spacing: 0.12em; color: #C9CDD3">STILL PERFECT</h3>
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px 16px">
+<sc-for list="{{ perfect }}" as="t" hint-placeholder-count="14">
+<a href="#" style="display: flex; align-items: center; gap: 10px; min-height: 30px">
+<span class="cond" style="{{ t.badge }}">{{ t.abbr }}</span>
+<span style="flex: 1">{{ t.name }}</span>
+<span class="cond num" style="color: #8E949C">{{ t.rank }}</span>
+</a>
+</sc-for>
+</div>
+</div>
+<div style="padding: 18px 24px; display: flex; flex-direction: column; gap: 10px; min-height: 0; overflow: auto">
+<h3 class="cond" style="margin: 0; font-size: 14px; font-weight: 700; letter-spacing: 0.12em; color: #C9CDD3">FIRST LOSSES · RANKED TEAMS</h3>
+<sc-for list="{{ falls }}" as="f" hint-placeholder-count="5">
+<div style="display: flex; gap: 14px; padding-bottom: 10px; border-bottom: 1px solid #1E2125">
+<span class="cond" style="width: 56px; flex-shrink: 0; font-size: 15px; font-weight: 700">{{ f.wk }}</span>
+<span style="flex: 1; display: flex; flex-direction: column; gap: 3px">
+<span style="color: #F0645A">{{ f.teams }}</span>
+<span style="font-size: 12px; color: #8E949C">{{ f.note }}</span>
+</span>
+</div>
+</sc-for>
+</div>
+</div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var data = [['START', 138], ['WK 1', 79], ['WK 2', 51], ['WK 3', 34], ['WK 4', 24], ['WK 5', 18], ['WK 6', 14]];
+    var bars = data.map(function (d, i) {
+      return { label: d[0], n: String(d[1]), style: 'width: 100%; border-radius: 4px 4px 0 0; height: ' + Math.max(6, Math.round(d[1] / 138 * 100)) + 'px; background: ' + (i === data.length - 1 ? '#F2F3F5' : '#3A3F46') };
+    });
+    var b = function (c, dark) { return 'width: 26px; height: 26px; flex-shrink: 0; border-radius: 4px; background: ' + c + '; color: ' + (dark ? '#111214' : '#FFFFFF') + '; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700'; };
+    var p = [
+      ['OSU', 'Ohio State', '#BB0000', '#1'], ['IND', 'Indiana', '#990000', '#2'], ['ORE', 'Oregon', '#154733', '#3'], ['MIA', 'Miami', '#F47321', '#4'],
+      ['ND', 'Notre Dame', '#0C2340', '#6'], ['BYU', 'BYU', '#002E5D', '#7'], ['VAN', 'Vanderbilt', '#866D4B', '#18'], ['UNLV', 'UNLV', '#CF0A2C', '#24'],
+      ['JMU', 'James Madison', '#450084', 'RV'], ['NAVY', 'Navy', '#00205B', ''], ['MEM', 'Memphis', '#003087', ''], ['TLN', 'Tulane', '#006747', ''],
+      ['WKU', 'Western Kentucky', '#C60C30', ''], ['ODU', 'Old Dominion', '#003865', '']
+    ].map(function (t) { return { abbr: t[0], name: t[1], rank: t[3], badge: b(t[2], false) }; });
+    return {
+      bars: bars,
+      perfect: p,
+      falls: [
+        { wk: 'WK 6', teams: '#4 Michigan, #7 Georgia', note: 'Michigan fell as a 22.5-point favorite to Purdue' },
+        { wk: 'WK 5', teams: '#9 LSU, #11 USC', note: '6 teams lost their first game' },
+        { wk: 'WK 4', teams: '#10 Alabama, #14 Tennessee', note: '10 teams lost their first game' },
+        { wk: 'WK 3', teams: '#5 Texas', note: '17 teams lost their first game' },
+        { wk: 'WK 2', teams: '#13 Clemson', note: '28 teams lost their first game' },
+        { wk: 'WK 1', teams: 'No ranked team', note: '59 teams lost their opener' }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

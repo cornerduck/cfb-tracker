@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Favorites menu</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@500;600;700&family=Graduate&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#0B0C0E}
+a{color:#F2F3F5;text-decoration:none}a:hover{color:#FFFFFF}
+.cond{font-family:"Barlow Condensed","Arial Narrow",sans-serif;letter-spacing:0.02em}
+.varsity{font-family:Graduate,"Rockwell","Courier New",serif}
+.num{font-variant-numeric:tabular-nums}
+</style>
+</helmet>
+<div style="width: 380px; height: 380px; box-sizing: border-box; background: #0B0C0E; color: #F2F3F5; font-family: Barlow, 'Helvetica Neue', sans-serif; font-size: 14px; display: flex; flex-direction: column; overflow: hidden">
+<div style="flex: 1; display: flex; justify-content: flex-end; padding: 12px">
+<div role="menu" style="width: 340px; align-self: flex-start; background: #1A1D21; border: 1px solid #2A2E34; border-radius: 10px; padding: 8px; display: flex; flex-direction: column; box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5)">
+<span class="cond" style="padding: 8px 12px 6px; font-size: 13px; font-weight: 700; letter-spacing: 0.12em; color: #8E949C">MY TEAMS</span><a href="#" style="display: flex; align-items: center; gap: 12px; min-height: 56px; padding: 0 12px; border-radius: 6px"><span class="cond" style="width: 34px; height: 34px; flex-shrink: 0; border-radius: 6px; background: #D9DCE0; color: #990000; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700">IND</span><span style="flex: 1; display: flex; flex-direction: column"><span style="font-weight: 600">Indiana <span class="cond" style="color: #8E949C; font-weight: 500">#2 · 6–0</span></span><span style="font-size: 12px; color: #8E949C">Next: Sat 18:00 @ Northwestern</span></span></a><a href="#" style="display: flex; align-items: center; gap: 12px; min-height: 56px; padding: 0 12px; border-radius: 6px"><span class="cond" style="width: 34px; height: 34px; flex-shrink: 0; border-radius: 6px; background: #D9DCE0; color: #BF5700; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700">TEX</span><span style="flex: 1; display: flex; flex-direction: column"><span style="font-weight: 600">Texas <span class="cond" style="color: #8E949C; font-weight: 500">#5 · 5–1</span></span><span style="font-size: 12px; color: #8E949C">Next: Sun 01:30 vs #10 Alabama</span></span></a><a href="#" style="display: flex; align-items: center; gap: 12px; min-height: 56px; padding: 0 12px; border-radius: 6px"><span class="cond" style="width: 34px; height: 34px; flex-shrink: 0; border-radius: 6px; background: #D9DCE0; color: #0033A0; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700">BSU</span><span style="flex: 1; display: flex; flex-direction: column"><span style="font-weight: 600">Boise State <span class="cond" style="color: #8E949C; font-weight: 500">RV · 4–2</span></span><span style="font-size: 12px; color: #8E949C">Next: Sun 04:00 vs Air Force</span></span></a>
+<div style="height: 1px; background: #2A2E34; margin: 6px 0"></div>
+<a href="#" style="display: flex; align-items: center; min-height: 42px; padding: 0 12px; font-size: 14px; color: #C9CDD3">Manage favorite teams →</a>
+</div></div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":380,"height":380}}'>
+class Component extends DCLogic {
+  renderVals() {
+return {};
+  }
+}
+</script>
+</body>
+</html>

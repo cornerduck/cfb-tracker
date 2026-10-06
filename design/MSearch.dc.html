@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Search mobile</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@500;600;700&family=Graduate&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#0B0C0E}
+a{color:#F2F3F5;text-decoration:none}a:hover{color:#FFFFFF}
+.cond{font-family:"Barlow Condensed","Arial Narrow",sans-serif;letter-spacing:0.02em}
+.varsity{font-family:Graduate,"Rockwell","Courier New",serif}
+.num{font-variant-numeric:tabular-nums}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #0B0C0E; color: #F2F3F5; font-family: Barlow, 'Helvetica Neue', sans-serif; font-size: 14px; display: flex; flex-direction: column; overflow: hidden">
+<div style="display: flex; align-items: center; gap: 8px; padding: 12px 12px 10px 16px; border-bottom: 1px solid #23262B; background: #0E1013">
+<label style="flex: 1; display: flex; align-items: center; gap: 8px; height: 44px; padding: 0 12px; background: #15171A; border: 1px solid #F2F3F5; border-radius: 8px; color: #8E949C"><svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="7" cy="7" r="5"></circle><path d="M11 11l3.5 3.5"></path></svg><input type="text" value="ind" aria-label="Search" style="flex: 1; min-width: 0; background: transparent; border: 0; outline: 0; color: #F2F3F5; font: inherit; font-size: 16px"></label>
+<button type="button" style="height: 44px; padding: 0 8px; background: transparent; border: 0; color: #C9CDD3; font: inherit; font-size: 15px">Cancel</button></div>
+<div style="flex: 1; padding: 8px; display: flex; flex-direction: column"><span class="cond" style="padding: 8px 12px 4px; font-size: 12px; font-weight: 700; letter-spacing: 0.12em; color: #8E949C">TEAMS</span><a href="#" style="display: flex; align-items: center; gap: 12px; min-height: 48px; padding: 0 12px; border-radius: 6px; "><span class="cond" style="width: 30px; height: 30px; flex-shrink: 0; border-radius: 6px; background: #D9DCE0; color: #990000; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700">IND</span><span style="flex: 1; display: flex; flex-direction: column"><span style="font-size: 14px; font-weight: 600">Indiana Hoosiers</span><span style="font-size: 12px; color: #8E949C">#2 · Big Ten</span></span></a><a href="#" style="display: flex; align-items: center; gap: 12px; min-height: 48px; padding: 0 12px; border-radius: 6px; "><span class="cond" style="width: 30px; height: 30px; flex-shrink: 0; border-radius: 6px; background: #D9DCE0; color: #C8102E; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700">ISU</span><span style="flex: 1; display: flex; flex-direction: column"><span style="font-size: 14px; font-weight: 600">Iowa State</span><span style="font-size: 12px; color: #8E949C">#22 · Big 12</span></span></a><span class="cond" style="padding: 8px 12px 4px; font-size: 12px; font-weight: 700; letter-spacing: 0.12em; color: #8E949C">PLAYERS</span><a href="#" style="display: flex; align-items: center; gap: 12px; min-height: 48px; padding: 0 12px; border-radius: 6px; "><span class="cond" style="width: 30px; height: 30px; flex-shrink: 0; border-radius: 6px; background: #D9DCE0; color: #990000; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700">IND</span><span style="flex: 1; display: flex; flex-direction: column"><span style="font-size: 14px; font-weight: 600">[QB Name]</span><span style="font-size: 12px; color: #8E949C">QB · Indiana · 1,742 yds</span></span></a><a href="#" style="display: flex; align-items: center; gap: 12px; min-height: 48px; padding: 0 12px; border-radius: 6px; "><span class="cond" style="width: 30px; height: 30px; flex-shrink: 0; border-radius: 6px; background: #D9DCE0; color: #990000; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700">IND</span><span style="flex: 1; display: flex; flex-direction: column"><span style="font-size: 14px; font-weight: 600">[RB Name]</span><span style="font-size: 12px; color: #8E949C">RB · Indiana · 541 yds</span></span></a><a href="#" style="display: flex; align-items: center; gap: 12px; min-height: 48px; padding: 0 12px; border-radius: 6px; "><span class="cond" style="width: 30px; height: 30px; flex-shrink: 0; border-radius: 6px; background: #D9DCE0; color: #990000; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700">IND</span><span style="flex: 1; display: flex; flex-direction: column"><span style="font-size: 14px; font-weight: 600">[WR Name]</span><span style="font-size: 12px; color: #8E949C">WR · Indiana · 502 yds</span></span></a></div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+return {};
+  }
+}
+</script>
+</body>
+</html>

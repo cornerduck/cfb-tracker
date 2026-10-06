@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Game window player stats</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@500;600;700&family=Graduate&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#050607}
+a{color:#F2F3F5;text-decoration:none}a:hover{color:#FFFFFF}
+.cond{font-family:"Barlow Condensed","Arial Narrow",sans-serif;letter-spacing:0.02em}
+.num{font-variant-numeric:tabular-nums}
+</style>
+</helmet>
+<div style="width: 1440px; height: 900px; box-sizing: border-box; background: #050607; color: #F2F3F5; font-family: Barlow, 'Helvetica Neue', sans-serif; font-size: 14px; display: flex; align-items: center; justify-content: center">
+<div role="dialog" aria-label="Game details: Purdue at Michigan" style="position: relative; width: 1000px; height: 780px; box-sizing: border-box; background: #15171A; border: 1px solid #2A2E34; border-radius: 12px; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6)">
+
+<div style="padding: 18px 24px 0; display: flex; align-items: center; justify-content: space-between">
+<span class="cond" style="font-size: 13px; font-weight: 600; letter-spacing: 0.12em; color: #8E949C">WEEK 6 · SAT 3 OCT · MICHIGAN STADIUM, ANN ARBOR · FOX</span>
+<button type="button" aria-label="Close" style="width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; background: #1C1F23; border: 1px solid #2A2E34; border-radius: 50%; color: #F2F3F5"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M3 3l10 10M13 3L3 13"></path></svg></button>
+</div>
+
+<div style="position: relative; display: flex; align-items: center; justify-content: center; gap: 40px; padding: 18px 24px 22px; border-bottom: 1px solid #23262B">
+<a href="#" style="display: flex; align-items: center; gap: 14px">
+<span class="cond" style="width: 64px; height: 64px; border-radius: 8px; background: #CEB888; color: #111214; display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: 700">PUR</span>
+<span style="display: flex; flex-direction: column"><span class="cond" style="font-size: 30px; font-weight: 700">PURDUE</span><span class="cond num" style="color: #8E949C; font-size: 15px">5–1 · 2–1 B1G</span></span>
+</a>
+<span class="cond num" style="font-size: 64px; font-weight: 700; line-height: 1">27</span>
+<span style="display: flex; flex-direction: column; align-items: center; gap: 2px"><span class="cond" style="font-size: 15px; font-weight: 700; letter-spacing: 0.14em; color: #8E949C">FINAL</span><span class="cond" style="font-size: 22px; color: #8E949C">@</span></span>
+<span class="cond num" style="font-size: 64px; font-weight: 600; line-height: 1; color: #8E949C">24</span>
+<a href="#" style="display: flex; align-items: center; gap: 14px">
+<span style="display: flex; flex-direction: column; align-items: flex-end"><span class="cond" style="font-size: 30px; font-weight: 600; color: #8E949C"><span class="num" style="font-size: 17px; margin-right: 6px">4</span>MICHIGAN</span><span class="cond num" style="color: #8E949C; font-size: 15px">5–1 · 2–1 B1G</span></span>
+<span class="cond" style="width: 64px; height: 64px; border-radius: 8px; background: #00274C; color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: 700">MICH</span>
+</a>
+<span class="cond" style="position: absolute; top: 4px; right: 120px; transform: rotate(6deg); padding: 3px 10px; border-radius: 4px; background: #E5484D; color: #FFFFFF; font-size: 15px; font-weight: 700; letter-spacing: 0.14em; box-shadow: 0 0 18px rgba(229, 72, 77, 0.55)">STUNNER · +22.5</span>
+</div>
+
+<div role="tablist" aria-label="Game sections" style="display: flex; gap: 4px; padding: 0 24px; border-bottom: 1px solid #23262B">
+<button type="button" role="tab" aria-selected="false" class="cond" style="height: 44px; padding: 0 14px; background: transparent; border: 0; border-bottom: 2px solid transparent; color: #8E949C; font-size: 15px; font-weight: 700; letter-spacing: 0.1em">SUMMARY</button>
+<button type="button" role="tab" aria-selected="true" class="cond" style="height: 44px; padding: 0 14px; background: transparent; border: 0; border-bottom: 2px solid #F2F3F5; color: #F2F3F5; font-size: 15px; font-weight: 700; letter-spacing: 0.1em">PLAYER STATS</button>
+</div>
+<div style="flex: 1; min-height: 0; overflow: auto; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 32px; padding: 6px 24px 22px; align-content: start">
+<div style="display: flex; flex-direction: column; gap: 18px; min-width: 0">
+<div style="position: sticky; top: 0; z-index: 1; padding: 10px 0 8px; background: #15171A; border-bottom: 2px solid #CEB888"><span class="cond" style="font-size: 18px; font-weight: 700; letter-spacing: 0.08em">PURDUE</span></div>
+<sc-for list="{{ tables }}" as="t" hint-placeholder-count="6">
+<section style="display: flex; flex-direction: column; gap: 4px">
+<h3 class="cond" style="margin: 0 0 2px; font-size: 14px; font-weight: 700; letter-spacing: 0.12em; color: #C9CDD3">{{ t.title }}</h3>
+<div class="num" style="display: flex; flex-direction: column; font-size: 13px">
+<div class="cond" style="{{ t.grid }}; padding: 4px 0; color: #8E949C; font-size: 12px; font-weight: 600; letter-spacing: 0.06em">
+<span>PLAYER</span>
+<sc-for list="{{ t.cols }}" as="c" hint-placeholder-count="5"><span style="text-align: right">{{ c }}</span></sc-for>
+</div>
+<sc-for list="{{ t.rows }}" as="r" hint-placeholder-count="3">
+<div style="{{ t.grid }}; min-height: 30px; align-items: center; border-top: 1px solid #23262B">
+<a href="#" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{ r.name }}</a>
+<sc-for list="{{ r.vals }}" as="v" hint-placeholder-count="5"><span style="text-align: right">{{ v }}</span></sc-for>
+</div>
+</sc-for>
+</div>
+</section>
+</sc-for>
+</div>
+<div style="display: flex; flex-direction: column; gap: 18px; min-width: 0">
+<div style="position: sticky; top: 0; z-index: 1; padding: 10px 0 8px; background: #15171A; border-bottom: 2px solid #4A7AB5"><span class="cond" style="font-size: 18px; font-weight: 700; letter-spacing: 0.08em">@ MICHIGAN</span></div>
+<sc-for list="{{ tables2 }}" as="t" hint-placeholder-count="6">
+<section style="display: flex; flex-direction: column; gap: 4px">
+<h3 class="cond" style="margin: 0 0 2px; font-size: 14px; font-weight: 700; letter-spacing: 0.12em; color: #C9CDD3">{{ t.title }}</h3>
+<div class="num" style="display: flex; flex-direction: column; font-size: 13px">
+<div class="cond" style="{{ t.grid }}; padding: 4px 0; color: #8E949C; font-size: 12px; font-weight: 600; letter-spacing: 0.06em">
+<span>PLAYER</span>
+<sc-for list="{{ t.cols }}" as="c" hint-placeholder-count="5"><span style="text-align: right">{{ c }}</span></sc-for>
+</div>
+<sc-for list="{{ t.rows }}" as="r" hint-placeholder-count="3">
+<div style="{{ t.grid }}; min-height: 30px; align-items: center; border-top: 1px solid #23262B">
+<a href="#" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{ r.name }}</a>
+<sc-for list="{{ r.vals }}" as="v" hint-placeholder-count="5"><span style="text-align: right">{{ v }}</span></sc-for>
+</div>
+</sc-for>
+</div>
+</section>
+</sc-for>
+</div>
+</div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  badge(color, txt) {
+    return 'width: 24px; height: 24px; flex-shrink: 0; border-radius: 4px; background: ' + color + '; color: ' + txt + '; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700';
+  }
+  stat(label, l, r, lv, rv, lowerBetter) {
+    var lWin = lowerBetter ? lv < rv : lv > rv;
+    var total = lv + rv || 1;
+    var lp = Math.round(lv / total * 100);
+    return {
+      label: label, l: l, r: r,
+      lStyle: 'font-size: 18px; font-weight: 700; color: ' + (lWin ? '#F2F3F5' : '#8E949C'),
+      rStyle: 'font-size: 18px; font-weight: 700; color: ' + (!lWin ? '#F2F3F5' : '#8E949C'),
+      lBar: 'flex: ' + lp + ' 1 0; border-radius: 3px; background: #CEB888; opacity: ' + (lWin ? '1' : '0.45'),
+      rBar: 'flex: ' + (100 - lp) + ' 1 0; border-radius: 3px; background: #4A7AB5; opacity: ' + (!lWin ? '1' : '0.45')
+    };
+  }
+  renderVals() {
+    var row = function (n, v) { return { name: n, vals: v }; };
+    return {
+      tables: [
+        { title: 'PASSING', cols: ['C/ATT', 'YDS', 'AVG', 'TD', 'INT', 'SACK'], rows: [row('[QB Name]', ['22/31', '284', '9.2', '2', '0', '1'])] },
+        { title: 'RUSHING', cols: ['CAR', 'YDS', 'AVG', 'TD', 'LONG'], rows: [row('[RB Name]', ['19', '96', '5.1', '1', '22']), row('[RB Name]', ['7', '31', '4.4', '0', '9']), row('[QB Name]', ['5', '-9', '-1.8', '0', '6'])] },
+        { title: 'RECEIVING', cols: ['REC', 'YDS', 'AVG', 'TD', 'LONG'], rows: [row('[WR Name]', ['8', '121', '15.1', '1', '41']), row('[WR Name]', ['5', '74', '14.8', '0', '28']), row('[TE Name]', ['4', '52', '13.0', '1', '19']), row('[RB Name]', ['3', '22', '7.3', '0', '11']), row('[WR Name]', ['2', '15', '7.5', '0', '9'])] },
+        { title: 'DEFENSE', cols: ['TOT', 'SOLO', 'SACK', 'TFL', 'PD', 'INT'], rows: [row('[LB Name]', ['11', '7', '0', '1', '1', '1']), row('[S Name]', ['8', '6', '0', '0', '2', '1']), row('[DE Name]', ['6', '4', '2', '3', '0', '0']), row('[CB Name]', ['5', '5', '0', '0', '3', '1']), row('[DT Name]', ['4', '2', '1', '1', '0', '0'])] },
+        { title: 'KICKING', cols: ['FG', 'PCT', 'LONG', 'XP', 'PTS'], rows: [row('[K Name]', ['2/2', '100', '47', '3/3', '9'])] },
+        { title: 'PUNTING & RETURNS', cols: ['NO', 'YDS', 'AVG', 'LONG', 'IN 20'], rows: [row('[P Name] · punts', ['4', '178', '44.5', '53', '2']), row('[WR Name] · kick ret.', ['2', '46', '23.0', '27', '–'])] }
+      ].map(function (t) { t.grid = 'display: grid; column-gap: 8px; grid-template-columns: minmax(0, 1fr) repeat(' + t.cols.length + ', 40px)'; return t; }),
+      tables2: [
+        { title: 'PASSING', cols: ['C/ATT', 'YDS', 'AVG', 'TD', 'INT', 'SACK'], rows: [row('[QB Name]', ['22/31', '284', '9.2', '2', '0', '1'])] },
+        { title: 'RUSHING', cols: ['CAR', 'YDS', 'AVG', 'TD', 'LONG'], rows: [row('[RB Name]', ['19', '96', '5.1', '1', '22']), row('[RB Name]', ['7', '31', '4.4', '0', '9']), row('[QB Name]', ['5', '-9', '-1.8', '0', '6'])] },
+        { title: 'RECEIVING', cols: ['REC', 'YDS', 'AVG', 'TD', 'LONG'], rows: [row('[WR Name]', ['8', '121', '15.1', '1', '41']), row('[WR Name]', ['5', '74', '14.8', '0', '28']), row('[TE Name]', ['4', '52', '13.0', '1', '19']), row('[RB Name]', ['3', '22', '7.3', '0', '11']), row('[WR Name]', ['2', '15', '7.5', '0', '9'])] },
+        { title: 'DEFENSE', cols: ['TOT', 'SOLO', 'SACK', 'TFL', 'PD', 'INT'], rows: [row('[LB Name]', ['11', '7', '0', '1', '1', '1']), row('[S Name]', ['8', '6', '0', '0', '2', '1']), row('[DE Name]', ['6', '4', '2', '3', '0', '0']), row('[CB Name]', ['5', '5', '0', '0', '3', '1']), row('[DT Name]', ['4', '2', '1', '1', '0', '0'])] },
+        { title: 'KICKING', cols: ['FG', 'PCT', 'LONG', 'XP', 'PTS'], rows: [row('[K Name]', ['2/2', '100', '47', '3/3', '9'])] },
+        { title: 'PUNTING & RETURNS', cols: ['NO', 'YDS', 'AVG', 'LONG', 'IN 20'], rows: [row('[P Name] · punts', ['4', '178', '44.5', '53', '2']), row('[WR Name] · kick ret.', ['2', '46', '23.0', '27', '–'])] }
+      ].map(function (t) { t.grid = 'display: grid; column-gap: 8px; grid-template-columns: minmax(0, 1fr) repeat(' + t.cols.length + ', 40px)'; return t; })
+    };
+  }
+}
+</script>
+</body>
+</html>
