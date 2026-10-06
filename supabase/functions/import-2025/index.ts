@@ -555,21 +555,53 @@ const importBoxscores = async (
   const gameIds = new Set((games ?? []).map((game) => game.id));
   const teamByName = new Map<string, number>();
   for (const team of teams ?? []) teamByName.set(normalizeName(team.school), team.id);
-  const [teamData, playerData] = await Promise.all([
-    fetchCfbd("/games/teams", apiKey, calls),
-    fetchCfbd("/games/players", apiKey, calls),
-  ]);
+  const { data: calendar, error: calendarError } = await supabase.from("calendar")
+    .select("week,season_type")
+    .eq("season", SEASON);
+  if (calendarError) throw new Error(`Could not load the 2025 calendar: ${calendarError.message}`);
+  const periodByKey = new Map<string, { week: string; seasonType: string }>();
+  for (const period of calendar ?? []) {
+    if (
+      (period.season_type === "regular" || period.season_type === "postseason") &&
+      typeof period.week === "number"
+    ) {
+      periodByKey.set(`${period.season_type}:${period.week}`, {
+        week: String(period.week),
+        seasonType: period.season_type,
+      });
+    }
+  }
+  const periods = [...periodByKey.values()];
+  if (!periods.length) throw new Error("The 2025 calendar has no regular or postseason weeks");
+
+  const teamData = await fetchCfbd("/games/teams", apiKey, calls);
+  const playerData: unknown[] = [];
+  for (const period of periods) {
+    playerData.push(...await fetchCfbd("/games/players", apiKey, calls, period));
+  }
   const teamStats = new Map<string, JsonObject>();
   for (const value of teamData) {
-    const item = asObject(value, "team game statistic");
-    const gameId = integerValue(item.gameId) ?? integerValue(item.id);
-    const teamId = teamIdFor(item.teamId ?? item.team, teamByName);
-    const stat = optionalString(item.statName) ?? optionalString(item.stat);
-    if (gameId === null || !gameIds.has(gameId) || teamId === null || !stat) continue;
-    const key = `${gameId}:${teamId}`;
-    const row = teamStats.get(key) ?? { game_id: gameId, team_id: teamId, stats: {} };
-    (row.stats as JsonObject)[stat] = item.statValue ?? item.value ?? null;
-    teamStats.set(key, row);
+    const game = asObject(value, "team game statistics");
+    const gameId = integerValue(game.id);
+    if (gameId === null || !gameIds.has(gameId)) continue;
+    const sides = Array.isArray(game.teams) ? game.teams : [];
+    for (const rawSide of sides) {
+      const side = asObject(rawSide, "team game statistics");
+      const teamId = teamIdFor(side.teamId ?? side.team_id ?? side.team, teamByName);
+      if (teamId === null) continue;
+      const key = `${gameId}:${teamId}`;
+      const row = teamStats.get(key) ??
+        { game_id: gameId, team_id: teamId, stats: {} };
+      for (const rawStat of Array.isArray(side.stats) ? side.stats : []) {
+        const stat = asObject(rawStat, "team game statistic");
+        const category = optionalString(stat.category);
+        const name = optionalString(stat.stat);
+        if (category && name) {
+          (row.stats as JsonObject)[`${category}_${name}`] = stat.stat;
+        }
+      }
+      teamStats.set(key, row);
+    }
   }
   counts.game_team_stats = await upsert(
     supabase,
@@ -580,30 +612,47 @@ const importBoxscores = async (
 
   const playerStats = new Map<string, JsonObject>();
   for (const value of playerData) {
-    const item = asObject(value, "player game statistic");
-    const gameId = integerValue(item.gameId) ?? integerValue(item.id);
-    const teamId = teamIdFor(item.teamId ?? item.team, teamByName);
-    const playerName = optionalString(item.player) ?? optionalString(item.playerName) ??
-      optionalString(item.athlete);
-    const category = optionalString(item.category);
-    const stat = optionalString(item.statName) ?? optionalString(item.stat);
-    if (
-      gameId === null || !gameIds.has(gameId) || teamId === null ||
-      !playerName || !category || !stat
-    ) continue;
-    const playerId = optionalIdentifier(item.playerId) ??
-      optionalIdentifier(item.athleteId) ?? `${teamId}:${slugify(playerName)}`;
-    const key = `${gameId}:${playerId}:${teamId}:${category}`;
-    const row = playerStats.get(key) ?? {
-      game_id: gameId,
-      player_id: playerId,
-      player_name: playerName,
-      team_id: teamId,
-      category,
-      stats: {},
-    };
-    (row.stats as JsonObject)[stat] = item.statValue ?? item.value ?? null;
-    playerStats.set(key, row);
+    const game = asObject(value, "player game statistics");
+    const gameId = integerValue(game.id);
+    if (gameId === null || !gameIds.has(gameId)) continue;
+    for (const rawSide of Array.isArray(game.teams) ? game.teams : []) {
+      const side = asObject(rawSide, "player game team statistics");
+      const teamId = teamIdFor(side.teamId ?? side.team_id ?? side.team, teamByName);
+      if (teamId === null) continue;
+      for (const rawCategory of Array.isArray(side.categories) ? side.categories : []) {
+        const categoryRecord = asObject(rawCategory, "player game category");
+        const category = optionalString(categoryRecord.name);
+        if (!category) continue;
+        for (const rawType of Array.isArray(categoryRecord.types) ? categoryRecord.types : []) {
+          const type = asObject(rawType, "player game statistic type");
+          const stat = optionalString(type.name);
+          if (!stat) continue;
+          for (const rawAthlete of Array.isArray(type.athletes) ? type.athletes : []) {
+            const athlete = asObject(rawAthlete, "player game statistic");
+            const playerName = optionalString(athlete.name);
+            if (!playerName) continue;
+            const playerId = optionalIdentifier(athlete.id) ??
+              `${teamId}:${slugify(playerName)}`;
+            const key = `${gameId}:${playerId}:${teamId}:${category}`;
+            const row = playerStats.get(key) ?? {
+              game_id: gameId,
+              player_id: playerId,
+              player_name: playerName,
+              team_id: teamId,
+              category,
+              stats: {},
+            };
+            (row.stats as JsonObject)[stat] = athlete.stat ?? null;
+            playerStats.set(key, row);
+          }
+        }
+      }
+    }
+  }
+  if (teamStats.size === 0 || playerStats.size === 0) {
+    throw new Error(
+      `CFBD returned no usable 2025 box scores (team rows: ${teamStats.size}, player rows: ${playerStats.size})`,
+    );
   }
   counts.game_player_stats = await upsert(
     supabase,
