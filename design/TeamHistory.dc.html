@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Team page history desktop</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@500;600;700&family=Graduate&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#0B0C0E}
+a{color:#F2F3F5;text-decoration:none}a:hover{color:#FFFFFF}
+.cond{font-family:"Barlow Condensed","Arial Narrow",sans-serif;letter-spacing:0.02em}
+.varsity{font-family:Graduate,"Rockwell","Courier New",serif}
+.num{font-variant-numeric:tabular-nums}
+</style>
+</helmet>
+<div style="width: 1440px; height: 900px; box-sizing: border-box; background: #0B0C0E; color: #F2F3F5; font-family: Barlow, 'Helvetica Neue', sans-serif; font-size: 14px; display: flex; flex-direction: column; overflow: hidden">
+<header style="height: 56px; flex-shrink: 0; display: flex; align-items: center; gap: 24px; padding: 0 24px; border-bottom: 1px solid #23262B; background: #0E1013">
+<div class="cond" style="font-size: 20px; font-weight: 700; letter-spacing: 0.08em"><span style="display: inline-flex; align-items: center; gap: 9px"><span class="varsity" style="width: 30px; height: 30px; box-sizing: border-box; border-radius: 7px; background: #0B0C0E; border: 2px solid #F2F3F5; color: #F2F3F5; display: inline-flex; align-items: center; justify-content: center; font-family: Graduate, serif; font-size: 17px; letter-spacing: 0">S</span>STRDYS</span></div>
+<nav aria-label="Main" style="display: flex; gap: 2px; height: 100%">
+<sc-for list="{{ nav }}" as="n" hint-placeholder-count="8">
+<a href="#" class="cond" style="{{ n.style }}">{{ n.label }}</a>
+</sc-for>
+</nav>
+<div style="flex: 1"></div>
+<label style="display: flex; align-items: center; gap: 8px; width: 170px; height: 32px; padding: 0 10px; box-sizing: border-box; background: #15171A; border: 1px solid #2A2E34; border-radius: 6px; color: #8E949C">
+<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="7" cy="7" r="5"></circle><path d="M11 11l3.5 3.5"></path></svg>
+<input type="text" placeholder="Search" aria-label="Search teams or players" style="flex: 1; min-width: 0; background: transparent; border: 0; outline: 0; color: #F2F3F5; font: inherit; font-size: 13px">
+</label>
+<button type="button" class="cond" style="height: 32px; padding: 0 12px; background: #15171A; border: 1px solid #2A2E34; border-radius: 6px; color: #F2F3F5; font-size: 14px; font-weight: 600; letter-spacing: 0.04em">WEEK 6 <span style="color: #8E949C">▾</span></button>
+<button type="button" aria-label="Favorite teams" style="width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; background: #15171A; border: 1px solid #2A2E34; border-radius: 6px; color: #F2F3F5"><svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><path d="M8 1.8l1.9 3.9 4.3.6-3.1 3 .7 4.3L8 11.6l-3.8 2 .7-4.3-3.1-3 4.3-.6z"></path></svg></button>
+<div aria-label="Updated Monday 06:02" style="width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border: 1px solid #23462F; background: #0F1D15; border-radius: 6px"><span style="width: 8px; height: 8px; border-radius: 50%; background: #4CC38A"></span></div>
+<button type="button" aria-label="Account" class="cond" style="width: 32px; height: 32px; border-radius: 50%; border: 1px solid #2A2E34; background: #1C1F23; color: #F2F3F5; font-size: 14px; font-weight: 600">B</button>
+</header><div style="flex-shrink: 0; position: relative; display: flex; align-items: center; gap: 22px; padding: 18px 24px; background: #4A0000; border-bottom: 3px solid #990000">
+<span class="cond" style="width: 92px; height: 92px; flex-shrink: 0; border-radius: 10px; background: #990000; border: 2px dashed #F2C4C4; display: flex; align-items: center; justify-content: center; font-size: 28px; font-weight: 700">IND</span>
+<div style="display: flex; flex-direction: column; gap: 6px; flex: 1; min-width: 0">
+<div style="display: flex; align-items: center; gap: 10px"><span class="cond" style="display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 24px; border-radius: 4px; background: rgba(0, 0, 0, 0.3); border: 1px solid #A45A5A; color: #F2E3E3; font-size: 11px; font-weight: 700">B1G</span><span class="cond" style="font-size: 14px; font-weight: 600; letter-spacing: 0.12em; color: #F2C4C4">BLOOMINGTON, INDIANA</span></div>
+<h1 class="cond" style="margin: 0; font-size: 46px; font-weight: 700; line-height: 1; letter-spacing: 0.02em">INDIANA HOOSIERS</h1>
+<div style="display: flex; align-items: center; gap: 14px; font-size: 15px; color: #F2E3E3">
+<span class="cond" style="font-size: 20px; font-weight: 700; color: #FFFFFF">#2 AP</span>
+<span class="cond num" style="font-size: 20px; font-weight: 700; color: #FFFFFF">6–0 · 3–0 B1G</span>
+<span class="cond num" style="display: flex; align-items: center; gap: 3px; color: #FFB27A; font-size: 17px; font-weight: 700"><svg width="15" height="15" viewBox="0 0 24 24" fill="#F08A3C"><path d="M12 2c1 3-2 5-2 8a2 2 0 0 0 4 0c0-1 0-2-1-3 3 1 5 4 5 7a6 6 0 0 1-12 0c0-5 4-7 6-12z"></path></svg>W6</span>
+<span>1st in Big Ten · title game spot</span>
+</div>
+</div>
+<button type="button" class="cond" style="display: flex; align-items: center; gap: 8px; height: 38px; padding: 0 14px; border-radius: 19px; background: #F2F3F5; color: #0B0C0E; border: 0; font-size: 14px; font-weight: 700; letter-spacing: 0.08em"><svg width="14" height="14" viewBox="0 0 16 16" fill="#0B0C0E"><path d="M8 1.8l1.9 3.9 4.3.6-3.1 3 .7 4.3L8 11.6l-3.8 2 .7-4.3-3.1-3 4.3-.6z"></path></svg>FAVORITE</button>
+<div style="width: 300px; height: 96px; flex-shrink: 0; border-radius: 8px; border: 1px dashed #A45A5A; background: rgba(0, 0, 0, 0.25); display: flex; align-items: flex-end; padding: 10px 12px; box-sizing: border-box"><span style="font-size: 11px; color: #F2C4C4; letter-spacing: 0.08em">IMAGE SLOT · STADIUM PHOTO</span></div>
+</div>
+
+<div role="tablist" aria-label="Team sections" style="flex-shrink: 0; display: flex; gap: 4px; padding: 0 24px; border-bottom: 1px solid #23262B"><button type="button" role="tab" class="cond" style="height: 42px; padding: 0 14px; background: transparent; border: 0; border-bottom: 2px solid transparent; color: #8E949C; font-size: 15px; font-weight: 700; letter-spacing: 0.1em">OVERVIEW</button><button type="button" role="tab" class="cond" style="height: 42px; padding: 0 14px; background: transparent; border: 0; border-bottom: 2px solid transparent; color: #8E949C; font-size: 15px; font-weight: 700; letter-spacing: 0.1em">SCHEDULE</button><button type="button" role="tab" class="cond" style="height: 42px; padding: 0 14px; background: transparent; border: 0; border-bottom: 2px solid transparent; color: #8E949C; font-size: 15px; font-weight: 700; letter-spacing: 0.1em">STATS</button><button type="button" role="tab" class="cond" style="height: 42px; padding: 0 14px; background: transparent; border: 0; border-bottom: 2px solid #F2F3F5; color: #F2F3F5; font-size: 15px; font-weight: 700; letter-spacing: 0.1em">HISTORY</button></div><div style="flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 1.8fr) minmax(0, 1fr); gap: 14px; padding: 14px 24px 20px">
+<section style="background: #15171A; border: 1px solid #23262B; border-radius: 8px; padding: 14px 16px; display: flex; flex-direction: column; gap: 6px; min-height: 0; gap: 2px"><div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px"><h2 class="cond" style="margin: 0; font-size: 15px; font-weight: 700; letter-spacing: 0.1em; color: #C9CDD3">SEASONS TRACKED</h2><span style="font-size: 12px; color: #8E949C">Grows by one row every year</span></div>
+<div class="cond" style="display: grid; grid-template-columns: 70px 120px 80px 70px minmax(0, 1fr) minmax(0, 1.2fr) 90px; column-gap: 12px; padding: 4px 12px; color: #8E949C; font-size: 12px; font-weight: 600; letter-spacing: 0.08em"><span>SEASON</span><span>RECORD</span><span>CONF</span><span>FINAL</span><span>CONFERENCE</span><span>POSTSEASON</span><span style="text-align: right">GAMEDAY</span></div><a href="#" style="display: grid; grid-template-columns: 70px 120px 80px 70px minmax(0, 1fr) minmax(0, 1.2fr) 90px; column-gap: 12px; align-items: center; min-height: 64px; padding: 0 12px; border-bottom: 1px solid #1E2125; background: #1D2024; box-shadow: inset 3px 0 0 #F2F3F5;"><span class="cond" style="font-size: 22px; font-weight: 700">2026</span><span class="cond" style="margin-left: 6px; padding: 1px 6px; border-radius: 3px; background: #F2F3F5; color: #0B0C0E; font-size: 10px; font-weight: 700; letter-spacing: 0.1em; vertical-align: middle">CURRENT</span><span class="cond num" style="font-size: 17px; font-weight: 700">6–0</span><span class="cond num" style="color: #C9CDD3">3–0</span><span class="cond" style="font-size: 17px; font-weight: 700">#2</span><span style="font-size: 14px">1st in Big Ten</span><span style="font-size: 14px; color: #8E949C">Playoff race: projected No. 2 seed</span><span class="cond num" style="text-align: right; color: #C9CDD3">[n] so far</span></a><a href="#" style="display: grid; grid-template-columns: 70px 120px 80px 70px minmax(0, 1fr) minmax(0, 1.2fr) 90px; column-gap: 12px; align-items: center; min-height: 64px; padding: 0 12px; border-bottom: 1px solid #1E2125; "><span class="cond" style="font-size: 22px; font-weight: 700">2025</span><span class="cond num" style="font-size: 17px; font-weight: 700">[W–L]</span><span class="cond num" style="color: #C9CDD3">[W–L]</span><span class="cond" style="font-size: 17px; font-weight: 700">#1</span><span style="font-size: 14px">Big Ten champion</span><span style="font-size: 14px; color: #F2D6D6">National champion · beat Miami 27–21</span><span class="cond num" style="text-align: right; color: #C9CDD3">[n]</span></a></section>
+<div style="display: flex; flex-direction: column; gap: 14px; min-height: 0">
+<section style="background: #15171A; border: 1px solid #23262B; border-radius: 8px; padding: 14px 16px; display: flex; flex-direction: column; gap: 6px; min-height: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px"><h2 class="cond" style="margin: 0; font-size: 15px; font-weight: 700; letter-spacing: 0.1em; color: #C9CDD3" >SINCE 2025</h2><span></span>
+<div style="background: #0F1114; border-radius: 6px; padding: 9px 10px"><div style="font-size: 12px; color: #8E949C">Record</div><div class="cond num" style="font-size: 22px; font-weight: 700">[W–L]</div></div><div style="background: #0F1114; border-radius: 6px; padding: 9px 10px"><div style="font-size: 12px; color: #8E949C">Weeks ranked</div><div class="cond num" style="font-size: 22px; font-weight: 700">[n]</div></div><div style="background: #0F1114; border-radius: 6px; padding: 9px 10px"><div style="font-size: 12px; color: #8E949C">Weeks at #1</div><div class="cond num" style="font-size: 22px; font-weight: 700">[n]</div></div><div style="background: #0F1114; border-radius: 6px; padding: 9px 10px"><div style="font-size: 12px; color: #8E949C">Upsets won</div><div class="cond num" style="font-size: 22px; font-weight: 700">[n]</div></div></section>
+<section style="background: #15171A; border: 1px solid #23262B; border-radius: 8px; padding: 14px 16px; display: flex; flex-direction: column; gap: 6px; min-height: 0"><h2 class="cond" style="margin: 0; font-size: 15px; font-weight: 700; letter-spacing: 0.1em; color: #C9CDD3">HONORS</h2><div style="display: flex; align-items: center; gap: 12px; min-height: 44px; border-bottom: 1px solid #1E2125"><span class="cond" style="width: 44px; color: #8E949C; font-weight: 700">2025</span><span style="font-size: 14px; color: #F2F3F5">National champions</span></div><div style="display: flex; align-items: center; gap: 12px; min-height: 44px; border-bottom: 1px solid #1E2125"><span class="cond" style="width: 44px; color: #8E949C; font-weight: 700">2025</span><span style="font-size: 14px; color: #C9CDD3">Big Ten champions</span></div><div style="display: flex; align-items: center; gap: 12px; min-height: 44px; border-bottom: 1px solid #1E2125"><span class="cond" style="width: 44px; color: #8E949C; font-weight: 700">2025</span><span style="font-size: 14px; color: #C9CDD3">Heisman Trophy · Fernando Mendoza</span></div></section>
+</div></div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var active = 'display: flex; align-items: center; padding: 0 10px; height: 100%; border-bottom: 2px solid #F2F3F5; color: #F2F3F5; font-size: 15px; font-weight: 600; letter-spacing: 0.08em';
+    var idle = 'display: flex; align-items: center; padding: 0 10px; height: 100%; border-bottom: 2px solid transparent; color: #8E949C; font-size: 15px; font-weight: 600; letter-spacing: 0.08em';
+    return { nav: ['HOME', 'SCORES', 'RANKINGS', 'STANDINGS', 'STATS', 'TEAMS', "PICK'EM", 'ARCHIVE'].map(function (l, i) { return { label: l, style: i === 5 ? active : idle }; }) };
+  }
+}
+</script>
+</body>
+</html>

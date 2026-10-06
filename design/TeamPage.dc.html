@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>CFB Tracker Team Page Desktop</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@500;600;700&family=Graduate&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#0B0C0E}
+a{color:#F2F3F5;text-decoration:none}a:hover{color:#FFFFFF}
+.cond{font-family:"Barlow Condensed","Arial Narrow",sans-serif;letter-spacing:0.02em}
+.num{font-variant-numeric:tabular-nums}
+</style>
+</helmet>
+<div style="width: 1440px; height: 900px; box-sizing: border-box; background: #0B0C0E; color: #F2F3F5; font-family: Barlow, 'Helvetica Neue', sans-serif; font-size: 14px; display: flex; flex-direction: column; overflow: hidden">
+<header style="height: 56px; flex-shrink: 0; display: flex; align-items: center; gap: 24px; padding: 0 24px; border-bottom: 1px solid #23262B; background: #0E1013">
+<div class="cond" style="font-size: 20px; font-weight: 700; letter-spacing: 0.08em"><span style="display: inline-flex; align-items: center; gap: 9px"><span class="varsity" style="width: 30px; height: 30px; box-sizing: border-box; border-radius: 7px; background: #0B0C0E; border: 2px solid #F2F3F5; color: #F2F3F5; display: inline-flex; align-items: center; justify-content: center; font-family: Graduate, serif; font-size: 17px; letter-spacing: 0">S</span>STRDYS</span></div>
+<nav aria-label="Main" style="display: flex; gap: 2px; height: 100%">
+<sc-for list="{{ nav }}" as="n" hint-placeholder-count="8">
+<a href="#" class="cond" style="{{ n.style }}">{{ n.label }}</a>
+</sc-for>
+</nav>
+<div style="flex: 1"></div>
+<label style="display: flex; align-items: center; gap: 8px; width: 170px; height: 32px; padding: 0 10px; box-sizing: border-box; background: #15171A; border: 1px solid #2A2E34; border-radius: 6px; color: #8E949C">
+<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="7" cy="7" r="5"></circle><path d="M11 11l3.5 3.5"></path></svg>
+<input type="text" placeholder="Search" aria-label="Search teams or players" style="flex: 1; min-width: 0; background: transparent; border: 0; outline: 0; color: #F2F3F5; font: inherit; font-size: 13px">
+</label>
+<button type="button" class="cond" style="height: 32px; padding: 0 12px; background: #15171A; border: 1px solid #2A2E34; border-radius: 6px; color: #F2F3F5; font-size: 14px; font-weight: 600; letter-spacing: 0.04em">WEEK 6 <span style="color: #8E949C">▾</span></button>
+<button type="button" aria-label="Favorite teams" style="width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; background: #15171A; border: 1px solid #2A2E34; border-radius: 6px; color: #F2F3F5"><svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><path d="M8 1.8l1.9 3.9 4.3.6-3.1 3 .7 4.3L8 11.6l-3.8 2 .7-4.3-3.1-3 4.3-.6z"></path></svg></button>
+<div aria-label="Updated Monday 06:02" style="width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border: 1px solid #23462F; background: #0F1D15; border-radius: 6px"><span style="width: 8px; height: 8px; border-radius: 50%; background: #4CC38A"></span></div>
+<button type="button" aria-label="Account" class="cond" style="width: 32px; height: 32px; border-radius: 50%; border: 1px solid #2A2E34; background: #1C1F23; color: #F2F3F5; font-size: 14px; font-weight: 600">B</button>
+</header>
+<div style="flex-shrink: 0; position: relative; display: flex; align-items: center; gap: 22px; padding: 18px 24px; background: #4A0000; border-bottom: 3px solid #990000">
+<span class="cond" style="width: 92px; height: 92px; flex-shrink: 0; border-radius: 10px; background: #990000; border: 2px dashed #F2C4C4; display: flex; align-items: center; justify-content: center; font-size: 28px; font-weight: 700">IND</span>
+<div style="display: flex; flex-direction: column; gap: 6px; flex: 1; min-width: 0">
+<div style="display: flex; align-items: center; gap: 10px"><span class="cond" style="display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 24px; border-radius: 4px; background: rgba(0, 0, 0, 0.3); border: 1px solid #A45A5A; color: #F2E3E3; font-size: 11px; font-weight: 700">B1G</span><span class="cond" style="font-size: 14px; font-weight: 600; letter-spacing: 0.12em; color: #F2C4C4">BLOOMINGTON, INDIANA</span></div>
+<h1 class="cond" style="margin: 0; font-size: 46px; font-weight: 700; line-height: 1; letter-spacing: 0.02em">INDIANA HOOSIERS</h1>
+<div style="display: flex; align-items: center; gap: 14px; font-size: 15px; color: #F2E3E3">
+<span class="cond" style="font-size: 20px; font-weight: 700; color: #FFFFFF">#2 AP</span>
+<span class="cond num" style="font-size: 20px; font-weight: 700; color: #FFFFFF">6–0 · 3–0 B1G</span>
+<span class="cond num" style="display: flex; align-items: center; gap: 3px; color: #FFB27A; font-size: 17px; font-weight: 700"><svg width="15" height="15" viewBox="0 0 24 24" fill="#F08A3C"><path d="M12 2c1 3-2 5-2 8a2 2 0 0 0 4 0c0-1 0-2-1-3 3 1 5 4 5 7a6 6 0 0 1-12 0c0-5 4-7 6-12z"></path></svg>W6</span>
+<span>1st in Big Ten · title game spot</span>
+</div>
+</div>
+<button type="button" class="cond" style="display: flex; align-items: center; gap: 8px; height: 38px; padding: 0 14px; border-radius: 19px; background: #F2F3F5; color: #0B0C0E; border: 0; font-size: 14px; font-weight: 700; letter-spacing: 0.08em"><svg width="14" height="14" viewBox="0 0 16 16" fill="#0B0C0E"><path d="M8 1.8l1.9 3.9 4.3.6-3.1 3 .7 4.3L8 11.6l-3.8 2 .7-4.3-3.1-3 4.3-.6z"></path></svg>FAVORITE</button>
+<div style="width: 300px; height: 96px; flex-shrink: 0; border-radius: 8px; border: 1px dashed #A45A5A; background: rgba(0, 0, 0, 0.25); display: flex; align-items: flex-end; padding: 10px 12px; box-sizing: border-box"><span style="font-size: 11px; color: #F2C4C4; letter-spacing: 0.08em">IMAGE SLOT · STADIUM PHOTO</span></div>
+</div>
+
+<div role="tablist" aria-label="Team sections" style="flex-shrink: 0; display: flex; gap: 4px; padding: 0 24px; border-bottom: 1px solid #23262B">
+<sc-for list="{{ tabs }}" as="t" hint-placeholder-count="4">
+<button type="button" role="tab" class="cond" style="{{ t.style }}">{{ t.label }}</button>
+</sc-for>
+</div>
+
+<div style="flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr) 300px; gap: 14px; padding: 14px 24px 20px">
+
+<section style="background: #15171A; border: 1px solid #23262B; border-radius: 8px; padding: 12px 14px; display: flex; flex-direction: column; gap: 4px; min-height: 0">
+<h2 class="cond" style="margin: 0 0 4px; font-size: 15px; font-weight: 700; letter-spacing: 0.1em; color: #C9CDD3">2026 SCHEDULE</h2>
+<sc-for list="{{ sched }}" as="g" hint-placeholder-count="13">
+<button type="button" style="{{ g.row }}">
+<span class="cond num" style="color: #8E949C; font-size: 13px">{{ g.wk }}</span>
+<span style="display: flex; align-items: center; gap: 8px; min-width: 0"><span class="cond" style="font-size: 12px; color: #8E949C; width: 16px">{{ g.ha }}</span><span class="cond" style="{{ g.badge }}">{{ g.abbr }}</span><span style="font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{ g.opp }}</span></span>
+<span class="cond num" style="{{ g.resStyle }}">{{ g.res }}</span>
+<span class="cond num" style="text-align: right; font-size: 13px; color: #8E949C">{{ g.line }}</span>
+</button>
+</sc-for>
+</section>
+
+<div style="display: flex; flex-direction: column; gap: 14px; min-height: 0">
+<section style="background: #15171A; border: 1px solid #23262B; border-radius: 8px; padding: 12px 14px; display: flex; flex-direction: column; gap: 10px">
+<div style="display: flex; justify-content: space-between; align-items: baseline"><h2 class="cond" style="margin: 0; font-size: 15px; font-weight: 700; letter-spacing: 0.1em; color: #C9CDD3">NEXT GAME</h2><span class="cond" style="font-size: 12px; letter-spacing: 0.1em; color: #8E949C">WEEK 7 · SAT 18:00 · BTN</span></div>
+<button type="button" style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; background: #0F1114; border: 1px solid #23262B; border-radius: 6px; font: inherit; color: inherit; text-align: left">
+<span style="display: flex; flex-direction: column; gap: 6px; flex: 1">
+<span style="display: flex; align-items: center; gap: 8px"><span style="width: 14px"></span><span class="cond" style="width: 26px; height: 26px; border-radius: 6px; background: #D9DCE0; color: #990000; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700">IND</span><span class="cond" style="font-size: 17px; font-weight: 700">#2 INDIANA</span><span class="cond num" style="font-size: 13px; color: #8E949C">6–0</span></span>
+<span style="display: flex; align-items: center; gap: 8px"><span class="cond" style="width: 14px; color: #8E949C; text-align: center">@</span><span class="cond" style="width: 26px; height: 26px; border-radius: 6px; background: #D9DCE0; color: #4E2A84; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700">NW</span><span class="cond" style="font-size: 17px; font-weight: 700">NORTHWESTERN</span><span class="cond num" style="font-size: 13px; color: #8E949C">2–4</span></span>
+</span>
+<span style="display: flex; flex-direction: column; align-items: flex-end; gap: 4px"><span class="cond num" style="font-size: 18px; font-weight: 700">IND −21</span><span class="cond" style="font-size: 12px; color: #8E949C">KICKS OFF IN 4D 23H</span></span>
+</button>
+<div style="display: flex; gap: 8px">
+<a href="#" class="cond" style="flex: 1; display: flex; align-items: center; justify-content: center; height: 36px; border: 1px solid #2A2E34; border-radius: 6px; font-size: 13px; font-weight: 700; letter-spacing: 0.08em">MAKE YOUR PICK</a>
+<a href="#" class="cond" style="flex: 1; display: flex; align-items: center; justify-content: center; height: 36px; border: 1px solid #2A2E34; border-radius: 6px; font-size: 13px; font-weight: 700; letter-spacing: 0.08em">COMPARE TEAMS</a>
+</div>
+</section>
+<section style="background: #15171A; border: 1px solid #23262B; border-radius: 8px; padding: 12px 14px; display: flex; flex-direction: column; gap: 6px">
+<h2 class="cond" style="margin: 0; font-size: 15px; font-weight: 700; letter-spacing: 0.1em; color: #C9CDD3">AP RANKING THIS SEASON</h2>
+<svg viewBox="0 0 400 120" width="100%" height="90" preserveAspectRatio="none" aria-label="AP ranking from 9 in preseason to 2 after week 6">
+<line x1="30" y1="10" x2="390" y2="10" stroke="#23262B"></line><line x1="30" y1="60" x2="390" y2="60" stroke="#23262B"></line><line x1="30" y1="110" x2="390" y2="110" stroke="#23262B"></line>
+<text x="4" y="14" fill="#8E949C" font-size="11" font-family="Barlow Condensed, sans-serif">#1</text><text x="4" y="64" fill="#8E949C" font-size="11" font-family="Barlow Condensed, sans-serif">#6</text><text x="0" y="114" fill="#8E949C" font-size="11" font-family="Barlow Condensed, sans-serif">#11</text>
+<polyline points="40,90 98,80 156,70 214,50 272,40 330,30 388,20" fill="none" stroke="#E24A4A" stroke-width="3" stroke-linejoin="round"></polyline>
+<circle cx="388" cy="20" r="5" fill="#F2F3F5"></circle>
+</svg>
+<div class="cond" style="display: flex; justify-content: space-between; padding-left: 30px; font-size: 11px; color: #8E949C; letter-spacing: 0.08em"><span>PRE</span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span></div>
+</section>
+<section style="background: #15171A; border: 1px solid #23262B; border-radius: 8px; padding: 12px 14px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; flex: 1; min-height: 0; align-content: start">
+<h2 class="cond" style="grid-column: span 3; margin: 0; font-size: 15px; font-weight: 700; letter-spacing: 0.1em; color: #C9CDD3">TEAM STATS</h2>
+<sc-for list="{{ tstats }}" as="s" hint-placeholder-count="6">
+<div style="background: #0F1114; border-radius: 6px; padding: 9px 10px"><div style="font-size: 12px; color: #8E949C">{{ s.label }}</div><div style="display: flex; align-items: baseline; gap: 6px"><span class="cond num" style="font-size: 22px; font-weight: 700">{{ s.val }}</span><span class="cond" style="font-size: 12px; color: #8E949C">{{ s.rank }}</span></div></div>
+</sc-for>
+</section>
+</div>
+
+<div style="display: flex; flex-direction: column; gap: 14px; min-height: 0">
+<section style="background: #15171A; border: 1px solid #23262B; border-radius: 8px; padding: 12px 14px; display: flex; flex-direction: column; gap: 2px">
+<h2 class="cond" style="margin: 0 0 4px; font-size: 15px; font-weight: 700; letter-spacing: 0.1em; color: #C9CDD3">TOP PLAYERS</h2>
+<sc-for list="{{ players }}" as="p" hint-placeholder-count="4">
+<button type="button" style="display: flex; align-items: center; gap: 10px; min-height: 40px; padding: 0; background: transparent; border: 0; border-bottom: 1px solid #1E2125; font: inherit; color: inherit; text-align: left">
+<span class="cond" style="width: 26px; font-size: 12px; font-weight: 700; color: #8E949C">{{ p.pos }}</span>
+<span style="flex: 1; font-size: 14px">{{ p.name }}</span>
+<span class="cond num" style="font-size: 13px; color: #C9CDD3">{{ p.line }}</span>
+</button>
+</sc-for>
+</section>
+<section style="background: #15171A; border: 1px solid #23262B; border-radius: 8px; padding: 12px 14px; display: flex; flex-direction: column; gap: 7px; flex: 1; min-height: 0; font-size: 13px">
+<h2 class="cond" style="margin: 0 0 2px; font-size: 15px; font-weight: 700; letter-spacing: 0.1em; color: #C9CDD3">PROGRAM</h2>
+<sc-for list="{{ program }}" as="r" hint-placeholder-count="7">
+<div style="display: flex; justify-content: space-between; gap: 10px"><span style="color: #8E949C">{{ r.k }}</span><span style="text-align: right">{{ r.v }}</span></div>
+</sc-for>
+</section>
+</div>
+
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var active = 'display: flex; align-items: center; padding: 0 10px; height: 100%; border-bottom: 2px solid #F2F3F5; color: #F2F3F5; font-size: 15px; font-weight: 600; letter-spacing: 0.08em';
+    var idle = 'display: flex; align-items: center; padding: 0 10px; height: 100%; border-bottom: 2px solid transparent; color: #8E949C; font-size: 15px; font-weight: 600; letter-spacing: 0.08em';
+    var nav = ['HOME', 'SCORES', 'RANKINGS', 'STANDINGS', 'STATS', 'TEAMS', "PICK'EM", 'ARCHIVE'].map(function (l, i) { return { label: l, style: i === 5 ? active : idle }; });
+    var badge = function (c, dark, s) { s = s || 26; return 'width: ' + s + 'px; height: ' + s + 'px; flex-shrink: 0; border-radius: 4px; background: ' + c + '; color: ' + (dark ? '#111214' : '#FFFFFF') + '; display: flex; align-items: center; justify-content: center; font-size: ' + (s > 30 ? 13 : 10) + 'px; font-weight: 700'; };
+    var chip = 'display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 24px; border-radius: 4px; background: #D9DCE0; border: 1px solid #D9DCE0; color: #2A2E34; font-size: 11px; font-weight: 700';
+    var tOn = 'height: 42px; padding: 0 14px; background: transparent; border: 0; border-bottom: 2px solid #F2F3F5; color: #F2F3F5; font-size: 15px; font-weight: 700; letter-spacing: 0.1em';
+    var tOff = 'height: 42px; padding: 0 14px; background: transparent; border: 0; border-bottom: 2px solid transparent; color: #8E949C; font-size: 15px; font-weight: 700; letter-spacing: 0.1em';
+    var S = [
+      ['1', 'vs', 'ODU', 'Old Dominion', '#003865', 'W 45–20', 'IND −24'],
+      ['2', 'at', 'KENN', 'Kennesaw State', '#FDBB30', 'W 42–13', 'IND −28'],
+      ['3', 'vs', 'INST', 'Indiana State', '#00669A', 'W 56–7', 'FCS'],
+      ['4', 'vs', 'ILL', 'Illinois', '#E84A27', 'W 35–17', 'IND −13'],
+      ['5', 'at', 'MD', 'Maryland', '#E03A3E', 'W 31–10', 'IND −16'],
+      ['6', 'vs', 'PSU', '#11 Penn State', '#041E42', 'W 38–24', 'IND −6.5'],
+      ['7', 'at', 'NW', 'Northwestern', '#4E2A84', 'Sat 18:00', 'IND −21'],
+      ['8', 'vs', 'MSU', 'Michigan State', '#18453B', 'Sat 24 Oct', ''],
+      ['9', '', '', 'Bye week', '#23262B', '', ''],
+      ['10', 'at', 'OSU', '#1 Ohio State', '#BB0000', 'Sat 7 Nov', ''],
+      ['11', 'vs', 'IOWA', 'Iowa', '#FFCD00', 'Sat 14 Nov', ''],
+      ['12', 'at', 'WIS', 'Wisconsin', '#C5050C', 'Sat 21 Nov', ''],
+      ['13', 'vs', 'PUR', '#21 Purdue', '#CEB888', 'Sat 28 Nov', '']
+    ];
+    var sched = S.map(function (g) {
+      var played = g[5].charAt(0) === 'W' || g[5].charAt(0) === 'L';
+      var next = g[0] === '7';
+      var light = ['#FDBB30', '#FFCD00', '#CEB888'].indexOf(g[4]) > -1;
+      return {
+        wk: g[0], ha: g[1], abbr: g[2], opp: g[3], res: g[5], line: g[6],
+        badge: g[2] ? badge(g[4], light, 22) : 'display: none',
+        resStyle: 'font-size: 15px; font-weight: 700; color: ' + (played ? (g[5].charAt(0) === 'W' ? '#4CC38A' : '#F0645A') : (next ? '#F2F3F5' : '#8E949C')),
+        row: 'display: grid; grid-template-columns: 24px minmax(0, 1fr) 80px 64px; column-gap: 10px; align-items: center; width: 100%; min-height: 0; flex: 1; padding: 0 8px; border: 0; border-bottom: 1px solid #1E2125; border-radius: ' + (next ? '6px' : '0') + '; background: ' + (next ? '#24282D' : 'transparent') + '; font: inherit; color: ' + (g[2] ? 'inherit' : '#6F757D') + '; text-align: left'
+      };
+    });
+    return {
+      nav: nav,
+      tabs: ['OVERVIEW', 'SCHEDULE', 'STATS', 'HISTORY'].map(function (l, i) { return { label: l, style: i === 0 ? tOn : tOff }; }),
+      sched: sched,
+      tstats: [
+        { label: 'Points / game', val: '41.2', rank: '#3' }, { label: 'Allowed / game', val: '15.2', rank: '#9' }, { label: 'Yards / game', val: '486', rank: '#5' },
+        { label: 'Pass yds / game', val: '290', rank: '#11' }, { label: 'Rush yds / game', val: '196', rank: '#14' }, { label: 'Turnover margin', val: '+9', rank: '#2' }
+      ],
+      players: [
+        { pos: 'QB', name: '[QB Name]', line: '1,742 yds · 19 TD' },
+        { pos: 'RB', name: '[RB Name]', line: '541 yds · 7 TD' },
+        { pos: 'WR', name: '[WR Name]', line: '502 yds · 6 TD' },
+        { pos: 'LB', name: '[LB Name]', line: '48 tkl · 2 INT' }
+      ],
+      program: [
+        { k: 'Head coach', v: '[Head coach] · [record]' }, { k: 'Stadium', v: 'Memorial Stadium · [capacity]' },
+        { k: 'National titles', v: '1 · 2025' }, { k: 'Conference titles', v: '[number]' }, { k: 'Heisman winners', v: '[number]' },
+        { k: 'Rivals', v: 'Purdue' }, { k: 'GameDay visits', v: '[number] · 9–4 at home' }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

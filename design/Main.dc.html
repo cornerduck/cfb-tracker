@@ -1,0 +1,267 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>CFB Tracker Home Desktop</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@500;600;700&family=Graduate&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#0B0C0E}
+a{color:#F2F3F5;text-decoration:none}a:hover{color:#FFFFFF}
+.cond{font-family:"Barlow Condensed","Arial Narrow",sans-serif;letter-spacing:0.02em}
+.varsity{font-family:Graduate,"Rockwell","Courier New",serif}
+.num{font-variant-numeric:tabular-nums}
+</style>
+</helmet>
+<div style="width: 1440px; height: 900px; box-sizing: border-box; background: #0B0C0E; color: #F2F3F5; font-family: Barlow, 'Helvetica Neue', sans-serif; font-size: 14px; display: flex; flex-direction: column; overflow: hidden">
+
+<header style="height: 56px; flex-shrink: 0; display: flex; align-items: center; gap: 24px; padding: 0 24px; border-bottom: 1px solid #23262B; background: #0E1013">
+<div class="cond" style="font-size: 20px; font-weight: 700; letter-spacing: 0.08em"><span style="display: inline-flex; align-items: center; gap: 9px"><span class="varsity" style="width: 30px; height: 30px; box-sizing: border-box; border-radius: 7px; background: #0B0C0E; border: 2px solid #F2F3F5; color: #F2F3F5; display: inline-flex; align-items: center; justify-content: center; font-family: Graduate, serif; font-size: 17px; letter-spacing: 0">S</span>STRDYS</span></div>
+<nav aria-label="Main" style="display: flex; gap: 2px; height: 100%">
+<sc-for list="{{ nav }}" as="n" hint-placeholder-count="8">
+<a href="#" class="cond" style="{{ n.style }}">{{ n.label }}</a>
+</sc-for>
+</nav>
+<div style="flex: 1"></div>
+<label style="display: flex; align-items: center; gap: 8px; width: 170px; height: 32px; padding: 0 10px; box-sizing: border-box; background: #15171A; border: 1px solid #2A2E34; border-radius: 6px; color: #8E949C">
+<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="7" cy="7" r="5"></circle><path d="M11 11l3.5 3.5"></path></svg>
+<input type="text" placeholder="Search" aria-label="Search teams or players" style="flex: 1; min-width: 0; background: transparent; border: 0; outline: 0; color: #F2F3F5; font: inherit; font-size: 13px">
+</label>
+<button type="button" class="cond" style="height: 32px; padding: 0 12px; background: #15171A; border: 1px solid #2A2E34; border-radius: 6px; color: #F2F3F5; font-size: 14px; font-weight: 600; letter-spacing: 0.04em">WEEK 6 <span style="color: #8E949C">▾</span></button>
+<button type="button" aria-label="Favorite teams" style="width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; background: #15171A; border: 1px solid #2A2E34; border-radius: 6px; color: #F2F3F5"><svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><path d="M8 1.8l1.9 3.9 4.3.6-3.1 3 .7 4.3L8 11.6l-3.8 2 .7-4.3-3.1-3 4.3-.6z"></path></svg></button>
+<div aria-label="Updated Monday 06:02" style="width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border: 1px solid #23462F; background: #0F1D15; border-radius: 6px"><span style="width: 8px; height: 8px; border-radius: 50%; background: #4CC38A"></span></div>
+<button type="button" aria-label="Account" class="cond" style="width: 32px; height: 32px; border-radius: 50%; border: 1px solid #2A2E34; background: #1C1F23; color: #F2F3F5; font-size: 14px; font-weight: 600">B</button>
+</header>
+
+<main style="flex: 1; min-height: 0; padding: 18px 28px 22px; box-sizing: border-box; display: flex; flex-direction: column; gap: 14px">
+
+<div style="display: flex; align-items: center; gap: 16px">
+<h1 class="cond" style="margin: 0; font-size: 32px; font-weight: 700; letter-spacing: 0.04em">WEEK 6</h1>
+<div style="flex: 1"></div>
+<a href="#" style="display: flex; align-items: center; gap: 10px; height: 34px; padding: 0 14px; border: 1px solid #2A2E34; border-radius: 17px; background: #15171A">
+<span class="cond" style="font-size: 13px; font-weight: 700; letter-spacing: 0.12em; color: #C9CDD3">UNDEFEATED WATCH</span>
+<span class="cond num" style="font-size: 20px; font-weight: 700">14</span>
+<span style="font-size: 13px; color: #8E949C">teams left</span>
+</a>
+</div>
+
+<section aria-label="Weekly awards" style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px">
+<sc-for list="{{ awards }}" as="w" hint-placeholder-count="4">
+<a href="#" style="position: relative; display: flex; flex-direction: column; gap: 4px; padding: 12px 16px; background: #15171A; border: 1px solid #23262B; border-radius: 8px; overflow: hidden">
+<span style="{{ w.bar }}"></span>
+<span style="display: flex; align-items: center; gap: 7px">
+<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#C9CDD3" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0zM7 6H4a3 3 0 0 0 3 4M17 6h3a3 3 0 0 1-3 4"></path></svg>
+<span class="cond" style="font-size: 12px; font-weight: 700; letter-spacing: 0.12em; color: #C9CDD3">{{ w.label }}</span>
+</span>
+<sc-if value="{{ w.isGame }}" hint-placeholder-val="{{ true }}"><span class="cond num" style="display: flex; align-items: center; gap: 7px; font-size: 22px; font-weight: 700; line-height: 1.1"><span style="{{ w.aPlate }}">{{ w.aAbbr }}</span>{{ w.aScore }}<span style="font-size: 14px; color: #8E949C">@</span><span style="font-size: 13px; color: #8E949C">{{ w.hRank }}</span><span style="{{ w.hPlate }}">{{ w.hAbbr }}</span>{{ w.hScore }}</span></sc-if><sc-if value="{{ w.isPlayer }}" hint-placeholder-val="{{ false }}"><span class="cond" style="display: flex; align-items: center; gap: 8px; font-size: 22px; font-weight: 700; line-height: 1.1"><span style="{{ w.aPlate }}">{{ w.aAbbr }}</span>{{ w.pName }}</span></sc-if>
+<span style="font-size: 12px; color: #8E949C">{{ w.sub }}</span>
+<sc-if value="{{ w.stunner }}" hint-placeholder-val="{{ false }}">
+<span class="cond" style="position: absolute; top: 10px; right: 10px; transform: rotate(6deg); padding: 2px 8px; border-radius: 4px; background: #E5484D; color: #FFFFFF; font-size: 12px; font-weight: 700; letter-spacing: 0.14em; box-shadow: 0 0 16px rgba(229, 72, 77, 0.55)">STUNNER</span>
+</sc-if>
+</a>
+</sc-for>
+</section>
+
+<div style="flex: 1; min-height: 0; display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); grid-template-rows: minmax(0, 1fr) minmax(0, 1fr); gap: 14px">
+
+<section style="grid-column: 1 / span 4; grid-row: 1; background: #15171A; border: 1px solid #23262B; border-radius: 8px; padding: 14px 18px; display: flex; flex-direction: column; gap: 6px; min-height: 0">
+<div style="display: flex; align-items: baseline; justify-content: space-between">
+<h2 class="cond" style="margin: 0; font-size: 16px; font-weight: 700; letter-spacing: 0.1em; color: #C9CDD3">AP TOP 5</h2>
+<a href="#" style="font-size: 13px; color: #8E949C">Full rankings →</a>
+</div>
+<sc-for list="{{ top5 }}" as="r" hint-placeholder-count="5">
+<a href="#" style="{{ r.row }}">
+<span class="cond num" style="{{ r.rankStyle }}">{{ r.rank }}</span>
+<span class="cond" style="{{ r.badge }}">{{ r.abbr }}</span>
+<span class="cond" style="font-size: 18px; font-weight: 700">{{ r.name }}</span>
+<sc-if value="{{ r.hot }}" hint-placeholder-val="{{ false }}"><span class="cond num" style="display: flex; align-items: center; gap: 2px; color: #F08A3C; font-size: 13px; font-weight: 700"><svg width="13" height="13" viewBox="0 0 24 24" fill="#F08A3C"><path d="M12 2c1 3-2 5-2 8a2 2 0 0 0 4 0c0-1 0-2-1-3 3 1 5 4 5 7a6 6 0 0 1-12 0c0-5 4-7 6-12z"></path></svg>{{ r.streak }}</span></sc-if>
+<span style="flex: 1"></span>
+<span class="cond num" style="color: #8E949C; font-size: 15px">{{ r.record }}</span>
+<span class="cond num" style="{{ r.moveStyle }}">{{ r.move }}</span>
+</a>
+</sc-for>
+</section>
+
+<section style="grid-column: 1 / span 4; grid-row: 2; background: #15171A; border: 1px solid #23262B; border-radius: 8px; padding: 14px 18px; display: flex; flex-direction: column; gap: 10px; min-height: 0">
+<div style="display: flex; align-items: baseline; justify-content: space-between">
+<h2 class="cond" style="margin: 0; font-size: 16px; font-weight: 700; letter-spacing: 0.1em; color: #C9CDD3">HEISMAN RACE</h2>
+<a href="#" style="font-size: 13px; color: #8E949C">Full tracker →</a>
+</div>
+<button type="button" style="display: flex; align-items: center; gap: 14px; padding: 10px 12px; background: #0F1114; border: 1px solid #23262B; border-radius: 6px; font: inherit; color: inherit; text-align: left">
+<span class="cond num" style="font-size: 34px; font-weight: 700; line-height: 1; width: 22px">1</span>
+<span class="cond" style="width: 48px; height: 48px; flex-shrink: 0; border-radius: 50%; background: #990000; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 700">IND</span>
+<span style="flex: 1; display: flex; flex-direction: column">
+<span class="cond" style="font-size: 21px; font-weight: 700">[QB NAME]</span>
+<span style="font-size: 12px; color: #8E949C">QB · Indiana · 1,742 yds · 19 TD · 2 INT</span>
+</span>
+<span class="cond num" style="font-size: 22px; font-weight: 700">94.2</span>
+</button>
+<sc-for list="{{ heisman }}" as="p" hint-placeholder-count="3">
+<button type="button" style="display: flex; align-items: center; gap: 12px; padding: 4px 12px; background: transparent; border: 0; font: inherit; color: inherit; text-align: left">
+<span class="cond num" style="width: 22px; font-size: 17px; font-weight: 700; color: #8E949C">{{ p.rank }}</span>
+<span class="cond" style="{{ p.badge }}">{{ p.abbr }}</span>
+<span style="flex: 1">{{ p.name }}</span>
+<span class="cond num" style="font-size: 16px; color: #C9CDD3">{{ p.score }}</span>
+</button>
+</sc-for>
+</section>
+
+<section style="grid-column: 5 / span 5; grid-row: 1; background: #15171A; border: 1px solid #23262B; border-radius: 8px; padding: 14px 18px; display: flex; flex-direction: column; gap: 10px; min-height: 0">
+<div style="display: flex; align-items: baseline; justify-content: space-between">
+<h2 class="cond" style="margin: 0; font-size: 16px; font-weight: 700; letter-spacing: 0.1em; color: #C9CDD3">BIGGEST RESULTS</h2>
+<a href="#" style="font-size: 13px; color: #8E949C">All scores →</a>
+</div>
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-rows: repeat(2, minmax(0, 1fr)); gap: 10px; flex: 1; min-height: 0">
+<sc-for list="{{ games }}" as="g" hint-placeholder-count="4">
+<button type="button" style="position: relative; text-align: left; font: inherit; color: inherit; background: #0F1114; border: 1px solid #23262B; border-radius: 6px; padding: 8px 12px; display: flex; flex-direction: column; gap: 5px; justify-content: center">
+<span style="display: flex; align-items: center; gap: 8px; width: 100%">
+<span style="width: 14px; flex-shrink: 0"></span><span class="cond" style="{{ g.a.badge }}">{{ g.a.abbr }}</span>
+<span class="cond num" style="width: 16px; font-size: 12px; color: #8E949C; text-align: right">{{ g.a.rank }}</span>
+<span class="cond" style="{{ g.a.nameStyle }}">{{ g.a.name }}</span>
+<sc-if value="{{ g.a.hot }}" hint-placeholder-val="{{ false }}"><span class="cond num" style="display: flex; align-items: center; gap: 2px; color: #F08A3C; font-size: 12px; font-weight: 700"><svg width="12" height="12" viewBox="0 0 24 24" fill="#F08A3C"><path d="M12 2c1 3-2 5-2 8a2 2 0 0 0 4 0c0-1 0-2-1-3 3 1 5 4 5 7a6 6 0 0 1-12 0c0-5 4-7 6-12z"></path></svg>{{ g.a.streak }}</span></sc-if>
+<span style="flex: 1"></span>
+<span class="cond num" style="{{ g.a.scoreStyle }}">{{ g.a.score }}</span>
+</span>
+<span style="display: flex; align-items: center; gap: 8px; width: 100%">
+<span class="cond" style="width: 14px; flex-shrink: 0; font-size: 13px; color: #8E949C; text-align: center">@</span><span class="cond" style="{{ g.h.badge }}">{{ g.h.abbr }}</span>
+<span class="cond num" style="width: 16px; font-size: 12px; color: #8E949C; text-align: right">{{ g.h.rank }}</span>
+<span class="cond" style="{{ g.h.nameStyle }}">{{ g.h.name }}</span>
+<span style="flex: 1"></span>
+<span class="cond num" style="{{ g.h.scoreStyle }}">{{ g.h.score }}</span>
+</span>
+<span class="cond" style="font-size: 11px; letter-spacing: 0.1em; color: #8E949C">{{ g.status }}</span>
+<sc-if value="{{ g.upset }}" hint-placeholder-val="{{ false }}">
+<span class="cond" style="position: absolute; right: 54px; bottom: 7px; transform: rotate(-7deg); padding: 0 7px; border: 2px solid #F08A3C; border-radius: 4px; color: #F08A3C; font-size: 12px; font-weight: 700; letter-spacing: 0.14em">UPSET</span>
+</sc-if>
+</button>
+</sc-for>
+</div>
+</section>
+
+<section style="grid-column: 5 / span 5; grid-row: 2; background: #15171A; border: 1px solid #23262B; border-radius: 8px; padding: 14px 18px; display: flex; flex-direction: column; gap: 6px; min-height: 0">
+<div style="display: flex; align-items: baseline; justify-content: space-between">
+<h2 class="cond" style="margin: 0; font-size: 16px; font-weight: 700; letter-spacing: 0.1em; color: #C9CDD3">MY TEAMS</h2>
+<a href="#" style="font-size: 13px; color: #8E949C">Edit</a>
+</div>
+<sc-for list="{{ mine }}" as="t" hint-placeholder-count="3">
+<a href="#" style="display: flex; align-items: center; gap: 14px; padding: 8px 0; border-bottom: 1px solid #1E2125">
+<span class="cond" style="{{ t.badgeLg }}">{{ t.abbr }}</span>
+<span style="flex: 1; display: flex; flex-direction: column; min-width: 0">
+<span style="display: flex; align-items: center; gap: 8px"><span class="cond" style="font-size: 18px; font-weight: 700">{{ t.name }}</span><span class="cond num" style="color: #8E949C; font-size: 15px">{{ t.rank }} · {{ t.record }}</span><sc-if value="{{ t.hot }}" hint-placeholder-val="{{ false }}"><span class="cond num" style="display: flex; align-items: center; gap: 2px; color: #F08A3C; font-size: 13px; font-weight: 700"><svg width="13" height="13" viewBox="0 0 24 24" fill="#F08A3C"><path d="M12 2c1 3-2 5-2 8a2 2 0 0 0 4 0c0-1 0-2-1-3 3 1 5 4 5 7a6 6 0 0 1-12 0c0-5 4-7 6-12z"></path></svg>{{ t.streak }}</span></sc-if></span>
+<span style="font-size: 13px; color: #8E949C"><span style="{{ t.resStyle }}">{{ t.res }}</span> {{ t.last }} · Next: {{ t.next }}</span>
+</span>
+</a>
+</sc-for>
+</section>
+
+<section style="grid-column: 10 / span 3; grid-row: 1 / span 2; position: relative; border-radius: 8px; overflow: hidden; display: flex; flex-direction: column; background: #14110E; border: 1px solid #D86A12">
+<a href="#" style="position: relative; height: 176px; flex-shrink: 0; background: #A64B00; display: flex; flex-direction: column; justify-content: flex-end; padding: 12px 16px; border-bottom: 3px solid #F2F3F5">
+<span style="position: absolute; top: 10px; left: 16px; font-size: 11px; color: #FFE3CC; letter-spacing: 0.08em">IMAGE SLOT · CAMPUS PHOTO</span>
+<span class="varsity" style="font-size: 13px; color: #FFE3CC; letter-spacing: 0.12em">COLLEGE GAMEDAY · WK 7</span>
+<span class="varsity" style="font-size: 38px; line-height: 1; color: #FFFFFF">AUSTIN</span>
+<span class="varsity" style="font-size: 14px; color: #FFE3CC; letter-spacing: 0.2em">TEXAS</span>
+</a>
+<div style="flex: 1; min-height: 0; padding: 12px 16px 14px; display: flex; flex-direction: column; gap: 12px">
+<div style="display: flex; align-items: center; justify-content: space-between">
+<a href="#" style="display: flex; flex-direction: column; align-items: center; gap: 3px"><svg width="74" height="40" viewBox="0 0 74 40" aria-hidden="true"><path d="M2 2 L72 20 L2 38 Z" fill="#9E1B32" stroke="#F2F3F5" stroke-width="2"></path><circle cx="20" cy="20" r="14" fill="#D9DCE0"></circle><text x="20" y="23.6" text-anchor="middle" font-family="Barlow Condensed, sans-serif" font-weight="700" font-size="10" fill="#111214">ALA</text></svg><span class="cond" style="font-size: 13px; color: #C9CDD3">#10 · 5–1</span></a>
+<span class="varsity" style="font-size: 18px; color: #F2C79F">@</span>
+<a href="#" style="display: flex; flex-direction: column; align-items: center; gap: 3px"><svg width="74" height="40" viewBox="0 0 74 40" aria-hidden="true"><path d="M72 2 L2 20 L72 38 Z" fill="#BF5700" stroke="#F2F3F5" stroke-width="2"></path><circle cx="54" cy="20" r="14" fill="#D9DCE0"></circle><text x="54" y="23.6" text-anchor="middle" font-family="Barlow Condensed, sans-serif" font-weight="700" font-size="10" fill="#111214">TEX</text></svg><span class="cond" style="font-size: 13px; color: #C9CDD3">#5 · 5–1 · HOME</span></a>
+</div>
+<div style="display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 10px 0; border-top: 1px dashed #4A3B2E; border-bottom: 1px dashed #4A3B2E">
+<span class="cond" style="font-size: 12px; letter-spacing: 0.14em; color: #B9A898">SHOW STARTS IN</span>
+<span class="varsity num" style="font-size: 26px; color: #FFFFFF">4D 22H 10M</span>
+<span class="cond" style="font-size: 13px; color: #F2C79F; letter-spacing: 0.08em">KICKOFF SUN 01:30 · ABC · TEX −3.5</span>
+</div>
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px">
+<div style="background: #1E1915; border: 1px solid #3A2E24; border-radius: 6px; padding: 7px 10px"><div style="font-size: 11px; color: #B9A898">Guest picker</div><div class="cond" style="font-size: 16px; font-weight: 700">TBA</div></div>
+<div style="background: #1E1915; border: 1px solid #3A2E24; border-radius: 6px; padding: 7px 10px"><div style="font-size: 11px; color: #B9A898">Texas w/ GameDay</div><div class="cond num" style="font-size: 16px; font-weight: 700">9–4</div></div>
+</div>
+<div style="flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 2px">
+<span class="varsity" style="font-size: 11px; letter-spacing: 0.14em; color: #F2C79F; margin-bottom: 2px">RECENT STOPS</span>
+<a href="#" style="display: flex; align-items: center; gap: 8px; flex: 1; min-height: 0; border-bottom: 1px solid #2A221B; font-size: 13px"><span class="cond" style="width: 34px; color: #B9A898">WK 6</span><span style="flex: 1">Bloomington</span><span class="cond" style="color: #4CC38A; font-weight: 700">W 38–24</span></a>
+<a href="#" style="display: flex; align-items: center; gap: 8px; flex: 1; min-height: 0; border-bottom: 1px solid #2A221B; font-size: 13px"><span class="cond" style="width: 34px; color: #B9A898">WK 5</span><span style="flex: 1">Ann Arbor</span><span class="cond" style="color: #4CC38A; font-weight: 700">W 27–20</span></a>
+<a href="#" style="display: flex; align-items: center; gap: 8px; flex: 1; min-height: 0; font-size: 13px"><span class="cond" style="width: 34px; color: #B9A898">WK 4</span><span style="flex: 1">Oxford</span><span class="cond" style="color: #F0645A; font-weight: 700">L 21–24</span></a>
+</div>
+<a href="#" class="varsity" style="text-align: center; padding: 8px; border: 2px solid #F2C79F; border-radius: 4px; color: #F2C79F; font-size: 11px; letter-spacing: 0.12em">ALL GAMEDAY STOPS</a>
+</div>
+</section>
+
+</div>
+</main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  badge(color, txt, size) {
+    var s = size || 22;
+    return 'width: ' + s + 'px; height: ' + s + 'px; flex-shrink: 0; border-radius: 4px; background: ' + color + '; color: ' + (txt || '#FFFFFF') + '; display: flex; align-items: center; justify-content: center; font-size: ' + (s > 30 ? 13 : 11) + 'px; font-weight: 700; letter-spacing: 0';
+  }
+  side(abbr, name, rank, score, color, win, streak) {
+    return {
+      abbr: abbr, name: name, rank: rank, score: score,
+      hot: !!streak, streak: streak || '',
+      badge: this.badge(color, '#FFFFFF', 24),
+      nameStyle: 'font-size: 16px; white-space: nowrap; font-weight: ' + (win ? '700' : '500') + '; color: ' + (win ? '#F2F3F5' : '#8E949C'),
+      scoreStyle: 'font-size: 22px; font-weight: 700; color: ' + (win ? '#F2F3F5' : '#8E949C')
+    };
+  }
+  renderVals() {
+    var active = 'display: flex; align-items: center; padding: 0 10px; height: 100%; border-bottom: 2px solid #F2F3F5; color: #F2F3F5; font-size: 15px; font-weight: 600; letter-spacing: 0.08em';
+    var idle = 'display: flex; align-items: center; padding: 0 10px; height: 100%; border-bottom: 2px solid transparent; color: #8E949C; font-size: 15px; font-weight: 600; letter-spacing: 0.08em';
+    var bar = function (c) { return 'position: absolute; left: 0; top: 0; right: 0; height: 3px; background: ' + c; };
+    var plate = function (c) { return 'width: 30px; height: 30px; flex-shrink: 0; border-radius: 6px; background: #D9DCE0; color: ' + c + '; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; letter-spacing: 0'; };
+    var aw = function (label, a, h, sub, stun, c) { return { label: label, isGame: true, isPlayer: false, aAbbr: a[0], aPlate: plate(a[1]), aScore: a[2], hAbbr: h[0], hPlate: plate(h[1]), hScore: h[2], hRank: h[3], sub: sub, stunner: stun, bar: bar(c) }; };
+    var awp = function (label, t, name, sub, c) { return { label: label, isGame: false, isPlayer: true, aAbbr: t[0], aPlate: plate(t[1]), pName: name, sub: sub, stunner: false, bar: bar(c) }; };
+    var self = this;
+    var rowBase = 'display: flex; align-items: center; gap: 12px; padding: 0 8px; flex: 1; min-height: 0; border-radius: 6px; ';
+    var mv = function (m, c) { return { move: m, moveStyle: 'width: 36px; text-align: right; font-size: 14px; font-weight: 700; color: ' + c }; };
+    var mk = function (rank, abbr, name, color, record, streak, move) {
+      return Object.assign({
+        rank: rank, abbr: abbr, name: name, record: record, hot: !!streak, streak: streak || '',
+        badge: self.badge(color, '#FFFFFF', 30),
+        rankStyle: 'width: 26px; font-size: ' + (rank === '1' ? '30' : '22') + 'px; font-weight: 700; text-align: right',
+        row: rowBase + (rank === '1' ? 'background: #1D2024;' : '')
+      }, move);
+    };
+    return {
+      nav: ['HOME', 'SCORES', 'RANKINGS', 'STANDINGS', 'STATS', 'TEAMS', "PICK'EM", 'ARCHIVE'].map(function (l, i) { return { label: l, style: i === 0 ? active : idle }; }),
+      awards: [
+        aw('UPSET OF THE WEEK', ['PUR', '#B08D3C', '27'], ['MICH', '#00274C', '24', '#4'], 'Purdue won as a 22.5-point underdog', true, '#E5484D'),
+        aw('GAME OF THE WEEK', ['TTU', '#CC0000', '30'], ['KSU', '#512888', '28', ''], 'Decided in overtime', false, '#F2F3F5'),
+        aw('BLOWOUT OF THE WEEK', ['WIS', '#C5050C', '3'], ['OSU', '#BB0000', '45', '#1'], 'Margin of 42 points', false, '#8E949C'),
+        awp('PERFORMANCE OF THE WEEK', ['IND', '#990000'], '[QB NAME]', 'QB · 412 pass yds · 5 TD · 0 INT', '#4CC38A')
+      ],
+      top5: [
+        mk('1', 'OSU', 'OHIO STATE', '#BB0000', '6–0', '11', mv('—', '#8E949C')),
+        mk('2', 'IND', 'INDIANA', '#990000', '6–0', '6', mv('—', '#8E949C')),
+        mk('3', 'ORE', 'OREGON', '#154733', '6–0', '6', mv('▲ 1', '#4CC38A')),
+        mk('4', 'MIA', 'MIAMI', '#F47321', '6–0', '6', mv('▲ 4', '#4CC38A')),
+        mk('5', 'TEX', 'TEXAS', '#BF5700', '5–1', '', mv('—', '#8E949C'))
+      ],
+      heisman: [
+        { rank: '2', abbr: 'TEX', name: '[RB Name] · RB', score: '89.7', badge: this.badge('#BF5700', '#FFFFFF', 24) },
+        { rank: '3', abbr: 'OSU', name: '[QB Name] · QB', score: '88.1', badge: this.badge('#BB0000', '#FFFFFF', 24) },
+        { rank: '4', abbr: 'MIA', name: '[WR Name] · WR', score: '84.6', badge: this.badge('#F47321', '#FFFFFF', 24) }
+      ],
+      games: [
+        { a: this.side('MISS', 'OLE MISS', '14', '27', '#CE1126', true), h: this.side('UGA', 'GEORGIA', '7', '24', '#BA0C2F', false), status: 'FINAL · MISS +7.5', upset: true },
+        { a: this.side('PSU', 'PENN ST', '11', '24', '#041E42', false), h: this.side('IND', 'INDIANA', '2', '38', '#990000', true, '6'), status: 'FINAL', upset: false },
+        { a: this.side('OU', 'OKLAHOMA', '9', '20', '#841617', false), h: this.side('TEX', 'TEXAS', '5', '27', '#BF5700', true), status: 'FINAL', upset: false },
+        { a: this.side('TTU', 'TEXAS TECH', '22', '30', '#CC0000', true), h: this.side('KSU', 'KANSAS ST', '16', '28', '#512888', false), status: 'FINAL / OT', upset: false }
+      ],
+      mine: [
+        { abbr: 'IND', name: 'INDIANA', rank: '#2', record: '6–0', hot: true, streak: '6', res: 'W', resStyle: 'color: #4CC38A; font-weight: 600', last: '38–24 vs Penn State', next: 'Sat 18:00 at Northwestern', badgeLg: this.badge('#990000', '#FFFFFF', 40) },
+        { abbr: 'TEX', name: 'TEXAS', rank: '#5', record: '5–1', hot: false, streak: '', res: 'W', resStyle: 'color: #4CC38A; font-weight: 600', last: '27–20 vs Oklahoma', next: 'Sun 01:30 vs Alabama', badgeLg: this.badge('#BF5700', '#FFFFFF', 40) },
+        { abbr: 'BSU', name: 'BOISE STATE', rank: 'RV', record: '4–2', hot: false, streak: '', res: 'L', resStyle: 'color: #F0645A; font-weight: 600', last: '17–20 at UNLV', next: 'Sat 21:00 vs Air Force', badgeLg: this.badge('#0033A0', '#FFFFFF', 40) }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

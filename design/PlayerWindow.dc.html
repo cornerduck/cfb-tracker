@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Player window</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@500;600;700&family=Graduate&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#050607}
+a{color:#F2F3F5;text-decoration:none}a:hover{color:#FFFFFF}
+.cond{font-family:"Barlow Condensed","Arial Narrow",sans-serif;letter-spacing:0.02em}
+.num{font-variant-numeric:tabular-nums}
+</style>
+</helmet>
+<div style="width: 1440px; height: 900px; box-sizing: border-box; background: #050607; color: #F2F3F5; font-family: Barlow, 'Helvetica Neue', sans-serif; font-size: 14px; display: flex; align-items: center; justify-content: center">
+<div role="dialog" aria-label="Player details" style="position: relative; width: 1000px; height: 780px; box-sizing: border-box; background: #15171A; border: 1px solid #2A2E34; border-radius: 12px; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6)">
+
+<div style="position: relative; display: flex; align-items: center; gap: 22px; padding: 26px 28px 24px; background: #2A0B0B; border-bottom: 3px solid #990000">
+<span class="cond" style="width: 96px; height: 96px; flex-shrink: 0; border-radius: 50%; background: #990000; border: 3px solid #F2F3F5; display: flex; align-items: center; justify-content: center; font-size: 30px; font-weight: 700">IND</span>
+<div style="flex: 1; display: flex; flex-direction: column; gap: 4px">
+<span class="cond" style="font-size: 14px; font-weight: 700; letter-spacing: 0.14em; color: #F2B8B8">QB · #12 · JUNIOR</span>
+<span class="cond" style="font-size: 44px; font-weight: 700; line-height: 1">[QB NAME]</span>
+<a href="#" style="display: flex; align-items: center; gap: 6px; color: #F2D6D6; font-size: 15px">#2 Indiana Hoosiers · 6–0 <span style="color: #F2B8B8">→</span></a>
+</div>
+<div style="display: flex; flex-direction: column; align-items: flex-end; gap: 6px">
+<span class="cond" style="padding: 4px 10px; border-radius: 4px; background: #F2F3F5; color: #0B0C0E; font-size: 13px; font-weight: 700; letter-spacing: 0.12em">PERFORMANCE OF THE WEEK</span>
+<span class="cond" style="font-size: 13px; color: #F2B8B8; letter-spacing: 0.1em">HEISMAN TRACKER #1 · 94.2</span>
+</div>
+<button type="button" aria-label="Close" style="position: absolute; top: 14px; right: 14px; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; background: rgba(0, 0, 0, 0.35); border: 1px solid #5A2A2A; border-radius: 50%; color: #F2F3F5"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M3 3l10 10M13 3L3 13"></path></svg></button>
+</div>
+
+<div style="flex: 1; min-height: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr))">
+
+<div style="padding: 20px 28px; display: flex; flex-direction: column; gap: 20px; border-right: 1px solid #23262B">
+<section style="display: flex; flex-direction: column; gap: 10px">
+<div style="display: flex; align-items: baseline; justify-content: space-between">
+<h3 class="cond" style="margin: 0; font-size: 14px; font-weight: 700; letter-spacing: 0.12em; color: #C9CDD3">THIS WEEK</h3>
+<a href="#" style="font-size: 13px; color: #8E949C"><span style="color: #4CC38A; font-weight: 600">W</span> 38–24 vs #11 Penn State →</a>
+</div>
+<div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px">
+<sc-for list="{{ week }}" as="w" hint-placeholder-count="4">
+<div style="background: #0F1114; border: 1px solid #23262B; border-radius: 6px; padding: 12px">
+<div style="font-size: 12px; color: #8E949C">{{ w.label }}</div>
+<div class="cond num" style="font-size: 28px; font-weight: 700">{{ w.value }}</div>
+</div>
+</sc-for>
+</div>
+</section>
+
+<section style="display: flex; flex-direction: column; gap: 10px">
+<h3 class="cond" style="margin: 0; font-size: 14px; font-weight: 700; letter-spacing: 0.12em; color: #C9CDD3">SEASON 2026</h3>
+<div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px">
+<sc-for list="{{ season }}" as="s" hint-placeholder-count="6">
+<div style="background: #0F1114; border-radius: 6px; padding: 10px 12px">
+<div style="font-size: 12px; color: #8E949C">{{ s.label }}</div>
+<div style="display: flex; align-items: baseline; gap: 6px"><span class="cond num" style="font-size: 22px; font-weight: 700">{{ s.value }}</span><span class="cond num" style="font-size: 12px; color: #8E949C">{{ s.rank }}</span></div>
+</div>
+</sc-for>
+</div>
+</section>
+
+<section style="display: flex; flex-direction: column; gap: 10px">
+<h3 class="cond" style="margin: 0; font-size: 14px; font-weight: 700; letter-spacing: 0.12em; color: #C9CDD3">PASSING YARDS BY GAME</h3>
+<div style="display: flex; align-items: flex-end; gap: 10px; height: 110px"><div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; height: 100%; justify-content: flex-end"><span class="cond num" style="font-size: 12px; color: #C9CDD3">288</span><span style="width: 100%; height: 56px; border-radius: 4px 4px 0 0; background: #3A3F46"></span><span class="cond" style="font-size: 11px; color: #8E949C">WK 1</span></div><div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; height: 100%; justify-content: flex-end"><span class="cond num" style="font-size: 12px; color: #C9CDD3">247</span><span style="width: 100%; height: 48px; border-radius: 4px 4px 0 0; background: #3A3F46"></span><span class="cond" style="font-size: 11px; color: #8E949C">WK 2</span></div><div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; height: 100%; justify-content: flex-end"><span class="cond num" style="font-size: 12px; color: #C9CDD3">226</span><span style="width: 100%; height: 44px; border-radius: 4px 4px 0 0; background: #3A3F46"></span><span class="cond" style="font-size: 11px; color: #8E949C">WK 3</span></div><div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; height: 100%; justify-content: flex-end"><span class="cond num" style="font-size: 12px; color: #C9CDD3">301</span><span style="width: 100%; height: 58px; border-radius: 4px 4px 0 0; background: #3A3F46"></span><span class="cond" style="font-size: 11px; color: #8E949C">WK 4</span></div><div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; height: 100%; justify-content: flex-end"><span class="cond num" style="font-size: 12px; color: #C9CDD3">268</span><span style="width: 100%; height: 52px; border-radius: 4px 4px 0 0; background: #3A3F46"></span><span class="cond" style="font-size: 11px; color: #8E949C">WK 5</span></div><div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; height: 100%; justify-content: flex-end"><span class="cond num" style="font-size: 12px; color: #C9CDD3">412</span><span style="width: 100%; height: 80px; border-radius: 4px 4px 0 0; background: #F2F3F5"></span><span class="cond" style="font-size: 11px; color: #8E949C">WK 6</span></div></div>
+</section>
+<section style="display: flex; flex-direction: column; gap: 8px">
+<h3 class="cond" style="margin: 0; font-size: 14px; font-weight: 700; letter-spacing: 0.12em; color: #C9CDD3">NEXT GAME</h3>
+<button type="button" style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; background: #0F1114; border: 1px solid #23262B; border-radius: 6px; font: inherit; color: inherit; text-align: left"><span class="cond" style="font-size: 16px; font-weight: 700; flex: 1">#2 INDIANA @ NORTHWESTERN</span><span class="cond" style="font-size: 13px; color: #8E949C">SAT 18:00 · BTN · IND −21</span></button>
+</section>
+</div>
+
+<div style="padding: 20px 28px; display: flex; flex-direction: column; gap: 10px; min-height: 0">
+<h3 class="cond" style="margin: 0; font-size: 14px; font-weight: 700; letter-spacing: 0.12em; color: #C9CDD3">GAME LOG</h3>
+<div class="num" style="display: flex; flex-direction: column; font-size: 14px">
+<div class="cond" style="display: grid; grid-template-columns: 28px minmax(0, 1fr) 72px 44px 28px 28px 12px; column-gap: 8px; padding: 6px 0; color: #8E949C; font-size: 12px; font-weight: 600; letter-spacing: 0.08em"><span>WK</span><span>OPPONENT</span><span>RESULT</span><span style="text-align: right">YDS</span><span style="text-align: right">TD</span><span style="text-align: right">INT</span><span></span></div>
+<sc-for list="{{ log }}" as="g" hint-placeholder-count="6">
+<a href="#" style="{{ g.rowStyle }}">
+<span class="cond" style="color: #8E949C">{{ g.wk }}</span>
+<span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{ g.opp }}</span>
+<span><span style="color: #4CC38A; font-weight: 600">W</span> {{ g.score }}</span>
+<span style="text-align: right">{{ g.yds }}</span>
+<span style="text-align: right">{{ g.td }}</span>
+<span style="text-align: right">{{ g.int }}</span>
+<span style="text-align: right; color: #8E949C">›</span>
+</a>
+</sc-for>
+</div>
+<a href="#" class="cond" style="margin-top: auto; display: flex; align-items: center; justify-content: center; min-height: 44px; border: 1px solid #2A2E34; border-radius: 6px; font-size: 14px; font-weight: 700; letter-spacing: 0.12em">GO TO INDIANA TEAM PAGE →</a>
+</div>
+
+</div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var row = function (hl) { return 'display: grid; grid-template-columns: 28px minmax(0, 1fr) 72px 44px 28px 28px 12px; column-gap: 8px; align-items: center; min-height: 38px; border-top: 1px solid #23262B; ' + (hl ? 'background: #1D2024;' : ''); };
+    return {
+      week: [
+        { label: 'Comp / Att', value: '28/35' },
+        { label: 'Pass yards', value: '412' },
+        { label: 'Touchdowns', value: '5' },
+        { label: 'Interceptions', value: '0' }
+      ],
+      season: [
+        { label: 'Pass yards', value: '1,742', rank: '#3 FBS' },
+        { label: 'Pass TD', value: '19', rank: '#1 FBS' },
+        { label: 'INT', value: '2', rank: '' },
+        { label: 'Comp %', value: '71.4', rank: '#5 FBS' },
+        { label: 'Rating', value: '192.6', rank: '#2 FBS' },
+        { label: 'Rush yards', value: '187', rank: '' }
+      ],
+      log: [
+        { wk: '6', opp: 'vs #11 Penn State', score: '38–24', ca: '28/35', yds: '412', td: '5', int: '0', rowStyle: row(true) },
+        { wk: '5', opp: 'at Maryland', score: '31–10', ca: '19/27', yds: '268', td: '3', int: '0', rowStyle: row(false) },
+        { wk: '4', opp: 'vs Illinois', score: '35–17', ca: '21/30', yds: '301', td: '4', int: '1', rowStyle: row(false) },
+        { wk: '3', opp: 'vs Indiana State', score: '56–7', ca: '14/18', yds: '226', td: '3', int: '0', rowStyle: row(false) },
+        { wk: '2', opp: 'at Kennesaw St', score: '42–13', ca: '18/26', yds: '247', td: '2', int: '1', rowStyle: row(false) },
+        { wk: '1', opp: 'vs Old Dominion', score: '45–20', ca: '20/28', yds: '288', td: '2', int: '0', rowStyle: row(false) }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

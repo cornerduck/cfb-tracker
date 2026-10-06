@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>CFB Tracker Teams Desktop</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@500;600;700&family=Graduate&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#0B0C0E}
+a{color:#F2F3F5;text-decoration:none}a:hover{color:#FFFFFF}
+.cond{font-family:"Barlow Condensed","Arial Narrow",sans-serif;letter-spacing:0.02em}
+.num{font-variant-numeric:tabular-nums}
+</style>
+</helmet>
+<div style="width: 1440px; height: 900px; box-sizing: border-box; background: #0B0C0E; color: #F2F3F5; font-family: Barlow, 'Helvetica Neue', sans-serif; font-size: 14px; display: flex; flex-direction: column; overflow: hidden">
+<header style="height: 56px; flex-shrink: 0; display: flex; align-items: center; gap: 24px; padding: 0 24px; border-bottom: 1px solid #23262B; background: #0E1013">
+<div class="cond" style="font-size: 20px; font-weight: 700; letter-spacing: 0.08em"><span style="display: inline-flex; align-items: center; gap: 9px"><span class="varsity" style="width: 30px; height: 30px; box-sizing: border-box; border-radius: 7px; background: #0B0C0E; border: 2px solid #F2F3F5; color: #F2F3F5; display: inline-flex; align-items: center; justify-content: center; font-family: Graduate, serif; font-size: 17px; letter-spacing: 0">S</span>STRDYS</span></div>
+<nav aria-label="Main" style="display: flex; gap: 2px; height: 100%">
+<sc-for list="{{ nav }}" as="n" hint-placeholder-count="8">
+<a href="#" class="cond" style="{{ n.style }}">{{ n.label }}</a>
+</sc-for>
+</nav>
+<div style="flex: 1"></div>
+<label style="display: flex; align-items: center; gap: 8px; width: 170px; height: 32px; padding: 0 10px; box-sizing: border-box; background: #15171A; border: 1px solid #2A2E34; border-radius: 6px; color: #8E949C">
+<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="7" cy="7" r="5"></circle><path d="M11 11l3.5 3.5"></path></svg>
+<input type="text" placeholder="Search" aria-label="Search teams or players" style="flex: 1; min-width: 0; background: transparent; border: 0; outline: 0; color: #F2F3F5; font: inherit; font-size: 13px">
+</label>
+<button type="button" class="cond" style="height: 32px; padding: 0 12px; background: #15171A; border: 1px solid #2A2E34; border-radius: 6px; color: #F2F3F5; font-size: 14px; font-weight: 600; letter-spacing: 0.04em">WEEK 6 <span style="color: #8E949C">▾</span></button>
+<button type="button" aria-label="Favorite teams" style="width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; background: #15171A; border: 1px solid #2A2E34; border-radius: 6px; color: #F2F3F5"><svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><path d="M8 1.8l1.9 3.9 4.3.6-3.1 3 .7 4.3L8 11.6l-3.8 2 .7-4.3-3.1-3 4.3-.6z"></path></svg></button>
+<div aria-label="Updated Monday 06:02" style="width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border: 1px solid #23462F; background: #0F1D15; border-radius: 6px"><span style="width: 8px; height: 8px; border-radius: 50%; background: #4CC38A"></span></div>
+<button type="button" aria-label="Account" class="cond" style="width: 32px; height: 32px; border-radius: 50%; border: 1px solid #2A2E34; background: #1C1F23; color: #F2F3F5; font-size: 14px; font-weight: 600">B</button>
+</header>
+<div style="flex-shrink: 0; display: flex; align-items: center; gap: 18px; padding: 14px 24px 0; border-bottom: 1px solid #23262B">
+<h1 class="cond" style="margin: 0 10px 0 0; font-size: 28px; font-weight: 700; letter-spacing: 0.04em; padding-bottom: 10px">TEAMS</h1>
+<button type="button" role="tab" class="cond" style="height: 44px; padding: 0 14px; background: transparent; border: 0; border-bottom: 2px solid #F2F3F5; color: #F2F3F5; font-size: 15px; font-weight: 700; letter-spacing: 0.1em">DIRECTORY</button>
+<button type="button" role="tab" class="cond" style="height: 44px; padding: 0 14px; background: transparent; border: 0; border-bottom: 2px solid transparent; color: #8E949C; font-size: 15px; font-weight: 700; letter-spacing: 0.1em">COMPARE</button>
+</div>
+<div style="flex-shrink: 0; display: flex; align-items: center; gap: 8px; padding: 12px 24px">
+<sc-for list="{{ filters }}" as="f" hint-placeholder-count="5">
+<button type="button" class="cond" style="{{ f.style }}">{{ f.label }}</button>
+</sc-for>
+<span style="flex: 1"></span>
+<label style="display: flex; align-items: center; gap: 8px; width: 240px; height: 32px; padding: 0 10px; box-sizing: border-box; background: #15171A; border: 1px solid #2A2E34; border-radius: 6px; color: #8E949C">
+<svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="7" cy="7" r="5"></circle><path d="M11 11l3.5 3.5"></path></svg>
+<input type="text" placeholder="Find a team" aria-label="Find a team" style="flex: 1; min-width: 0; background: transparent; border: 0; outline: 0; color: #F2F3F5; font: inherit; font-size: 13px">
+</label>
+</div>
+<div style="flex: 1; min-height: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; padding: 0 24px 22px">
+<sc-for list="{{ confs }}" as="c" hint-placeholder-count="4">
+<section style="background: #15171A; border: 1px solid #23262B; border-radius: 8px; display: flex; flex-direction: column; overflow: hidden; min-height: 0">
+<div style="display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-bottom: 1px solid #23262B">
+<span class="cond" style="{{ c.chip }}">{{ c.short }}</span>
+<h2 class="cond" style="margin: 0; font-size: 17px; font-weight: 700; letter-spacing: 0.06em">{{ c.name }}</h2>
+<span style="flex: 1"></span>
+<span style="font-size: 12px; color: #8E949C">{{ c.count }} teams</span>
+</div>
+<div style="flex: 1; min-height: 0; overflow: auto; padding: 4px 6px">
+<sc-for list="{{ c.teams }}" as="t" hint-placeholder-count="16">
+<div style="display: flex; align-items: center; gap: 10px; min-height: 35px; padding: 0 8px; border-bottom: 1px solid #1E2125">
+<a href="#" style="display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0">
+<span class="cond" style="{{ t.badge }}">{{ t.abbr }}</span>
+<span style="font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{ t.name }}</span>
+<span class="cond num" style="font-size: 13px; color: #8E949C">{{ t.rank }}</span>
+</a>
+<button type="button" aria-label="{{ t.starLabel }}" style="width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; background: transparent; border: 0; color: #6F757D"><sc-if value="{{ t.fav }}" hint-placeholder-val="{{ false }}"><svg width="14" height="14" viewBox="0 0 16 16" fill="#F2F3F5" stroke="#F2F3F5" stroke-width="1.5" stroke-linejoin="round"><path d="M8 1.8l1.9 3.9 4.3.6-3.1 3 .7 4.3L8 11.6l-3.8 2 .7-4.3-3.1-3 4.3-.6z"></path></svg></sc-if><sc-if value="{{ t.notFav }}" hint-placeholder-val="{{ true }}"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><path d="M8 1.8l1.9 3.9 4.3.6-3.1 3 .7 4.3L8 11.6l-3.8 2 .7-4.3-3.1-3 4.3-.6z"></path></svg></sc-if></button>
+</div>
+</sc-for>
+</div>
+</section>
+</sc-for>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var active = 'display: flex; align-items: center; padding: 0 10px; height: 100%; border-bottom: 2px solid #F2F3F5; color: #F2F3F5; font-size: 15px; font-weight: 600; letter-spacing: 0.08em';
+    var idle = 'display: flex; align-items: center; padding: 0 10px; height: 100%; border-bottom: 2px solid transparent; color: #8E949C; font-size: 15px; font-weight: 600; letter-spacing: 0.08em';
+    var nav = ['HOME', 'SCORES', 'RANKINGS', 'STANDINGS', 'STATS', 'TEAMS', "PICK'EM", 'ARCHIVE'].map(function (l, i) { return { label: l, style: i === 5 ? active : idle }; });
+    var badge = function (c, dark, s) { s = s || 26; return 'width: ' + s + 'px; height: ' + s + 'px; flex-shrink: 0; border-radius: 4px; background: ' + c + '; color: ' + (dark ? '#111214' : '#FFFFFF') + '; display: flex; align-items: center; justify-content: center; font-size: ' + (s > 30 ? 13 : 10) + 'px; font-weight: 700'; };
+    var chip = 'display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 24px; border-radius: 4px; background: #D9DCE0; border: 1px solid #D9DCE0; color: #2A2E34; font-size: 11px; font-weight: 700';
+    var fOn = 'height: 32px; padding: 0 14px; border-radius: 16px; background: #F2F3F5; color: #0B0C0E; border: 0; font-size: 14px; font-weight: 700; letter-spacing: 0.08em';
+    var fOff = 'height: 32px; padding: 0 14px; border-radius: 16px; background: transparent; color: #C9CDD3; border: 1px solid #2A2E34; font-size: 14px; font-weight: 700; letter-spacing: 0.08em';
+    var favs = { IND: 1, TEX: 1, BSU: 1 };
+    var mk = function (arr) { return arr.map(function (t) { var light = ['#CEB888', '#FFCD00', '#FF8200', '#B3A369', '#F1B82D'].indexOf(t[2]) > -1; return { abbr: t[0], name: t[1], rec: t[3], rank: t[4] ? '#' + t[4] : '', badge: badge(t[2], light), fav: !!favs[t[0]], notFav: !favs[t[0]], starLabel: (favs[t[0]] ? 'Remove ' : 'Add ') + t[1] + (favs[t[0]] ? ' from favorites' : ' to favorites') }; }); };
+    var ACC = [['BC','Boston College','#98002E','3–3'],['CAL','California','#003262','4–2'],['CLEM','Clemson','#F56600','3–3'],['DUKE','Duke','#003087','4–2'],['FSU','Florida State','#782F40','3–3'],['GT','Georgia Tech','#B3A369','4–2'],['LOU','Louisville','#AD0000','5–1','23'],['MIA','Miami','#F47321','6–0','4'],['NCST','NC State','#CC0000','3–3'],['UNC','North Carolina','#7BAFD4','2–4'],['PITT','Pittsburgh','#003594','4–2'],['SMU','SMU','#0033A0','5–1','20'],['STAN','Stanford','#8C1515','2–4'],['SYR','Syracuse','#F76900','3–3'],['UVA','Virginia','#232D4B','4–2'],['VT','Virginia Tech','#630031','2–4'],['WAKE','Wake Forest','#9E7E38','3–3']];
+    var B1G = [['ILL','Illinois','#E84A27','3–3'],['IND','Indiana','#990000','6–0','2'],['IOWA','Iowa','#FFCD00','4–2'],['MD','Maryland','#E03A3E','3–3'],['MICH','Michigan','#00274C','5–1','13'],['MSU','Michigan State','#18453B','2–4'],['MINN','Minnesota','#7A0019','3–3'],['NEB','Nebraska','#E41C38','4–2'],['NW','Northwestern','#4E2A84','2–4'],['OSU','Ohio State','#BB0000','6–0','1'],['ORE','Oregon','#154733','6–0','3'],['PSU','Penn State','#041E42','4–2','17'],['PUR','Purdue','#CEB888','5–1','21'],['RUTG','Rutgers','#CC0033','3–3'],['UCLA','UCLA','#2D68C4','1–5'],['USC','USC','#990000','5–1','9'],['WASH','Washington','#4B2E83','4–2'],['WIS','Wisconsin','#C5050C','2–4']];
+    var B12 = [['ARIZ','Arizona','#CC0033','4–2'],['ASU','Arizona State','#8C1D40','5–1','19'],['BAY','Baylor','#154734','3–3'],['BYU','BYU','#002E5D','6–0','7'],['UCF','UCF','#BA9B37','3–3'],['CIN','Cincinnati','#E00122','4–2'],['COLO','Colorado','#CFB87C','3–3'],['HOU','Houston','#C8102E','4–2'],['ISU','Iowa State','#C8102E','5–1','22'],['KU','Kansas','#0051BA','3–3'],['KSU','Kansas State','#512888','4–2'],['OKST','Oklahoma State','#FF7300','2–4'],['TCU','TCU','#4D1979','4–2'],['TTU','Texas Tech','#CC0000','5–1','16'],['UTAH','Utah','#CC0000','4–2'],['WVU','West Virginia','#002855','3–3']];
+    var SEC = [['ALA','Alabama','#9E1B32','5–1','10'],['ARK','Arkansas','#9D2235','4–2'],['AUB','Auburn','#0C2340','3–3'],['FLA','Florida','#0021A5','3–3'],['UGA','Georgia','#BA0C2F','4–2','12'],['UK','Kentucky','#0033A0','2–4'],['LSU','LSU','#461D7C','5–1','8'],['MSST','Mississippi State','#660000','3–3'],['MIZ','Missouri','#F1B82D','4–2'],['OU','Oklahoma','#841617','4–2','15'],['MISS','Ole Miss','#CE1126','5–1','14'],['SCAR','South Carolina','#73000A','3–3'],['TENN','Tennessee','#FF8200','5–1','11'],['TEX','Texas','#BF5700','5–1','5'],['TAMU','Texas A&M','#500000','4–2','25'],['VAN','Vanderbilt','#866D4B','6–0','18']];
+    var c = function (short, name, arr) { return { short: short, name: name, count: String(arr.length), chip: chip, teams: mk(arr) }; };
+    return {
+      nav: nav,
+      filters: [{ label: 'POWER 4', style: fOn }, { label: 'GROUP OF 6', style: fOff }, { label: 'INDEPENDENTS', style: fOff }, { label: 'MY TEAMS', style: fOff }, { label: 'ALL 138', style: fOff }],
+      confs: [c('ACC', 'ACC', ACC), c('B1G', 'BIG TEN', B1G), c('B12', 'BIG 12', B12), c('SEC', 'SEC', SEC)]
+    };
+  }
+}
+</script>
+</body>
+</html>

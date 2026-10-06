@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Game sheet mobile</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@500;600;700&family=Graduate&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#050607}
+a{color:#F2F3F5;text-decoration:none}a:hover{color:#FFFFFF}
+.cond{font-family:"Barlow Condensed","Arial Narrow",sans-serif;letter-spacing:0.02em}
+.varsity{font-family:Graduate,"Rockwell","Courier New",serif}
+.num{font-variant-numeric:tabular-nums}
+</style>
+</helmet>
+<div style="width: 390px; height: 1820px; box-sizing: border-box; background: #050607; color: #F2F3F5; font-family: Barlow, 'Helvetica Neue', sans-serif; font-size: 14px; display: flex; flex-direction: column; overflow: hidden">
+<div style="height: 48px; flex-shrink: 0"></div>
+<div role="dialog" style="flex: 1; min-height: 0; background: #15171A; border: 1px solid #2A2E34; border-bottom: 0; border-radius: 16px 16px 0 0; display: flex; flex-direction: column; overflow: hidden">
+<span style="align-self: center; width: 40px; height: 5px; border-radius: 3px; background: #3A3F46; margin: 8px 0 4px"></span>
+<div style="display: flex; align-items: center; justify-content: space-between; padding: 0 8px 0 16px"><span class="cond" style="font-size: 12px; font-weight: 600; letter-spacing: 0.1em; color: #8E949C">WEEK 6 · ANN ARBOR · FOX</span><button type="button" aria-label="Close" style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; background: transparent; border: 0; color: #F2F3F5"><span style="width: 32px; height: 32px; border-radius: 50%; background: #23262B; display: flex; align-items: center; justify-content: center"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M3 3l10 10M13 3L3 13"></path></svg></span></button></div>
+<div style="position: relative; padding: 4px 16px 16px; display: flex; flex-direction: column; gap: 10px; border-bottom: 1px solid #23262B">
+<a href="#" style="display: flex; align-items: center; gap: 12px"><span class="cond" style="width: 40px; height: 40px; border-radius: 6px; background: #CEB888; color: #111214; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700">PUR</span><span style="flex: 1; display: flex; flex-direction: column"><span class="cond" style="font-size: 24px; font-weight: 700">PURDUE</span><span class="cond num" style="font-size: 13px; color: #8E949C">5–1</span></span><span class="cond num" style="font-size: 44px; font-weight: 700">27</span></a>
+<a href="#" style="display: flex; align-items: center; gap: 12px"><span class="cond" style="width: 40px; height: 40px; border-radius: 6px; background: #00274C; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700">MICH</span><span style="flex: 1; display: flex; flex-direction: column"><span class="cond" style="font-size: 24px; font-weight: 600; color: #8E949C"><span style="font-size: 15px">@ 4 </span>MICHIGAN</span><span class="cond num" style="font-size: 13px; color: #8E949C">5–1</span></span><span class="cond num" style="font-size: 44px; font-weight: 600; color: #8E949C">24</span></a>
+<span class="cond" style="position: absolute; top: 18px; right: 90px; transform: rotate(6deg); padding: 2px 9px; border-radius: 4px; background: #E5484D; color: #FFFFFF; font-size: 13px; font-weight: 700; letter-spacing: 0.14em; box-shadow: 0 0 16px rgba(229, 72, 77, 0.55)">STUNNER</span>
+<span class="cond" style="font-size: 13px; font-weight: 700; letter-spacing: 0.14em; color: #8E949C">FINAL</span>
+</div>
+<div role="tablist" style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); border-bottom: 1px solid #23262B">
+<button type="button" role="tab" aria-selected="true" class="cond" style="height: 46px; background: transparent; border: 0; border-bottom: 2px solid #F2F3F5; color: #F2F3F5; font-size: 15px; font-weight: 700; letter-spacing: 0.1em">SUMMARY</button>
+<button type="button" role="tab" aria-selected="false" class="cond" style="height: 46px; background: transparent; border: 0; border-bottom: 2px solid transparent; color: #8E949C; font-size: 15px; font-weight: 700; letter-spacing: 0.1em">PLAYER STATS</button>
+</div>
+<div style="flex: 1; min-height: 0; padding: 16px; display: flex; flex-direction: column; gap: 20px">
+<section style="display: flex; flex-direction: column; gap: 6px"><h3 class="cond" style="margin: 0; font-size: 15px; font-weight: 700; letter-spacing: 0.1em; color: #C9CDD3">BOX SCORE</h3>
+<div class="num" style="display: grid; grid-template-columns: minmax(0, 1fr) repeat(4, 36px) 44px; row-gap: 0; font-size: 15px">
+<span class="cond" style="color: #8E949C; font-size: 12px; padding: 6px 0">TEAM</span><span class="cond" style="text-align: center; color: #8E949C; font-size: 12px; padding: 6px 0">1</span><span class="cond" style="text-align: center; color: #8E949C; font-size: 12px; padding: 6px 0">2</span><span class="cond" style="text-align: center; color: #8E949C; font-size: 12px; padding: 6px 0">3</span><span class="cond" style="text-align: center; color: #8E949C; font-size: 12px; padding: 6px 0">4</span><span class="cond" style="text-align: right; color: #8E949C; font-size: 12px; padding: 6px 0">T</span>
+<span class="cond" style="font-size: 17px; font-weight: 700; padding: 8px 0; border-top: 1px solid #23262B">PUR</span><span style="text-align: center; padding: 8px 0; border-top: 1px solid #23262B">7</span><span style="text-align: center; padding: 8px 0; border-top: 1px solid #23262B">3</span><span style="text-align: center; padding: 8px 0; border-top: 1px solid #23262B">7</span><span style="text-align: center; padding: 8px 0; border-top: 1px solid #23262B">10</span><span class="cond" style="text-align: right; font-size: 18px; font-weight: 700; padding: 8px 0; border-top: 1px solid #23262B">27</span>
+<span class="cond" style="font-size: 17px; font-weight: 600; color: #8E949C; padding: 8px 0; border-top: 1px solid #23262B">@ MICH</span><span style="text-align: center; color: #8E949C; padding: 8px 0; border-top: 1px solid #23262B">0</span><span style="text-align: center; color: #8E949C; padding: 8px 0; border-top: 1px solid #23262B">14</span><span style="text-align: center; color: #8E949C; padding: 8px 0; border-top: 1px solid #23262B">7</span><span style="text-align: center; color: #8E949C; padding: 8px 0; border-top: 1px solid #23262B">3</span><span class="cond" style="text-align: right; font-size: 18px; font-weight: 600; color: #8E949C; padding: 8px 0; border-top: 1px solid #23262B">24</span>
+</div></section>
+<section style="display: flex; flex-direction: column; gap: 8px"><h3 class="cond" style="margin: 0; font-size: 15px; font-weight: 700; letter-spacing: 0.1em; color: #C9CDD3">BETTING LINE</h3>
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px"><div style="background: #0F1114; border-radius: 6px; padding: 10px 12px"><div style="font-size: 12px; color: #8E949C">Closing spread</div><div class="cond num" style="font-size: 20px; font-weight: 700">MICH −22.5</div></div><div style="background: #0F1114; border-radius: 6px; padding: 10px 12px"><div style="font-size: 12px; color: #8E949C">Over / under</div><div class="cond num" style="font-size: 20px; font-weight: 700">48.5 · Over</div></div></div>
+<div style="background: #0F1114; border-radius: 6px; padding: 10px 12px"><div style="font-size: 12px; color: #8E949C">Upset tier</div><div class="cond num" style="font-size: 20px; font-weight: 700; color: #FF8A8D">Stunner</div></div></section>
+<section style="display: flex; flex-direction: column"><h3 class="cond" style="margin: 0; font-size: 15px; font-weight: 700; letter-spacing: 0.1em; color: #C9CDD3">TOP PERFORMERS</h3><button type="button" style="display: flex; align-items: center; gap: 10px; min-height: 48px; padding: 0; background: transparent; border: 0; border-bottom: 1px solid #1E2125; font: inherit; color: inherit; text-align: left">
+<span class="cond" style="width: 24px; height: 24px; flex-shrink: 0; border-radius: 4px; background: #CEB888; color: #111214; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700">PUR</span>
+<span style="flex: 1; display: flex; flex-direction: column"><span style="font-size: 14px">[QB Name]</span><span class="cond" style="font-size: 11px; letter-spacing: 0.1em; color: #8E949C">PASSING</span></span>
+<span class="cond num" style="font-size: 14px; color: #C9CDD3">22/31 · 284 yds · 2 TD</span></button><button type="button" style="display: flex; align-items: center; gap: 10px; min-height: 48px; padding: 0; background: transparent; border: 0; border-bottom: 1px solid #1E2125; font: inherit; color: inherit; text-align: left">
+<span class="cond" style="width: 24px; height: 24px; flex-shrink: 0; border-radius: 4px; background: #00274C; color: #FFF; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700">MICH</span>
+<span style="flex: 1; display: flex; flex-direction: column"><span style="font-size: 14px">[QB Name]</span><span class="cond" style="font-size: 11px; letter-spacing: 0.1em; color: #8E949C">PASSING</span></span>
+<span class="cond num" style="font-size: 14px; color: #C9CDD3">18/33 · 201 yds · 2 INT</span></button><button type="button" style="display: flex; align-items: center; gap: 10px; min-height: 48px; padding: 0; background: transparent; border: 0; border-bottom: 1px solid #1E2125; font: inherit; color: inherit; text-align: left">
+<span class="cond" style="width: 24px; height: 24px; flex-shrink: 0; border-radius: 4px; background: #CEB888; color: #111214; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700">PUR</span>
+<span style="flex: 1; display: flex; flex-direction: column"><span style="font-size: 14px">[RB Name]</span><span class="cond" style="font-size: 11px; letter-spacing: 0.1em; color: #8E949C">RUSHING</span></span>
+<span class="cond num" style="font-size: 14px; color: #C9CDD3">19 car · 96 yds · 1 TD</span></button><button type="button" style="display: flex; align-items: center; gap: 10px; min-height: 48px; padding: 0; background: transparent; border: 0; border-bottom: 1px solid #1E2125; font: inherit; color: inherit; text-align: left">
+<span class="cond" style="width: 24px; height: 24px; flex-shrink: 0; border-radius: 4px; background: #00274C; color: #FFF; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700">MICH</span>
+<span style="flex: 1; display: flex; flex-direction: column"><span style="font-size: 14px">[RB Name]</span><span class="cond" style="font-size: 11px; letter-spacing: 0.1em; color: #8E949C">RUSHING</span></span>
+<span class="cond num" style="font-size: 14px; color: #C9CDD3">24 car · 131 yds · 2 TD</span></button><button type="button" style="display: flex; align-items: center; gap: 10px; min-height: 48px; padding: 0; background: transparent; border: 0; border-bottom: 1px solid #1E2125; font: inherit; color: inherit; text-align: left">
+<span class="cond" style="width: 24px; height: 24px; flex-shrink: 0; border-radius: 4px; background: #CEB888; color: #111214; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700">PUR</span>
+<span style="flex: 1; display: flex; flex-direction: column"><span style="font-size: 14px">[WR Name]</span><span class="cond" style="font-size: 11px; letter-spacing: 0.1em; color: #8E949C">RECEIVING</span></span>
+<span class="cond num" style="font-size: 14px; color: #C9CDD3">8 rec · 121 yds · 1 TD</span></button><button type="button" style="display: flex; align-items: center; gap: 10px; min-height: 48px; padding: 0; background: transparent; border: 0; border-bottom: 1px solid #1E2125; font: inherit; color: inherit; text-align: left">
+<span class="cond" style="width: 24px; height: 24px; flex-shrink: 0; border-radius: 4px; background: #00274C; color: #FFF; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700">MICH</span>
+<span style="flex: 1; display: flex; flex-direction: column"><span style="font-size: 14px">[WR Name]</span><span class="cond" style="font-size: 11px; letter-spacing: 0.1em; color: #8E949C">RECEIVING</span></span>
+<span class="cond num" style="font-size: 14px; color: #C9CDD3">6 rec · 88 yds · 1 TD</span></button><button type="button" style="display: flex; align-items: center; gap: 10px; min-height: 48px; padding: 0; background: transparent; border: 0; border-bottom: 1px solid #1E2125; font: inherit; color: inherit; text-align: left">
+<span class="cond" style="width: 24px; height: 24px; flex-shrink: 0; border-radius: 4px; background: #CEB888; color: #111214; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700">PUR</span>
+<span style="flex: 1; display: flex; flex-direction: column"><span style="font-size: 14px">[LB Name]</span><span class="cond" style="font-size: 11px; letter-spacing: 0.1em; color: #8E949C">DEFENSE</span></span>
+<span class="cond num" style="font-size: 14px; color: #C9CDD3">11 tkl · 1 INT</span></button><button type="button" style="display: flex; align-items: center; gap: 10px; min-height: 48px; padding: 0; background: transparent; border: 0; border-bottom: 1px solid #1E2125; font: inherit; color: inherit; text-align: left">
+<span class="cond" style="width: 24px; height: 24px; flex-shrink: 0; border-radius: 4px; background: #00274C; color: #FFF; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700">MICH</span>
+<span style="flex: 1; display: flex; flex-direction: column"><span style="font-size: 14px">[DE Name]</span><span class="cond" style="font-size: 11px; letter-spacing: 0.1em; color: #8E949C">DEFENSE</span></span>
+<span class="cond num" style="font-size: 14px; color: #C9CDD3">7 tkl · 2 sacks</span></button></section>
+<section style="display: flex; flex-direction: column; gap: 4px"><div style="display: flex; align-items: center; justify-content: space-between"><span class="cond" style="font-size: 14px; font-weight: 700; color: #CEB888">PURDUE</span><h3 class="cond" style="margin: 0; font-size: 15px; font-weight: 700; letter-spacing: 0.1em; color: #C9CDD3">TEAM STATS</h3><span class="cond" style="font-size: 14px; font-weight: 700; color: #7FA7D6">MICHIGAN</span></div><div style="display: flex; flex-direction: column; gap: 5px; padding: 6px 0">
+<div style="display: flex; justify-content: space-between; align-items: baseline"><span class="cond num" style="font-size: 18px; font-weight: 700; color: #F2F3F5">402</span><span style="font-size: 13px; color: #8E949C">Total yards</span><span class="cond num" style="font-size: 18px; font-weight: 700; color: #8E949C">356</span></div>
+<div style="display: flex; gap: 4px; height: 6px"><span style="flex: 53 1 0; border-radius: 3px; background: #CEB888; opacity: 1"></span><span style="flex: 47 1 0; border-radius: 3px; background: #4A7AB5; opacity: 0.45"></span></div>
+</div><div style="display: flex; flex-direction: column; gap: 5px; padding: 6px 0">
+<div style="display: flex; justify-content: space-between; align-items: baseline"><span class="cond num" style="font-size: 18px; font-weight: 700; color: #F2F3F5">284</span><span style="font-size: 13px; color: #8E949C">Passing yards</span><span class="cond num" style="font-size: 18px; font-weight: 700; color: #8E949C">201</span></div>
+<div style="display: flex; gap: 4px; height: 6px"><span style="flex: 59 1 0; border-radius: 3px; background: #CEB888; opacity: 1"></span><span style="flex: 41 1 0; border-radius: 3px; background: #4A7AB5; opacity: 0.45"></span></div>
+</div><div style="display: flex; flex-direction: column; gap: 5px; padding: 6px 0">
+<div style="display: flex; justify-content: space-between; align-items: baseline"><span class="cond num" style="font-size: 18px; font-weight: 700; color: #8E949C">118</span><span style="font-size: 13px; color: #8E949C">Rushing yards</span><span class="cond num" style="font-size: 18px; font-weight: 700; color: #F2F3F5">155</span></div>
+<div style="display: flex; gap: 4px; height: 6px"><span style="flex: 43 1 0; border-radius: 3px; background: #CEB888; opacity: 0.45"></span><span style="flex: 57 1 0; border-radius: 3px; background: #4A7AB5; opacity: 1"></span></div>
+</div><div style="display: flex; flex-direction: column; gap: 5px; padding: 6px 0">
+<div style="display: flex; justify-content: space-between; align-items: baseline"><span class="cond num" style="font-size: 18px; font-weight: 700; color: #F2F3F5">22</span><span style="font-size: 13px; color: #8E949C">First downs</span><span class="cond num" style="font-size: 18px; font-weight: 700; color: #8E949C">19</span></div>
+<div style="display: flex; gap: 4px; height: 6px"><span style="flex: 54 1 0; border-radius: 3px; background: #CEB888; opacity: 1"></span><span style="flex: 46 1 0; border-radius: 3px; background: #4A7AB5; opacity: 0.45"></span></div>
+</div><div style="display: flex; flex-direction: column; gap: 5px; padding: 6px 0">
+<div style="display: flex; justify-content: space-between; align-items: baseline"><span class="cond num" style="font-size: 18px; font-weight: 700; color: #F2F3F5">7/13</span><span style="font-size: 13px; color: #8E949C">3rd down</span><span class="cond num" style="font-size: 18px; font-weight: 700; color: #8E949C">4/12</span></div>
+<div style="display: flex; gap: 4px; height: 6px"><span style="flex: 64 1 0; border-radius: 3px; background: #CEB888; opacity: 1"></span><span style="flex: 36 1 0; border-radius: 3px; background: #4A7AB5; opacity: 0.45"></span></div>
+</div><div style="display: flex; flex-direction: column; gap: 5px; padding: 6px 0">
+<div style="display: flex; justify-content: space-between; align-items: baseline"><span class="cond num" style="font-size: 18px; font-weight: 700; color: #F2F3F5">0</span><span style="font-size: 13px; color: #8E949C">Turnovers</span><span class="cond num" style="font-size: 18px; font-weight: 700; color: #8E949C">3</span></div>
+<div style="display: flex; gap: 4px; height: 6px"><span style="flex: 0 1 0; border-radius: 3px; background: #CEB888; opacity: 1"></span><span style="flex: 100 1 0; border-radius: 3px; background: #4A7AB5; opacity: 0.45"></span></div>
+</div><div style="display: flex; flex-direction: column; gap: 5px; padding: 6px 0">
+<div style="display: flex; justify-content: space-between; align-items: baseline"><span class="cond num" style="font-size: 18px; font-weight: 700; color: #F2F3F5">5–40</span><span style="font-size: 13px; color: #8E949C">Penalties</span><span class="cond num" style="font-size: 18px; font-weight: 700; color: #8E949C">8–71</span></div>
+<div style="display: flex; gap: 4px; height: 6px"><span style="flex: 38 1 0; border-radius: 3px; background: #CEB888; opacity: 1"></span><span style="flex: 62 1 0; border-radius: 3px; background: #4A7AB5; opacity: 0.45"></span></div>
+</div><div style="display: flex; flex-direction: column; gap: 5px; padding: 6px 0">
+<div style="display: flex; justify-content: space-between; align-items: baseline"><span class="cond num" style="font-size: 18px; font-weight: 700; color: #F2F3F5">32:14</span><span style="font-size: 13px; color: #8E949C">Possession</span><span class="cond num" style="font-size: 18px; font-weight: 700; color: #8E949C">27:46</span></div>
+<div style="display: flex; gap: 4px; height: 6px"><span style="flex: 53 1 0; border-radius: 3px; background: #CEB888; opacity: 1"></span><span style="flex: 47 1 0; border-radius: 3px; background: #4A7AB5; opacity: 0.45"></span></div>
+</div></section>
+<a href="#" class="cond" style="display: flex; align-items: center; justify-content: center; min-height: 48px; border: 1px solid #2A2E34; border-radius: 6px; font-size: 14px; font-weight: 700; letter-spacing: 0.12em">COMPARE PURDUE AND MICHIGAN →</a>
+</div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":1820}}'>
+class Component extends DCLogic {
+  renderVals() {
+return {};
+  }
+}
+</script>
+</body>
+</html>
