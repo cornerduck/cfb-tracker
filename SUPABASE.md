@@ -217,12 +217,49 @@ After the Phase 5 changes are deployed:
    ```
 
 The 15-minute server-enforced cooldown is implemented for manual updates. The
-Edge Function requires an authenticated owner session for that route; the
-app's sign-in UI is Phase 6, so the in-app **Update now** action becomes
-operational when Phase 6 is implemented. The scheduled route uses its Vault
-token and does not depend on client authentication. The app status indicator
-reads only the latest update state and polls every five minutes.
+Edge Function requires an authenticated owner session for that route. The
+scheduled route uses its Vault token and does not depend on client
+authentication. The app status indicator reads only the latest update state
+and polls every five minutes.
 
 The routine schedule is expected to remain below the 400-call monthly target:
 the two-hour score pulls use one CFBD request each, with weekly box scores,
 polls and season stats fetched only on their scheduled jobs.
+
+## Phase 6 owner account
+
+The app uses the existing Supabase Auth owner account with email and password;
+it has no in-app registration. Before deploying the account UI:
+
+1. In **Authentication → Providers**, enable the Email provider and keep
+   password sign-in enabled.
+2. In **Authentication → Settings**, turn off **Allow new users to sign up**
+   to keep this a single-owner app. The existing owner can still sign in and
+   request password resets.
+3. In **Authentication → URL Configuration**, set the deployed app URL as the
+   Site URL and add it to the allowed redirect URLs. Password-reset links
+   return to this URL.
+4. Ensure the GitHub Actions variables `VITE_SUPABASE_URL` and
+   `VITE_SUPABASE_ANON_KEY` are available to the static app build. These are
+   the public project URL and publishable/anon key; never use a service-role
+   key in browser configuration.
+
+The Supabase workflow deploys the `delete-account` Edge Function together with
+the other functions. It verifies the caller's bearer token and deletes only
+that caller through Supabase Auth Admin; profile and pick'em data are removed
+by their `auth.users` foreign-key cascades. The browser asks the owner to
+retype their email before calling the function.
+
+The app creates the owner profile on first sign-in and stores the display
+name, time zone, favorite team IDs, and recent team/player searches in the
+existing owner-only `profiles` row. Those values are shared across devices.
+Favorite changes are applied atomically by the `toggle_favorite_team` database
+function, and the app refreshes the signed-in profile when a tab becomes
+visible, when the window regains focus, and every 30 seconds while open.
+Settings also reads the update log for the current month's CFBD request total.
+Manual **Update now** uses the signed-in session and the existing server
+cooldown.
+
+Phase 6 connects the account and favorites, not the 2025/2026 football screens:
+those still need a separate data-wiring pass before the imported seasons are
+shown in place of the clearly labeled preview content.

@@ -1,4 +1,10 @@
 import { useEffect, useState } from 'react'
+import type { Session } from '@supabase/supabase-js'
+import AccountSettings from './AccountSettings'
+import AuthScreen from './AuthScreen'
+import PasswordRecoveryScreen from './PasswordRecoveryScreen'
+import { supabase, supabaseConfigurationError, type Profile, type TeamRecord } from './lib/supabase'
+import type { LiveUpdateSnapshot } from './types'
 import './App.css'
 
 type TabName = 'Home' | 'Scores' | 'Rankings' | 'Standings' | 'Stats' | 'Teams' | "Pick'em" | 'Archive'
@@ -15,16 +21,6 @@ type ArchiveView = 'SEASONS' | 'ALL TIME' | 'GAMEDAY HISTORY'
 type StatCategory = 'PASSING' | 'RUSHING' | 'RECEIVING' | 'DEFENSE'
 type TeamPageView = 'OVERVIEW' | 'SCHEDULE' | 'STATS' | 'HISTORY'
 type GameWindowView = 'SUMMARY' | 'PLAYER STATS'
-type LiveUpdateState = 'healthy' | 'overdue' | 'failed' | 'running' | 'uninitialized' | 'unavailable'
-type LiveUpdateSnapshot = {
-  state: LiveUpdateState
-  last_updated: string | null
-  job: string | null
-  current_week: number | null
-  season_active: boolean
-  overdue: boolean
-}
-
 const awardDetails = [
   { label: 'UPSET OF THE WEEK', bar: 'linear-gradient(90deg, #F08A3C 0, #F08A3C 100%)', result: 'TEX 31 — ALA 27', sub: 'Biggest spread win' },
   { label: 'GAME OF THE WEEK', bar: 'linear-gradient(90deg, #D9DCE0 0, #D9DCE0 100%)', result: 'MICH 24 — OSU 21', sub: 'Closest win' },
@@ -68,12 +64,6 @@ const apPoll = [
   { abbr: 'TAMU', name: 'Texas A&M', color: '#500000', record: '4–2', conf: 'SEC', points: '102', last: 'L 21–24 @ Arkansas', next: 'vs Florida' },
 ]
 
-const myTeams = [
-  { name: 'Indiana', rank: '#1', record: '13–0', result: 'W 27-21', last: 'vs. Michigan', badge: 'IND', color: '#990000', hot: true, streak: '11' },
-  { name: 'Texas', rank: '#2', record: '12–1', result: 'W 31-17', last: 'at Alabama', badge: 'TEX', color: '#BF5700', hot: true, streak: '8' },
-  { name: 'LSU', rank: '#7', record: '9–4', result: 'L 20-27', last: 'vs. Arkansas', badge: 'LSU', color: '#461D7C', hot: false },
-]
-
 const heisman = [
   { rank: 2, name: 'M. Williams', score: '94.1', badge: 'TEX', color: '#BF5700' },
   { rank: 3, name: 'K. Howard', score: '91.8', badge: 'IND', color: '#990000' },
@@ -100,6 +90,8 @@ const badgeStyle = (color: string, size = 24) => ({
   fontWeight: 700,
   letterSpacing: 0
 })
+
+const timestampNow = () => new Date().toISOString()
 
 const conferenceLeaderRows = [
   { short: 'B1G', name: 'Big Ten', leader: 'Indiana', style: 'active' },
@@ -161,8 +153,23 @@ const archiveRows = [
 function App() {
   const [activeTab, setActiveTab] = useState<TabName>('Home')
   const [activeWindow, setActiveWindow] = useState<WindowName>(null)
+  const [settingsOpen, setSettingsOpen] = useState(false)
   const [teamFilter, setTeamFilter] = useState<TeamFilter>('Power 4')
-  const [favoriteTeams, setFavoriteTeams] = useState<string[]>(['Indiana', 'Texas', 'LSU'])
+  const [session, setSession] = useState<Session | null>(null)
+  const [authLoading, setAuthLoading] = useState(Boolean(supabase))
+  const [authBusy, setAuthBusy] = useState(false)
+  const [authError, setAuthError] = useState('')
+  const [authNotice, setAuthNotice] = useState('')
+  const [passwordRecovery, setPasswordRecovery] = useState(false)
+  const [profile, setProfile] = useState<Profile | null>(null)
+  const [profileLoading, setProfileLoading] = useState(false)
+  const [accountError, setAccountError] = useState('')
+  const [accountNotice, setAccountNotice] = useState('')
+  const [teamRecords, setTeamRecords] = useState<TeamRecord[]>([])
+  const [profileSaving, setProfileSaving] = useState(false)
+  const [favoriteSaving, setFavoriteSaving] = useState(false)
+  const [apiCallsThisMonth, setApiCallsThisMonth] = useState<number | null>(null)
+  const [manualUpdateBusy, setManualUpdateBusy] = useState(false)
   const [moreOpen, setMoreOpen] = useState(false)
   const [scoresView, setScoresView] = useState<ScoresView>('WEEK 6')
   const [scoreFilter, setScoreFilter] = useState('ALL FBS')
@@ -192,6 +199,125 @@ function App() {
   const [updateNowMessage, setUpdateNowMessage] = useState('')
   const supabaseBaseUrl = import.meta.env.VITE_SUPABASE_URL?.replace(/\/rest\/v1\/?$/, '').replace(/\/+$/, '')
   const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
+
+  useEffect(() => {
+    if (!supabase) return
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, nextSession) => {
+      setSession(nextSession)
+      setAuthLoading(false)
+      setAuthError('')
+      if (event === 'PASSWORD_RECOVERY') setPasswordRecovery(true)
+      if (!nextSession) {
+        setProfile(null)
+        setTeamRecords([])
+        setAccountError('')
+      }
+    })
+    void supabase.auth.getSession().then(({ data, error }) => {
+      if (error) setAuthError(error.message)
+      setSession(data.session)
+      setAuthLoading(false)
+    })
+    return () => subscription.unsubscribe()
+  }, [])
+
+  useEffect(() => {
+    if (!supabase || !session) return
+    const client = supabase
+    let disposed = false
+    const loadAccount = async () => {
+      setProfileLoading(true)
+      setAccountError('')
+      setProfile(null)
+      try {
+        const { data: existingProfile, error: profileError } = await client
+          .from('profiles')
+          .select('user_id,display_name,favorite_team_ids,time_zone,recent_searches,updated_at')
+          .eq('user_id', session.user.id)
+          .maybeSingle()
+        if (profileError) throw profileError
+
+        let loadedProfile = existingProfile as Profile | null
+        if (!loadedProfile) {
+          const displayName = typeof session.user.user_metadata?.full_name === 'string'
+            ? session.user.user_metadata.full_name
+            : session.user.email?.split('@')[0] ?? null
+          const { data, error } = await client
+            .from('profiles')
+            .insert({ user_id: session.user.id, display_name: displayName })
+            .select('user_id,display_name,favorite_team_ids,time_zone,recent_searches,updated_at')
+            .single()
+          if (error) {
+            if (error.code !== '23505') throw error
+            const { data: retriedProfile, error: retryError } = await client
+              .from('profiles')
+              .select('user_id,display_name,favorite_team_ids,time_zone,recent_searches,updated_at')
+              .eq('user_id', session.user.id)
+              .single()
+            if (retryError) throw retryError
+            loadedProfile = retriedProfile as Profile
+          } else {
+            loadedProfile = data as Profile
+          }
+        }
+        const { data: teams, error: teamsError } = await client
+          .from('teams')
+          .select('id,school,abbreviation,color')
+          .eq('is_fbs', true)
+          .order('school')
+        if (teamsError) throw teamsError
+        if (!disposed) {
+          setProfile(loadedProfile)
+          setTeamRecords((teams ?? []) as TeamRecord[])
+          setProfileLoading(false)
+        }
+      } catch (error) {
+        if (!disposed) {
+          setAccountError(error instanceof Error ? error.message : 'Could not load your account profile.')
+          setProfileLoading(false)
+        }
+      }
+    }
+    void loadAccount()
+    return () => {
+      disposed = true
+    }
+  }, [session])
+
+  useEffect(() => {
+    if (!supabase || !session) return
+    const client = supabase
+    let disposed = false
+    const syncProfile = async () => {
+      const { data, error } = await client
+        .from('profiles')
+        .select('user_id,display_name,favorite_team_ids,time_zone,recent_searches,updated_at')
+        .eq('user_id', session.user.id)
+        .maybeSingle()
+      if (disposed) return
+      if (error) {
+        setAccountError(error.message)
+        return
+      }
+      if (data) {
+        setProfile(data as Profile)
+        setAccountError('')
+      }
+    }
+    const onFocus = () => void syncProfile()
+    const onVisibility = () => {
+      if (document.visibilityState === 'visible') void syncProfile()
+    }
+    const interval = window.setInterval(() => void syncProfile(), 30_000)
+    window.addEventListener('focus', onFocus)
+    document.addEventListener('visibilitychange', onVisibility)
+    return () => {
+      disposed = true
+      window.clearInterval(interval)
+      window.removeEventListener('focus', onFocus)
+      document.removeEventListener('visibilitychange', onVisibility)
+    }
+  }, [session])
 
   useEffect(() => {
     if (!supabaseBaseUrl || !supabaseAnonKey) return
@@ -231,6 +357,151 @@ function App() {
   const liveUpdateTitle = liveUpdate.last_updated
     ? `Live data ${liveUpdate.state} · updated ${new Date(liveUpdate.last_updated).toLocaleString()}`
     : `Live data ${liveUpdate.state}`
+  const favoriteTeamRecords = profile
+    ? teamRecords.filter((team) => profile.favorite_team_ids.includes(team.id))
+    : []
+  const favoriteTeams = favoriteTeamRecords.map((team) => team.school)
+  const teamNameAliases = [
+    ['uconn', 'connecticut'],
+    ['hawaii', "hawai'i"],
+    ['ul monroe', 'louisiana monroe', 'louisiana-monroe'],
+    ['miami (oh)', 'miami (ohio)'],
+    ['fiu', 'florida international'],
+    ['umass', 'massachusetts'],
+    ['byu', 'brigham young'],
+    ['ucf', 'central florida'],
+    ['smu', 'southern methodist'],
+    ['tcu', 'texas christian'],
+    ['utsa', 'texas san antonio', 'texas-san antonio'],
+    ['uab', 'alabama birmingham', 'alabama-birmingham'],
+    ['southern miss', 'southern mississippi'],
+  ]
+  const teamNamesMatch = (left: string, right: string) => {
+    const normalizedLeft = left.trim().toLocaleLowerCase()
+    const normalizedRight = right.trim().toLocaleLowerCase()
+    return normalizedLeft === normalizedRight
+      || teamNameAliases.some((aliases) => aliases.includes(normalizedLeft) && aliases.includes(normalizedRight))
+  }
+  const findTeamRecord = (team: string, abbreviation?: string) => {
+    const normalizedAbbreviation = abbreviation?.trim().toLocaleLowerCase()
+    return teamRecords.find((record) => normalizedAbbreviation && record.abbreviation?.toLocaleLowerCase() === normalizedAbbreviation)
+      ?? teamRecords.find((record) => teamNamesMatch(record.school, team))
+  }
+  const isTeamFavorite = (team: string) => {
+    const record = findTeamRecord(team)
+    return Boolean(record && profile?.favorite_team_ids.includes(record.id))
+  }
+  const homeFavoriteTeams = favoriteTeamRecords.map((team, index) => ({
+    name: team.school,
+    rank: '',
+    record: '—',
+    result: '',
+    last: 'Favorite team',
+    badge: team.abbreviation ?? team.school.slice(0, 3).toUpperCase(),
+    color: team.color ?? '#23262B',
+    hot: false,
+    streak: '',
+    position: index + 1,
+  }))
+
+  const signIn = async (email: string, password: string) => {
+    if (!supabase) return
+    setAuthBusy(true)
+    setAuthError('')
+    setAuthNotice('')
+    try {
+      const { error } = await supabase.auth.signInWithPassword({ email, password })
+      if (error) setAuthError(error.message)
+    } catch (error) {
+      setAuthError(error instanceof Error ? error.message : 'Sign-in failed.')
+    } finally {
+      setAuthBusy(false)
+    }
+  }
+
+  const sendPasswordReset = async (email: string) => {
+    if (!supabase) return
+    setAuthBusy(true)
+    setAuthError('')
+    setAuthNotice('')
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: window.location.origin + import.meta.env.BASE_URL,
+      })
+      if (error) setAuthError(error.message)
+      else setAuthNotice('If an account exists for that email, a password reset link has been sent.')
+    } catch (error) {
+      setAuthError(error instanceof Error ? error.message : 'The password reset request failed.')
+    } finally {
+      setAuthBusy(false)
+    }
+  }
+
+  const saveRecoveredPassword = async (password: string) => {
+    if (!supabase) return
+    setAuthBusy(true)
+    setAuthError('')
+    try {
+      const { error } = await supabase.auth.updateUser({ password })
+      if (error) setAuthError(error.message)
+      else setPasswordRecovery(false)
+    } catch (error) {
+      setAuthError(error instanceof Error ? error.message : 'The password could not be updated.')
+    } finally {
+      setAuthBusy(false)
+    }
+  }
+
+  const signOut = async () => {
+    if (!supabase) return
+    const { error } = await supabase.auth.signOut()
+    if (error) setAccountError(error.message)
+  }
+
+  const saveProfile = async (displayName: string, timeZone: string) => {
+    if (!supabase || !session || !profile) return
+    setProfileSaving(true)
+    setAccountError('')
+    setAccountNotice('')
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .update({ display_name: displayName || null, time_zone: timeZone, updated_at: timestampNow() })
+        .eq('user_id', session.user.id)
+        .select('user_id,display_name,favorite_team_ids,time_zone,recent_searches,updated_at')
+        .single()
+      if (error) {
+        setAccountError(error.message)
+        return
+      }
+      setProfile(data as Profile)
+      setAccountNotice('Profile saved and synced.')
+    } catch (error) {
+      setAccountError(error instanceof Error ? error.message : 'Could not save your profile.')
+    } finally {
+      setProfileSaving(false)
+    }
+  }
+
+  const saveRecentSearch = async (search: string) => {
+    if (!supabase || !session || !profile) return
+    const recentSearches = [
+      search,
+      ...profile.recent_searches.filter((item) => item.toLocaleLowerCase() !== search.toLocaleLowerCase()),
+    ]
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .update({ recent_searches: recentSearches, updated_at: timestampNow() })
+        .eq('user_id', session.user.id)
+        .select('user_id,display_name,favorite_team_ids,time_zone,recent_searches,updated_at')
+        .single()
+      if (error) throw error
+      setProfile(data as Profile)
+    } catch (error) {
+      setAccountError(error instanceof Error ? error.message : 'Could not sync recent searches.')
+    }
+  }
 
   const teamGroups: Record<TeamFilter, string[]> = {
     'Power 4': ['ACC', 'B1G', 'B12', 'SEC'],
@@ -241,20 +512,133 @@ function App() {
   }
 
   const visibleTeamConferences = teamDir.filter((conference) => {
-    if (teamFilter === 'My Teams') return conference.teams.some((team) => favoriteTeams.includes(team))
+    if (teamFilter === 'My Teams') return conference.teams.some(isTeamFavorite)
     return teamGroups[teamFilter].includes(conference.short)
   }).map((conference) => ({
     ...conference,
     teams: teamFilter === 'My Teams'
-      ? conference.teams.filter((team) => favoriteTeams.includes(team))
+      ? conference.teams.filter(isTeamFavorite)
       : conference.teams,
   }))
 
-  const toggleFavorite = (team: string) => {
-    setFavoriteTeams((current) => current.includes(team)
-      ? current.filter((favorite) => favorite !== team)
-      : [...current, team])
+  const renderFavoriteButton = (team: string, abbreviation?: string) => {
+    const record = findTeamRecord(team, abbreviation)
+    if (!record) {
+      return <button type="button" className="team-favorite-button team-favorite-button--unavailable" disabled title={`${team} is not available in the imported team data.`} aria-label={`${team} cannot be added to favorites until its team record is imported`}>☆</button>
+    }
+    const favorite = Boolean(profile?.favorite_team_ids.includes(record.id))
+    return (
+      <button
+        type="button"
+        className={favorite ? 'team-favorite-button is-favorite' : 'team-favorite-button'}
+        disabled={favoriteSaving}
+        aria-label={favorite ? `Remove ${record.school} from favorites` : `Add ${record.school} to favorites`}
+        aria-pressed={favorite}
+        onClick={() => void toggleFavoriteRecord(record)}
+      >
+        {favorite ? '★' : '☆'}
+      </button>
+    )
   }
+
+  const toggleFavoriteRecord = async (record: TeamRecord) => {
+    if (!supabase || !session || !profile || favoriteSaving) return
+    setFavoriteSaving(true)
+    setAccountError('')
+    setAccountNotice('')
+    try {
+      const { data, error } = await supabase.rpc('toggle_favorite_team', { p_team_id: record.id })
+      if (error) {
+        setAccountError(error.message)
+        return
+      }
+      setProfile((current) => current
+        ? { ...current, favorite_team_ids: data as number[], updated_at: timestampNow() }
+        : current)
+    } catch (error) {
+      setAccountError(error instanceof Error ? error.message : 'Could not update favorite teams.')
+    } finally {
+      setFavoriteSaving(false)
+    }
+  }
+
+  const toggleFavorite = async (team: string) => {
+    const record = findTeamRecord(team)
+    if (!record) {
+      setAccountError(`Could not match ${team} to a team in the season data.`)
+      return
+    }
+    await toggleFavoriteRecord(record)
+  }
+
+  const updateLiveSeason = async () => {
+    if (!supabase || manualUpdateBusy) return
+    setManualUpdateBusy(true)
+    setUpdateNowMessage('')
+    setAccountError('')
+    try {
+      const { data, error } = await supabase.functions.invoke('update-2026', { body: {} })
+      if (error) {
+        setUpdateNowMessage(error.message)
+        return
+      }
+      if (data?.status !== 'success') {
+        setUpdateNowMessage(typeof data?.error === 'string' ? data.error : 'The update did not complete successfully.')
+        return
+      }
+      setUpdateNowMessage(`Update complete · ${data.api_calls_used ?? 0} API calls used.`)
+      const updateTimestamp = timestampNow()
+      setLiveUpdate((current) => ({ ...current, state: 'healthy', last_updated: updateTimestamp }))
+      setActiveWindow(null)
+    } catch (error) {
+      setUpdateNowMessage(error instanceof Error ? error.message : 'The live-season update failed.')
+    } finally {
+      setManualUpdateBusy(false)
+    }
+  }
+
+  const deleteAccount = async () => {
+    if (!supabase) return
+    setAccountError('')
+    try {
+      const { error } = await supabase.functions.invoke('delete-account', { body: {} })
+      if (error) {
+        setAccountError(error.message)
+        return
+      }
+      setSession(null)
+      setProfile(null)
+      const { error: signOutError } = await supabase.auth.signOut({ scope: 'local' })
+      if (signOutError) setAuthError('Account deleted, but this device could not clear the saved session. Sign out manually.')
+      setActiveWindow(null)
+    } catch (error) {
+      setAccountError(error instanceof Error ? error.message : 'The account could not be deleted.')
+    }
+  }
+
+  useEffect(() => {
+    if (!supabase || !session || activeWindow !== 'settings') return
+    const client = supabase
+    let disposed = false
+    const loadApiUsage = async () => {
+      const monthStart = new Date()
+      monthStart.setUTCDate(1)
+      monthStart.setUTCHours(0, 0, 0, 0)
+      const { data, error } = await client
+        .from('update_log')
+        .select('api_calls_used')
+        .gte('started_at', monthStart.toISOString())
+      if (error) {
+        if (!disposed) setAccountError(error.message)
+        return
+      }
+      if (!disposed) setApiCallsThisMonth((data ?? []).reduce((sum, row) => sum + row.api_calls_used, 0))
+    }
+    void loadApiUsage()
+    return () => {
+      disposed = true
+    }
+  }, [session, activeWindow])
 
   const renderHome = (mobile = false) => (
     <>
@@ -320,14 +704,17 @@ function App() {
           </div>
           <div className="rank-list">
             {rankings.map((item) => (
-              <button key={item.rank} type="button" className={mobile ? 'rank-row rank-row--mobile' : 'rank-row'} onClick={() => setActiveWindow('rankings')}>
-                <span className="cond num rank-num">{item.rank}</span>
-                <span className="cond badge" style={badgeStyle(item.color, mobile ? 22 : 24)}>{item.badge}</span>
-                <span className="cond team-name">{item.name}</span>
-                {item.hot ? <span className="cond num hot"> <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2c1 3-2 5-2 8a2 2 0 0 0 4 0c0-1 0-2-1-3 3 1 5 4 5 7a6 6 0 0 1-12 0c0-5 4-7 6-12z" /></svg>{item.streak}</span> : null}
-                <span style={{ flex: 1 }} />
-                <span className="cond num record">{item.record}</span>
-              </button>
+              <div key={item.rank} className="home-team-entry">
+                <button type="button" className={mobile ? 'rank-row rank-row--mobile' : 'rank-row'} onClick={() => setActiveWindow('rankings')}>
+                  <span className="cond num rank-num">{item.rank}</span>
+                  <span className="cond badge" style={badgeStyle(item.color, mobile ? 22 : 24)}>{item.badge}</span>
+                  <span className="cond team-name">{item.name}</span>
+                  {item.hot ? <span className="cond num hot"> <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2c1 3-2 5-2 8a2 2 0 0 0 4 0c0-1 0-2-1-3 3 1 5 4 5 7a6 6 0 0 1-12 0c0-5 4-7 6-12z" /></svg>{item.streak}</span> : null}
+                  <span style={{ flex: 1 }} />
+                  <span className="cond num record">{item.record}</span>
+                </button>
+                {renderFavoriteButton(item.name, item.badge)}
+              </div>
             ))}
           </div>
         </section>
@@ -363,25 +750,31 @@ function App() {
           </div>
           <div className={mobile ? 'mobile-results' : 'result-grid'}>
             {(mobile ? scores.slice(0, 3) : scores).map((game, index) => (
-              <button key={index} type="button" className={mobile ? 'result-card result-card--mobile' : 'result-card'} onClick={() => setActiveWindow('game')}>
-                <div className="result-line">
-                  <span className="cond badge" style={badgeStyle(game.away.color, mobile ? 18 : 20)}>{game.away.abbr}</span>
-                  <span className="cond num result-rank">{game.away.rank}</span>
-                  <span className="result-team">{game.away.name}</span>
-                  <span style={{ flex: 1 }} />
-                  <span className="cond num result-score">{game.away.score}</span>
+              <div key={index} className={`result-entry${mobile ? ' result-entry--mobile' : ''}`}>
+                <button type="button" className={mobile ? 'result-card result-card--mobile' : 'result-card'} onClick={() => setActiveWindow('game')}>
+                  <div className="result-line">
+                    <span className="cond badge" style={badgeStyle(game.away.color, mobile ? 18 : 20)}>{game.away.abbr}</span>
+                    <span className="cond num result-rank">{game.away.rank}</span>
+                    <span className="result-team">{game.away.name}</span>
+                    <span style={{ flex: 1 }} />
+                    <span className="cond num result-score">{game.away.score}</span>
+                  </div>
+                  <div className="result-line">
+                    <span className="cond small-at">@</span>
+                    <span className="cond badge" style={badgeStyle(game.home.color, mobile ? 18 : 20)}>{game.home.abbr}</span>
+                    <span className="cond num result-rank">{game.home.rank}</span>
+                    <span className="result-team">{game.home.name}</span>
+                    <span style={{ flex: 1 }} />
+                    <span className="cond num result-score">{game.home.score}</span>
+                  </div>
+                  <span className="cond result-status">{game.status}</span>
+                  {game.upset ? <span className="upset-badge cond">UPSET</span> : null}
+                </button>
+                <div className="result-favorites">
+                  {renderFavoriteButton(game.away.name, game.away.abbr)}
+                  {renderFavoriteButton(game.home.name, game.home.abbr)}
                 </div>
-                <div className="result-line">
-                  <span className="cond small-at">@</span>
-                  <span className="cond badge" style={badgeStyle(game.home.color, mobile ? 18 : 20)}>{game.home.abbr}</span>
-                  <span className="cond num result-rank">{game.home.rank}</span>
-                  <span className="result-team">{game.home.name}</span>
-                  <span style={{ flex: 1 }} />
-                  <span className="cond num result-score">{game.home.score}</span>
-                </div>
-                <span className="cond result-status">{game.status}</span>
-                {game.upset ? <span className="upset-badge cond">UPSET</span> : null}
-              </button>
+              </div>
             ))}
           </div>
         </section>
@@ -391,19 +784,21 @@ function App() {
             <h2 className="cond">MY TEAMS</h2>
             <button type="button" className="panel-link" onClick={() => setActiveWindow('favorites')}>Edit</button>
           </div>
-          {myTeams.map((team) => (
-            <button key={team.name} type="button" className={mobile ? 'team-row team-row--mobile' : 'team-row'} onClick={() => setActiveTab('Teams')}>
-              <span className="cond badge badge--team" style={badgeStyle(team.color, mobile ? 28 : 32)}>{team.badge}</span>
-              <div className="team-copy">
-                <div className="team-topline">
-                  <span className="cond team-name">{team.name}</span>
-                  <span className="cond num team-rank">{team.rank}</span>
-                  {team.hot ? <span className="cond num hot hot--small"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2c1 3-2 5-2 8a2 2 0 0 0 4 0c0-1 0-2-1-3 3 1 5 4 5 7a6 6 0 0 1-12 0c0-5 4-7 6-12z" /></svg>{team.streak}</span> : null}
+          {homeFavoriteTeams.map((team) => (
+            <div key={team.name} className="home-team-entry">
+              <button type="button" className={mobile ? 'team-row team-row--mobile' : 'team-row'} onClick={() => setActiveTab('Teams')}>
+                <span className="cond badge badge--team" style={badgeStyle(team.color, mobile ? 28 : 32)}>{team.badge}</span>
+                <div className="team-copy">
+                  <div className="team-topline">
+                    <span className="cond team-name">{team.name}</span>
+                  </div>
+                  <span className="team-meta">{team.last}</span>
                 </div>
-                <span className="team-meta"><span className="team-result">{team.result}</span> {team.last}</span>
-              </div>
-            </button>
+              </button>
+              {renderFavoriteButton(team.name, team.badge)}
+            </div>
           ))}
+          {!homeFavoriteTeams.length && <p className="data-unavailable">No favorite teams yet. Star teams in Teams to add them here.</p>}
         </section>
 
         {!mobile && (
@@ -517,26 +912,32 @@ function App() {
             <section key={slot.label} className="slot-section">
               <h2 className="cond">{slot.label}</h2>
               <div className="slot-grid">
-                {slot.games.filter((game) => scoreFilter !== 'TOP 25' || Boolean(game.away.rank || game.home.rank)).filter((game) => scoreFilter !== 'MY TEAMS' || myTeams.some((team) => team.badge === game.away.abbr || team.badge === game.home.abbr)).filter((game) => scoreFilter !== 'CONFERENCE' || game.away.conf === scoreConference || game.home.conf === scoreConference).map((game, idx) => (
-                  <button key={`${slot.label}-${idx}`} type="button" className="score-card" onClick={() => setActiveWindow('game')}>
-                    <div className="score-row">
-                      <span className="cond badge" style={badgeStyle(game.away.color, 24)}>{game.away.abbr}</span>
-                      <span className="cond num result-rank">{game.away.rank}</span>
-                      <span className="team-text">{game.away.name}</span>
-                      <span className="cond num result-score">{game.away.score}</span>
+                {slot.games.filter((game) => scoreFilter !== 'TOP 25' || Boolean(game.away.rank || game.home.rank)).filter((game) => scoreFilter !== 'MY TEAMS' || favoriteTeamRecords.some((team) => team.abbreviation === game.away.abbr || team.abbreviation === game.home.abbr)).filter((game) => scoreFilter !== 'CONFERENCE' || game.away.conf === scoreConference || game.home.conf === scoreConference).map((game, idx) => (
+                  <div key={`${slot.label}-${idx}`} className="score-entry">
+                    <button type="button" className="score-card" onClick={() => setActiveWindow('game')}>
+                      <div className="score-row">
+                        <span className="cond badge" style={badgeStyle(game.away.color, 24)}>{game.away.abbr}</span>
+                        <span className="cond num result-rank">{game.away.rank}</span>
+                        <span className="team-text">{game.away.name}</span>
+                        <span className="cond num result-score">{game.away.score}</span>
+                      </div>
+                      <div className="score-row">
+                        <span className="cond small-at">@</span>
+                        <span className="cond badge" style={badgeStyle(game.home.color, 24)}>{game.home.abbr}</span>
+                        <span className="cond num result-rank">{game.home.rank}</span>
+                        <span className="team-text">{game.home.name}</span>
+                        <span className="cond num result-score">{game.home.score}</span>
+                      </div>
+                      <div className="score-foot">
+                        <span>{game.status} · ABC</span>
+                        <span className="cond num">TEX −3.5</span>
+                      </div>
+                    </button>
+                    <div className="score-favorites">
+                      {renderFavoriteButton(game.away.name, game.away.abbr)}
+                      {renderFavoriteButton(game.home.name, game.home.abbr)}
                     </div>
-                    <div className="score-row">
-                      <span className="cond small-at">@</span>
-                      <span className="cond badge" style={badgeStyle(game.home.color, 24)}>{game.home.abbr}</span>
-                      <span className="cond num result-rank">{game.home.rank}</span>
-                      <span className="team-text">{game.home.name}</span>
-                      <span className="cond num result-score">{game.home.score}</span>
-                    </div>
-                    <div className="score-foot">
-                      <span>{game.status} · ABC</span>
-                      <span className="cond num">TEX −3.5</span>
-                    </div>
-                  </button>
+                  </div>
                 ))}
               </div>
             </section>
@@ -585,7 +986,7 @@ function App() {
             <h1 className="cond">{rankingsView === 'CFP' ? 'CFP RANKINGS' : rankingsView === 'COACHES' ? 'COACHES POLL' : 'AP TOP 25'}</h1>
             <span>2025</span>
           </div>
-          {rankingsView !== 'AP POLL' ? <p className="data-unavailable">This poll will be available when authenticated 2025 data is connected in Phase 6.</p> : <>
+          {rankingsView !== 'AP POLL' ? <p className="data-unavailable">This poll will appear when the imported 2025 data is connected to the screens.</p> : <>
           <div className="ranking-header row">
             <span>#</span><span>TEAM</span><span>REC</span><span>CONF</span><span>POINTS</span><span>LAST</span><span>NEXT</span>
           </div>
@@ -593,15 +994,29 @@ function App() {
             const rank = index + 1
             const darkBadge = team.color === '#CEB888' || team.color === '#FF8200'
             return (
-            <button key={rank} type="button" className="ranking-row row" onClick={() => setActiveWindow('rankings')}>
-              <span className="cond num">{rank}</span>
-              <span className="team-cell"><span className="cond badge" style={{ ...badgeStyle(team.color, 22), color: darkBadge ? '#111214' : '#FFFFFF' }}>{team.abbr}</span><span className="cond team-name">{team.name}</span></span>
-              <span className="cond num record">{team.record}</span>
-              <span className="cond">{team.conf}</span>
-              <span className="cond num points">{team.points}</span>
-              <span className="team-note">{team.last}</span>
-              <span className="team-note subtle">{team.next}</span>
-            </button>
+              <div key={rank} className="ranking-entry">
+                <div
+                  role="button"
+                  tabIndex={0}
+                  className="ranking-row row"
+                  onClick={() => setActiveWindow('rankings')}
+                  onKeyDown={(event) => {
+                    if (event.key === 'Enter' || event.key === ' ') {
+                      event.preventDefault()
+                      setActiveWindow('rankings')
+                    }
+                  }}
+                >
+                  <span className="cond num">{rank}</span>
+                  <span className="team-cell"><span className="cond badge" style={{ ...badgeStyle(team.color, 22), color: darkBadge ? '#111214' : '#FFFFFF' }}>{team.abbr}</span><span className="cond team-name">{team.name}</span></span>
+                  <span className="cond num record">{team.record}</span>
+                  <span className="cond">{team.conf}</span>
+                  <span className="cond num points">{team.points}</span>
+                  <span className="team-note">{team.last}</span>
+                  <span className="team-note subtle">{team.next}</span>
+                </div>
+                {renderFavoriteButton(team.name, team.abbr)}
+              </div>
             )
           })}
           </>}
@@ -688,6 +1103,7 @@ function App() {
               <span>VS RANKED</span>
               <span>STREAK</span>
               <span>STATUS</span>
+              <span aria-hidden="true"></span>
             </div>
             {standingsRows.map((row) => (
               <div key={row.team} className={row.chip === 'title' ? 'standings-row title-row' : 'standings-row'}>
@@ -699,10 +1115,11 @@ function App() {
                 <span className="cond num">{row.vsRanked}</span>
                 <span className="cond num streak-pill">{row.streak}</span>
                 <span className={row.chip === 'title' ? 'status-pill title' : 'status-pill'}>{row.status}</span>
+                {renderFavoriteButton(row.team, row.abbr)}
               </div>
             ))}
           </div>
-        </section> : <section className="team-page-content"><h2 className="cond">2025 {conferenceLeaderRows.find(({ short }) => short === selectedConference)?.name.toUpperCase()} STANDINGS</h2><p>Standings will be available when authenticated 2025 data is connected in Phase 6.</p></section>}
+        </section> : <section className="team-page-content"><h2 className="cond">2025 {conferenceLeaderRows.find(({ short }) => short === selectedConference)?.name.toUpperCase()} STANDINGS</h2><p>Standings will appear when the imported 2025 data is connected to the screens.</p></section>}
         {selectedConference === 'B1G' && <aside className="side-stack">
           <section className="side-panel">
             <h2 className="cond">PROJECTED TITLE GAME</h2>
@@ -756,9 +1173,9 @@ function App() {
           <section className="season-field"><h2 className="cond">SEASON FIELD</h2><p>Players who appeared in the weekly top 10 during the 2025 season are included here.</p></section>
         </section>
       ) : statsView === 'TEAMS' ? (
-        <section className="team-page-content stats-team-empty"><h2 className="cond">TEAM STATISTICS</h2><div className="filter-chips">{['OFFENSE', 'DEFENSE', 'SPECIAL TEAMS'].map((category) => <button key={category} type="button" className={teamStatCategory === category ? 'filter-pill active' : 'filter-pill'} onClick={() => setTeamStatCategory(category)}>{category}</button>)}</div><p>{teamStatCategory} statistics will be available when authenticated 2025 data is connected in Phase 6.</p></section>
+        <section className="team-page-content stats-team-empty"><h2 className="cond">TEAM STATISTICS</h2><div className="filter-chips">{['OFFENSE', 'DEFENSE', 'SPECIAL TEAMS'].map((category) => <button key={category} type="button" className={teamStatCategory === category ? 'filter-pill active' : 'filter-pill'} onClick={() => setTeamStatCategory(category)}>{category}</button>)}</div><p>{teamStatCategory} statistics will appear when the imported 2025 data is connected to the screens.</p></section>
       ) : statCategory !== 'PASSING' ? (
-        <section className="team-page-content stats-team-empty"><h2 className="cond">{statCategory} LEADERS</h2><p>These player statistics will be available when authenticated 2025 data is connected in Phase 6.</p></section>
+        <section className="team-page-content stats-team-empty"><h2 className="cond">{statCategory} LEADERS</h2><p>These player statistics will appear when the imported 2025 data is connected to the screens.</p></section>
       ) : (
       <div className="stats-layout">
         <section className="stats-table-panel">
@@ -775,18 +1192,21 @@ function App() {
             <span>RTG</span>
           </div>
           {statsRows.filter((row) => `${row.name} ${row.team}`.toLowerCase().includes(playerSearch.toLowerCase())).map((row) => (
-            <button key={row.rank} type="button" className="stats-row row" onClick={() => setActiveWindow('player')}>
-              <span className="cond num">{row.rank}</span>
-              <span className="player-cell"><span className="cond badge" style={badgeStyle(row.color, 22)}>{row.abbr}</span><span className="player-meta"><strong>{row.name}</strong><small>{row.team}</small></span></span>
-              <span className="cond badge conf-mini">{row.conf}</span>
-              <span className="cond num">{row.pct}</span>
-              <span className="cond num">{row.yds}</span>
-              <span className="cond num">{row.ya}</span>
-              <span className="cond num">{row.td}</span>
-              <span className="cond num muted">{row.int}</span>
-              <span className="cond num muted">{row.sack}</span>
-              <span className="cond num">{row.rtg}</span>
-            </button>
+            <div key={row.rank} className="stats-entry">
+              <button type="button" className="stats-row row" onClick={() => setActiveWindow('player')}>
+                <span className="cond num">{row.rank}</span>
+                <span className="player-cell"><span className="cond badge" style={badgeStyle(row.color, 22)}>{row.abbr}</span><span className="player-meta"><strong>{row.name}</strong><small>{row.team}</small></span></span>
+                <span className="cond badge conf-mini">{row.conf}</span>
+                <span className="cond num">{row.pct}</span>
+                <span className="cond num">{row.yds}</span>
+                <span className="cond num">{row.ya}</span>
+                <span className="cond num">{row.td}</span>
+                <span className="cond num muted">{row.int}</span>
+                <span className="cond num muted">{row.sack}</span>
+                <span className="cond num">{row.rtg}</span>
+              </button>
+              {renderFavoriteButton(row.team, row.abbr)}
+            </div>
           ))}
         </section>
         <aside className="side-stack">
@@ -820,7 +1240,7 @@ function App() {
           <header className="team-page-header">
             <span className="cond badge team-page-badge" style={badgeStyle('#23262B', 52)}>{selectedTeam.slice(0, 3).toUpperCase()}</span>
             <div><span className="muted">{teamDir.find((conference) => conference.teams.includes(selectedTeam))?.name}</span><h1 className="cond">{selectedTeam}</h1></div>
-            <button type="button" className={favoriteTeams.includes(selectedTeam) ? 'star favorited' : 'star'} onClick={() => toggleFavorite(selectedTeam)} aria-label={favoriteTeams.includes(selectedTeam) ? 'Remove from favorites' : 'Add to favorites'}>{favoriteTeams.includes(selectedTeam) ? '★' : '☆'}</button>
+            <button type="button" className={isTeamFavorite(selectedTeam) ? 'star favorited' : 'star'} disabled={favoriteSaving} onClick={() => void toggleFavorite(selectedTeam)} aria-label={isTeamFavorite(selectedTeam) ? 'Remove from favorites' : 'Add to favorites'}>{isTeamFavorite(selectedTeam) ? '★' : '☆'}</button>
           </header>
           <div className="section-tabs">
             {(['OVERVIEW', 'SCHEDULE', 'STATS', 'HISTORY'] as TeamPageView[]).map((view) => (
@@ -829,7 +1249,7 @@ function App() {
           </div>
           <section className="team-page-content">
             <h2 className="cond">{teamPageView}</h2>
-            <p>Team information and 2025 {teamPageView.toLowerCase()} will display here when the authenticated 2025 data connection is added in Phase 6.</p>
+            <p>Team information and 2025 {teamPageView.toLowerCase()} will appear when the imported data is connected to the screens.</p>
           </section>
         </section>
       ) : (
@@ -865,7 +1285,7 @@ function App() {
                     <span className="cond badge" style={badgeStyle(['#BF5700','#BB0000','#F47321','#990000','#461D7C','#002E5D'][Math.abs(team.length) % 6], 24)}>{team.slice(0, 3).toUpperCase()}</span>
                     <span className="dir-team">{team}</span>
                   </button>
-                  <button type="button" className={favoriteTeams.includes(team) ? 'star favorited' : 'star'} aria-label={favoriteTeams.includes(team) ? `Remove ${team} from favorites` : `Add ${team} to favorites`} aria-pressed={favoriteTeams.includes(team)} onClick={() => toggleFavorite(team)}>★</button>
+                  <button type="button" className={isTeamFavorite(team) ? 'star favorited' : 'star'} disabled={favoriteSaving} aria-label={isTeamFavorite(team) ? `Remove ${team} from favorites` : `Add ${team} to favorites`} aria-pressed={isTeamFavorite(team)} onClick={() => void toggleFavorite(team)}>{isTeamFavorite(team) ? '★' : '☆'}</button>
                 </div>
               ))}
             </div>
@@ -906,6 +1326,7 @@ function App() {
               <span className="cond badge" style={badgeStyle(team.color, 22)}>{team.badge}</span>
               <div><strong>{team.name}</strong><small>{team.title}</small></div>
               <span className="cond num">{team.record}</span>
+              {renderFavoriteButton(team.name, team.badge)}
             </div>
           ))}
         </section>
@@ -960,6 +1381,7 @@ function App() {
                   <span className="cond badge" style={badgeStyle('#BF5700', 30)}>TEX</span>
                   <strong className="cond">TEXAS</strong>
                   <span className="num large-score">31</span>
+                  {renderFavoriteButton('Texas', 'TEX')}
                 </div>
                 <div className="game-center">
                   <span className="cond">FINAL</span>
@@ -970,6 +1392,7 @@ function App() {
                   <span className="cond badge" style={badgeStyle('#9E1B32', 30)}>ALA</span>
                   <strong className="cond">ALABAMA</strong>
                   <span className="num large-score">17</span>
+                  {renderFavoriteButton('Alabama', 'ALA')}
                 </div>
               </div>
               <div className="section-tabs window-tabs">
@@ -1094,9 +1517,25 @@ function App() {
               </div>
               <input className="search-input" value={searchQuery} onChange={(event) => setSearchQuery(event.target.value)} placeholder="Find a team or player" />
               <div className="window-list">
-                {teamDir.flatMap((conference) => conference.teams).filter((team) => searchQuery && team.toLowerCase().includes(searchQuery.toLowerCase())).slice(0, 8).map((team) => <button key={team} type="button" className="window-row search-result" onClick={() => { setSelectedTeam(team); setActiveTab('Teams'); setActiveWindow(null) }}><span>{team}</span><span className="muted">Team</span></button>)}
-                {searchQuery && 'Fernando Mendoza'.toLowerCase().includes(searchQuery.toLowerCase()) && <button type="button" className="window-row search-result" onClick={() => setActiveWindow('player')}><span>Fernando Mendoza</span><span className="muted">Player</span></button>}
-                {!searchQuery && <p className="data-unavailable">Search FBS teams and players.</p>}
+                {teamDir.flatMap((conference) => conference.teams).filter((team) => searchQuery && team.toLowerCase().includes(searchQuery.toLowerCase())).slice(0, 8).map((team) => (
+                  <div key={team} className="search-result-entry">
+                    <button type="button" className="window-row search-result" onClick={() => { void saveRecentSearch(team); setSelectedTeam(team); setActiveTab('Teams'); setActiveWindow(null) }}><span>{team}</span><span className="muted">Team</span></button>
+                    {renderFavoriteButton(team)}
+                  </div>
+                ))}
+                {searchQuery && 'Fernando Mendoza'.toLowerCase().includes(searchQuery.toLowerCase()) && <button type="button" className="window-row search-result" onClick={() => { void saveRecentSearch('Fernando Mendoza'); setActiveWindow('player') }}><span>Fernando Mendoza</span><span className="muted">Player</span></button>}
+                {!searchQuery && profile?.recent_searches.length
+                  ? <><p className="muted">RECENT SEARCHES</p>{profile.recent_searches.map((search) => {
+                    const team = findTeamRecord(search)
+                    return <div key={search} className="search-result-entry">
+                      <button type="button" className="window-row search-result" onClick={() => {
+                        if (search === 'Fernando Mendoza') setActiveWindow('player')
+                        else { setSelectedTeam(search); setActiveTab('Teams'); setActiveWindow(null) }
+                      }}><span>{search}</span><span className="muted">Recent</span></button>
+                      {team && renderFavoriteButton(team.school, team.abbreviation ?? undefined)}
+                    </div>
+                  })}</>
+                  : !searchQuery && <p className="data-unavailable">Search FBS teams and players.</p>}
               </div>
             </div>
           )
@@ -1109,20 +1548,7 @@ function App() {
               </div>
               <p>{liveUpdate.state === 'failed' ? 'The most recent scheduled data refresh failed.' : 'Update the 2026 live-season data now.'}</p>
               {updateNowMessage && <p className="manual-update-notice" role="status">{updateNowMessage}</p>}
-              <button type="button" className="primary-button" onClick={() => setUpdateNowMessage('Manual updates require account sign-in, which is planned for Phase 6.')}>UPDATE NOW</button>
-            </div>
-          )
-        case 'settings':
-          return (
-            <div className="window-panel small-window">
-              <div className="window-header">
-                <h2 className="cond">SETTINGS</h2>
-                <button type="button" className="close-button" onClick={() => setActiveWindow(null)}>×</button>
-              </div>
-              <div className="settings-preview">
-                <strong>Account settings</strong>
-                <span>Profile, time zone, favorites, and data updates will be available with account setup.</span>
-              </div>
+              <button type="button" className="primary-button" disabled={manualUpdateBusy} onClick={() => void updateLiveSeason()}>{manualUpdateBusy ? 'UPDATING…' : 'UPDATE NOW'}</button>
             </div>
           )
         default:
@@ -1133,8 +1559,65 @@ function App() {
     return <div className="window-backdrop" onClick={() => setActiveWindow(null)}>{<div onClick={(event) => event.stopPropagation()}>{inner}</div>}</div>
   }
 
+  const renderAccountSettings = () => profile && session
+    ? <AccountSettings
+      profile={profile}
+      email={session.user.email ?? ''}
+      teams={teamRecords}
+      liveUpdate={liveUpdate}
+      apiCallsThisMonth={apiCallsThisMonth}
+      saving={profileSaving}
+      favoriteSaving={favoriteSaving}
+      updating={manualUpdateBusy}
+      notice={accountNotice || updateNowMessage}
+      error={accountError}
+      onBack={() => setSettingsOpen(false)}
+      onGoTeams={() => { setSettingsOpen(false); setActiveTab('Teams') }}
+      onSave={saveProfile}
+      onToggleFavorite={(teamId) => {
+        const team = teamRecords.find((item) => item.id === teamId)
+        return team ? toggleFavoriteRecord(team) : Promise.resolve()
+      }}
+      onUpdateNow={updateLiveSeason}
+      onSignOut={signOut}
+      onDeleteAccount={deleteAccount}
+    />
+    : <main className="settings-loading">Loading account settings…</main>
+
+  if (authLoading) return <main className="auth-screen"><p className="auth-loading">Checking sign-in…</p></main>
+  if (!session) {
+    return <AuthScreen
+      configured={Boolean(supabase)}
+      loading={authBusy}
+      error={supabaseConfigurationError ?? authError}
+      notice={authNotice}
+      onSignIn={signIn}
+      onForgotPassword={sendPasswordReset}
+    />
+  }
+  if (passwordRecovery) {
+    return <PasswordRecoveryScreen loading={authBusy} error={authError} onSave={saveRecoveredPassword} />
+  }
+  if (profileLoading || (!profile && !accountError)) return <main className="auth-screen"><p className="auth-loading">Loading your account…</p></main>
+  if (accountError && !profile) {
+    return (
+      <main className="auth-screen">
+        <section className="auth-card auth-card--error">
+          <h1 className="cond">ACCOUNT UNAVAILABLE</h1>
+          <p className="form-notice form-notice--error" role="alert">{accountError}</p>
+          <button className="auth-submit cond" type="button" onClick={() => window.location.reload()}>RETRY</button>
+          <button className="auth-link" type="button" onClick={() => void signOut()}>Sign out</button>
+        </section>
+      </main>
+    )
+  }
+
   return (
     <div className="app-shell">
+      {accountError && profile && !settingsOpen && <div className="account-error-banner" role="alert">
+        <span>{accountError}</span>
+        <button type="button" onClick={() => setAccountError('')} aria-label="Dismiss account error">×</button>
+      </div>}
       <div className="desktop-shell">
         <header className="topbar" aria-label="Main navigation">
           <div className="brand" aria-label="STRDYS home">
@@ -1160,25 +1643,27 @@ function App() {
               <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1.8l1.9 3.9 4.3.6-3.1 3 .7 4.3L8 11.6l-3.8 2 .7-4.3-3.1-3 4.3-.6z" /></svg>
             </button>
             <button type="button" className={`status-pill status-pill--${liveUpdate.state}`} aria-label={liveUpdateTitle} title={liveUpdateTitle} onClick={() => liveUpdateMessage && setActiveWindow('error')}><span /></button>
-            <button type="button" className="avatar-button" aria-label="Account" onClick={() => setActiveWindow('error')}>B</button>
+            <button type="button" className="avatar-button" aria-label="Account settings" onClick={() => setSettingsOpen(true)}>{(profile?.display_name || session.user.email || 'S').slice(0, 1).toUpperCase()}</button>
           </div>
         </header>
-        <main className={activeTab === 'Home' ? 'desktop-main desktop-main--home' : 'desktop-main'}>
-          {liveUpdateMessage && <div className={`live-update-banner live-update-banner--${liveUpdate.state}`} role="status"><span>{liveUpdateMessage}</span><button type="button" onClick={() => setActiveWindow('error')}>Update now</button></div>}
-          <div className="data-preview-banner">Screen preview data only · live 2025 data is deferred until Phase 6 account sign-in.</div>
-          {activeTab === 'Home' && renderHome(false)}
-          {activeTab === 'Scores' && renderScores()}
-          {activeTab === 'Rankings' && renderRankings()}
-          {activeTab === 'Standings' && renderStandings()}
-          {activeTab === 'Stats' && renderStats()}
-          {activeTab === 'Teams' && renderTeams()}
-          {activeTab === 'Archive' && renderArchive()}
-          {activeTab === "Pick'em" && <section className="team-page-content"><h2 className="cond">PICK'EM</h2><p>This feature is planned for Phase 7.</p></section>}
+        <main className={`${activeTab === 'Home' ? 'desktop-main desktop-main--home' : 'desktop-main'}${settingsOpen ? ' desktop-main--settings' : ''}`}>
+          {settingsOpen ? renderAccountSettings() : <>
+            {liveUpdateMessage && <div className={`live-update-banner live-update-banner--${liveUpdate.state}`} role="status"><span>{liveUpdateMessage}</span><button type="button" onClick={() => setActiveWindow('error')}>Update now</button></div>}
+            <div className="data-preview-banner">Account sync is active. Football screens still use preview data; 2025/2026 database wiring remains to be completed.</div>
+            {activeTab === 'Home' && renderHome(false)}
+            {activeTab === 'Scores' && renderScores()}
+            {activeTab === 'Rankings' && renderRankings()}
+            {activeTab === 'Standings' && renderStandings()}
+            {activeTab === 'Stats' && renderStats()}
+            {activeTab === 'Teams' && renderTeams()}
+            {activeTab === 'Archive' && renderArchive()}
+            {activeTab === "Pick'em" && <section className="team-page-content"><h2 className="cond">PICK'EM</h2><p>This feature is planned for Phase 7.</p></section>}
+          </>}
         </main>
       </div>
 
       <div className="mobile-shell">
-        <header className="mobile-topbar">
+        {!settingsOpen && <header className="mobile-topbar">
           <div className="brand brand--mobile" aria-label="STRDYS home">
             <span className="brand-mark">S</span>
             <span className="brand-name">STRDYS</span>
@@ -1186,11 +1671,12 @@ function App() {
           <button type="button" className="mobile-icon-button" onClick={() => setActiveWindow('search')} aria-label="Search teams or players">
             <svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="7" cy="7" r="5" /><path d="M11 11l3.5 3.5" /></svg>
           </button>
-          <button type="button" className="avatar-button avatar-button--mobile" onClick={() => setActiveWindow('favorites')} aria-label="Account">B</button>
-        </header>
+          <button type="button" className="avatar-button avatar-button--mobile" onClick={() => setSettingsOpen(true)} aria-label="Account settings">{(profile?.display_name || session.user.email || 'S').slice(0, 1).toUpperCase()}</button>
+        </header>}
+        {settingsOpen ? renderAccountSettings() : <>
         <main className="mobile-main">
           {liveUpdateMessage && <div className={`live-update-banner live-update-banner--${liveUpdate.state}`} role="status"><span>{liveUpdateMessage}</span><button type="button" onClick={() => setActiveWindow('error')}>Update now</button></div>}
-          <div className="data-preview-banner">Screen preview data only · live 2025 data is deferred until Phase 6 account sign-in.</div>
+          <div className="data-preview-banner">Account sync is active. Football screens still use preview data; 2025/2026 database wiring remains to be completed.</div>
           {activeTab === 'Home' && renderHome(true)}
           {activeTab === 'Scores' && renderScores()}
           {activeTab === 'Rankings' && renderRankings()}
@@ -1241,19 +1727,20 @@ function App() {
                 <span className="more-chevron">›</span>
               </button>
             ))}
-            <button type="button" className="more-item more-item--settings" onClick={() => { setMoreOpen(false); setActiveWindow('settings') }}>
+            <button type="button" className="more-item more-item--settings" onClick={() => { setMoreOpen(false); setSettingsOpen(true) }}>
               <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3" /><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9 7 7M17 17l2.1 2.1M4.9 19.1 7 17M17 7l2.1-2.1" /></svg>
               <span>Settings</span>
               <span className="more-chevron">›</span>
             </button>
             <div className="more-account">
-              <span className="more-avatar">B</span>
-              <span className="more-account-copy"><strong>Bent</strong><small>{favoriteTeams.length} favorite teams</small></span>
-              <button type="button" className="sign-out-button" disabled title="Sign-in is not enabled in this preview">Sign out</button>
+              <span className="more-avatar">{(profile?.display_name || session.user.email || 'S').slice(0, 1).toUpperCase()}</span>
+              <span className="more-account-copy"><strong>{profile?.display_name || session.user.email}</strong><small>{favoriteTeams.length} favorite teams</small></span>
+              <button type="button" className="sign-out-button" onClick={() => void signOut()}>Sign out</button>
             </div>
             </section>
           </div>
         )}
+        </>}
       </div>
 
       {renderWindow()}
