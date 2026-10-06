@@ -14,7 +14,7 @@ Supabase as the `CFBD_API_KEY` Edge Function secret.
 2. In GitHub, open **Actions → Supabase → Run workflow**.
 3. Select branch **main**, check **Import the 2026 FBS teams, conferences, and
    calendar after deployment**, then click **Run workflow**.
-4. Open the new workflow run. The **Run 2026 test import** job must finish
+4. Open the new workflow run. The **Run selected manual import** job must finish
    successfully and its final step prints a JSON result with
    `"status":"success"` and import counts.
 
