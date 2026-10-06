@@ -231,18 +231,23 @@ polls and season stats fetched only on their scheduled jobs.
 The app uses the existing Supabase Auth owner account with email and password;
 it has no in-app registration. Before deploying the account UI:
 
-1. In **Authentication → Providers**, enable the Email provider and keep
+1. The **Deploy app to GitHub Pages** workflow publishes the frontend after
+   changes reach `main`. It requires the repository Actions variables
+   `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`. After the first successful
+   deployment, the app is available at
+   `https://cornerduck.github.io/cfb-tracker/`.
+2. In GitHub, open **Settings → Pages** and verify the build and deployment
+   source is **GitHub Actions**.
+3. In **Authentication → Providers**, enable the Email provider and keep
    password sign-in enabled.
-2. In **Authentication → Settings**, turn off **Allow new users to sign up**
+4. In **Authentication → Settings**, turn off **Allow new users to sign up**
    to keep this a single-owner app. The existing owner can still sign in and
    request password resets.
-3. In **Authentication → URL Configuration**, set the deployed app URL as the
+5. In **Authentication → URL Configuration**, set the deployed app URL as the
    Site URL and add it to the allowed redirect URLs. Password-reset links
    return to this URL.
-4. Ensure the GitHub Actions variables `VITE_SUPABASE_URL` and
-   `VITE_SUPABASE_ANON_KEY` are available to the static app build. These are
-   the public project URL and publishable/anon key; never use a service-role
-   key in browser configuration.
+   These are the public project URL and publishable/anon key; never use a
+   service-role key in browser configuration.
 
 The Supabase workflow deploys the `delete-account` Edge Function together with
 the other functions. It verifies the caller's bearer token and deletes only
