@@ -574,9 +574,10 @@ const importBoxscores = async (
   const periods = [...periodByKey.values()];
   if (!periods.length) throw new Error("The 2025 calendar has no regular or postseason weeks");
 
-  const teamData = await fetchCfbd("/games/teams", apiKey, calls);
+  const teamData: unknown[] = [];
   const playerData: unknown[] = [];
   for (const period of periods) {
+    teamData.push(...await fetchCfbd("/games/teams", apiKey, calls, period));
     playerData.push(...await fetchCfbd("/games/players", apiKey, calls, period));
   }
   const teamStats = new Map<string, JsonObject>();
