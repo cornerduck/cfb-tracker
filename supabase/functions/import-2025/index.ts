@@ -671,7 +671,7 @@ const importRankings = async (
 ) => {
   const { teamByName } = await loadLookups(supabase);
   const rankings = await fetchCfbd("/rankings", apiKey, calls);
-  const polls: JsonObject[] = [];
+  const pollsByTeam = new Map<string, JsonObject>();
   const latestApRank = new Map<number, { week: number; rank: number }>();
   for (const value of rankings) {
     const item = asObject(value, "ranking week");
@@ -693,7 +693,7 @@ const importRankings = async (
         const teamId = teamIdFor(rank.teamId ?? rank.school, teamByName);
         const place = integerValue(rank.rank);
         if (teamId === null || place === null) continue;
-        polls.push({
+        pollsByTeam.set(`${week}:${source}:${teamId}`, {
           season: SEASON,
           week,
           source,
@@ -709,6 +709,7 @@ const importRankings = async (
       }
     }
   }
+  const polls = [...pollsByTeam.values()];
   if (!polls.length) throw new Error("CFBD returned no usable 2025 AP, Coaches, or CFP rankings");
   counts.polls = await upsert(
     supabase,
