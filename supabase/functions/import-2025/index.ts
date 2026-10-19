@@ -173,6 +173,34 @@ const importSetup = async (supabase: Db, season: number, apiKey: string, calls: 
       end_date: optionalString(week.lastGameStart) ?? optionalString(week.endDate),
     };
   }).filter((week) => week.week !== null);
+  // conferences.slug is unique. CFBD can list a conference more than once
+  // (for example a renamed or re-founded conference with a new id), and a
+  // slug may already be stored under another id. Keep one row per slug and
+  // reuse the stored id so existing team-season links stay valid.
+  const { data: storedConferences, error: storedConferencesError } = await supabase
+    .from("conferences").select("id,slug");
+  if (storedConferencesError) {
+    throw new Error(`Could not load existing conferences: ${storedConferencesError.message}`);
+  }
+  const storedIdBySlug = new Map<string, number>(
+    (storedConferences ?? []).map((row: JsonObject) => [String(row.slug), Number(row.id)] as [string, number]),
+  );
+  const conferenceIdAlias = new Map<number, number>();
+  const conferencesBySlug = new Map<string, (typeof conferences)[number]>();
+  for (const conference of conferences) {
+    const targetId: number = storedIdBySlug.get(conference.slug) ?? conferencesBySlug.get(conference.slug)?.id ??
+      conference.id;
+    conferenceIdAlias.set(conference.id, targetId);
+    if (!conferencesBySlug.has(conference.slug)) {
+      conferencesBySlug.set(conference.slug, { ...conference, id: targetId });
+    }
+  }
+  const allConferenceNames = conferences.map((conference) => ({
+    id: conferenceIdAlias.get(conference.id)!,
+    names: [conference.name, conference.short_name, conference.abbreviation],
+  }));
+  conferences.splice(0, conferences.length, ...conferencesBySlug.values());
+  counts.conference_duplicates_merged = conferenceIdAlias.size - conferences.length;
   const { error: seasonError } = await supabase.from("seasons").upsert(
     { year: season, status: "live" },
     { onConflict: "year", ignoreDuplicates: true },
@@ -181,9 +209,11 @@ const importSetup = async (supabase: Db, season: number, apiKey: string, calls: 
   counts.teams = await upsertRows(supabase, "teams", teams, "id");
   counts.conferences = await upsertRows(supabase, "conferences", conferences, "id");
   const conferenceByName = new Map<string, number>();
-  for (const conference of conferences) {
-    for (const name of [conference.name, conference.short_name, conference.abbreviation]) {
-      if (name) conferenceByName.set(normalizeConferenceName(name), conference.id);
+  for (const conference of allConferenceNames) {
+    for (const name of conference.names) {
+      if (name && !conferenceByName.has(normalizeConferenceName(name))) {
+        conferenceByName.set(normalizeConferenceName(name), conference.id);
+      }
     }
   }
   const divisionsByConference = new Map<number, Set<string>>();
