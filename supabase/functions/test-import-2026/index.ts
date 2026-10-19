@@ -72,9 +72,9 @@ const mapTeam = (value: unknown) => {
     mascot: optionalString(team.mascot),
     abbreviation: optionalString(team.abbreviation),
     color: optionalString(team.color),
-    alt_color: optionalString(team.alt_color),
+    alt_color: optionalString(team.alternateColor) ?? optionalString(team.alt_color),
     location: locationObject,
-    venue: optionalString(locationObject.venue),
+    venue: optionalString(locationObject.name) ?? optionalString(locationObject.venue),
     capacity: optionalInteger(locationObject.capacity),
     is_fbs: true,
   };
@@ -162,8 +162,8 @@ const mapCalendarWeek = (value: unknown) => {
     season,
     week: weekNumber,
     season_type: seasonType,
-    start_date: optionalString(week.firstGameStart),
-    end_date: optionalString(week.lastGameStart),
+    start_date: optionalString(week.firstGameStart) ?? optionalString(week.startDate),
+    end_date: optionalString(week.lastGameStart) ?? optionalString(week.endDate),
   };
 };
 
