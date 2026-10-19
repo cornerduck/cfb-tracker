@@ -15,7 +15,7 @@ on:
         default: false
         type: boolean
       import_2025_stage:
-        description: Run one resumable stage of the archived 2025 season import
+        description: Run one resumable stage of an archived season import (recompute rebuilds awards, Heisman and summary without API calls)
         required: true
         default: skip
         type: choice
@@ -27,6 +27,12 @@ on:
           - rankings
           - season-stats
           - awards
+          - recompute
+      import_season:
+        description: Season for the archived import stage (2025 unless an earlier season is imported)
+        required: false
+        default: '2025'
+        type: string
 
 permissions:
   contents: read
@@ -71,6 +77,7 @@ jobs:
       SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL }}
       SUPABASE_ANON_KEY: ${{ vars.VITE_SUPABASE_ANON_KEY }}
       IMPORT_STAGE: ${{ inputs.import_2025_stage }}
+      IMPORT_SEASON: ${{ inputs.import_season }}
     steps:
       - name: Request GitHub Actions identity token
         id: oidc
@@ -99,7 +106,7 @@ jobs:
             --header 'Content-Type: application/json' \
             --data '{}'
 
-      - name: Import 2025 season stage
+      - name: Import archived season stage
         if: inputs.import_2025_stage != 'skip'
         env:
           GITHUB_OIDC_TOKEN: ${{ steps.oidc.outputs.token }}
@@ -109,8 +116,8 @@ jobs:
           curl --fail-with-body --silent --show-error \
             --request POST \
             --url "${supabase_project_url}/functions/v1/import-2025" \
-            --header "Authorization: ******" \
+            --header "Authorization: Bearer $SUPABASE_ANON_KEY" \
             --header "apikey: $SUPABASE_ANON_KEY" \
             --header "x-github-oidc-token: $GITHUB_OIDC_TOKEN" \
             --header 'Content-Type: application/json' \
-            --data "{\"stage\":\"$IMPORT_STAGE\"}"
+            --data "$(jq -cn --arg stage "$IMPORT_STAGE" --arg season "${IMPORT_SEASON:-2025}" '{stage: $stage, season: ($season | tonumber)}')"

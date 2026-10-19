@@ -268,3 +268,49 @@ cooldown.
 Phase 6 connects the account and favorites, not the 2025/2026 football screens:
 those still need a separate data-wiring pass before the imported seasons are
 shown in place of the clearly labeled preview content.
+
+## Data fixes (October 2026)
+
+A review of the stored data found several import bugs. They are fixed in the
+shared modules under `supabase/functions/_shared/` (used by both `import-2025`
+and `update-2026`) and covered by `supabase/functions/_shared/shared_test.ts`.
+
+| Problem | Fix |
+|---|---|
+| FCS and Division II/III coaches polls were stored as the FBS Coaches Poll; the CFP committee rankings ("Playoff Committee Rankings") were not recognised | Exact poll classification |
+| The final postseason poll (CFBD week 1) overwrote the preseason poll | `polls.season_type` is part of the key |
+| Team box-score keys were stored as `category_value` | Keys are the category; the migration repairs stored rows |
+| Player season statistics stored the value as the name, so every row was empty | Rows are read from `statType`/`stat` and keep the player's position |
+| Upset detection was inverted (favorites were counted as upsets) | Uses the home-perspective consensus spread; tiers Upset ≥ 7, Big upset ≥ 14, Stunner ≥ 21; FCS wins over FBS count |
+| Performance of the Week could go to a punter | Points formula over passing, rushing, receiving and defense, per player and game |
+| Game of the Week ignored overtime | Overtime breaks margin ties |
+| Team venue and alternate color were never stored | Read from `location.name` and `alternateColor` |
+| Games had no TV outlet, notes, CFP seeds or live clock | Stored from `/games/media`, `notes`, `playoff` and `/scoreboard` |
+| Head coaches were never imported | `/coaches` is imported with season stats |
+
+The near-live Saturday job now reads `/scoreboard` (one call) for in-progress
+scores, clock and TV, and falls back to `/games` if the scoreboard is not
+available for the API key.
+
+### Repair the stored seasons
+
+After this change is merged and the **Supabase** workflow has applied the
+migration and deployed the functions:
+
+1. Run **Actions → Supabase → Run workflow** on `main` five times, one 2025
+   stage per run, in this order: `setup` (4 calls), `games` (3), `rankings`
+   (1), `season-stats` (3), `awards` (0). The `awards` stage rebuilds the
+   weekly awards, the Heisman tracker and the season summary from the stored
+   data and records the 2025 Heisman winner and finalists. Total: 11 calls.
+2. For 2026, press **Update now** once in the app (Settings → Data and
+   updates). It refreshes all 2026 polls, season statistics, coaches, TV for
+   the current week, weekly awards for every completed week and the Heisman
+   tracker (about 9 calls).
+3. Optional: to backfill TV outlets and notes for earlier 2026 weeks, run
+   `select public.invoke_live_update('bootstrap');` in the SQL Editor (about
+   five calls per elapsed week).
+
+The `recompute` stage rebuilds awards, Heisman and the season summary of a
+season without any CFBD calls and does not change the season status. The
+workflow's **import_season** field imports an earlier season (2014 or later)
+with the same stages.
