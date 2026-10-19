@@ -152,8 +152,12 @@ const syncGames = async (
   calls: CallCounter,
   period: SeasonPeriod,
   lookups: Lookups,
+  fullSeason = false,
 ) => {
-  const rows = (await fetchCfbd("/games", apiKey, calls, periodParams(period), { year: SEASON }))
+  // The full season (one call) keeps future games in the schedule; a single
+  // week is used for the frequent result refreshes.
+  const params = fullSeason ? { seasonType: "both" } : periodParams(period);
+  const rows = (await fetchCfbd("/games", apiKey, calls, params, { year: SEASON }))
     .map((game) => mapGame(game, lookups.idByName, SEASON))
     .filter((game): game is NonNullable<typeof game> =>
       game !== null &&
@@ -163,7 +167,7 @@ const syncGames = async (
   // Keep a live in-progress status written by the scoreboard until the game
   // feed reports the final.
   const { data: existing, error } = await supabase.from("games")
-    .select("id,status").in("id", rows.map((game) => game.id));
+    .select("id,status").eq("season", SEASON).eq("status", "in_progress");
   if (error) throw new Error(`Could not read stored games: ${error.message}`);
   const live = new Set((existing ?? []).filter((game: JsonObject) => game.status === "in_progress")
     .map((game: JsonObject) => game.id));
@@ -369,6 +373,7 @@ const executeJob = async (job: Job, supabase: Db, apiKey: string, calls: CallCou
       weeks.push(entry);
     }
     details.weeks = weeks;
+    details.schedule = (await syncGames(supabase, apiKey, calls, period, lookups, true)).count;
     details.team_records = await updateTeamRecords(supabase, SEASON, lookups.fbsIds);
     details.polls = await syncPolls(supabase, apiKey, calls, lookups);
     Object.assign(details, await syncSeasonStats(supabase, apiKey, calls, lookups));
@@ -410,7 +415,8 @@ const executeJob = async (job: Job, supabase: Db, apiKey: string, calls: CallCou
     details.season_type = resultsPeriod.seasonType;
   }
 
-  const { rows, count } = await syncGames(supabase, apiKey, calls, resultsPeriod, lookups);
+  const fullSeason = job === "monday" || job === "manual";
+  const { rows, count } = await syncGames(supabase, apiKey, calls, resultsPeriod, lookups, fullSeason);
   const gameIds = new Set(rows.map((game) => game.id));
   details.games = count;
   details.lines = await syncLines(supabase, apiKey, calls, resultsPeriod, gameIds);
