@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { useApp } from '../../app/context'
 import { fetchPlayerSeason } from '../../data/queries'
@@ -10,6 +10,7 @@ import { shortDateTime } from '../../shared/format'
 import { Empty, Flame, Movement, Plate, Tile } from '../../shared/ui'
 import { playerLine } from '../../shared/stats'
 import { GameDayTile } from './GameDayTile'
+import { OffseasonHome, offseasonState } from './Offseason'
 
 const AWARD_ORDER: WeeklyAward['award_type'][] = ['upset', 'game', 'blowout', 'performance']
 const AWARD_LABEL: Record<WeeklyAward['award_type'], string> = {
@@ -98,6 +99,14 @@ function AwardCard({ award, model }: { award: WeeklyAward; model: SeasonModel })
 }
 
 export function Home() {
+  const { model, seasons } = useApp()
+  const [params] = useSearchParams()
+  // ?offseason=preview shows the offseason screen at any time.
+  const state = useMemo(() => offseasonState(model, seasons, Date.now(), params.get('offseason') === 'preview'), [model, seasons, params])
+  return state ? <OffseasonHome state={state} /> : <SeasonHome />
+}
+
+function SeasonHome() {
   const app = useApp()
   const { model, period, timeZone, favorites, openWindow, mobile } = app
   const navigate = useNavigate()

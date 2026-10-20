@@ -27,6 +27,7 @@ import {
   upsertRows,
 } from "../_shared/store.ts";
 import { updateSeasonSummary } from "../_shared/season.ts";
+import { syncGameday } from "../_shared/gameday.ts";
 
 const SEASON = 2026;
 const JOBS = [
@@ -453,6 +454,15 @@ const executeJob = async (job: Job, supabase: Db, apiKey: string, calls: CallCou
   }
   if (job === "manual") {
     details.weekly_awards = await recomputeWeeklyAwards(supabase, SEASON, lookups.fbsIds);
+  }
+  // GameDay comes from Wikipedia, not CFBD; a failure never fails the job.
+  if (["weekly", "monday", "manual"].includes(job)) {
+    try {
+      Object.assign(details, await syncGameday(supabase));
+    } catch (error) {
+      details.gameday_error = error instanceof Error ? error.message : "GameDay update failed";
+      console.error("GameDay update failed:", details.gameday_error);
+    }
   }
   Object.assign(details, await updateSeasonSummary(supabase, SEASON));
   return details;

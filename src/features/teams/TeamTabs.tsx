@@ -10,6 +10,7 @@ import { statNumber } from '../../shared/stats'
 import { Empty, ErrorBox, Loading, Plate, Tile } from '../../shared/ui'
 import { gameText } from '../rankings/Rankings'
 import { useTeamStats } from '../stats/Stats'
+import { teamGameday, useGamedayStops } from '../gameday/data'
 import { METRICS, formatMetric, type TeamStatLine } from '../stats/teamStats'
 
 // ---------------------------------------------------------------- shared
@@ -116,6 +117,8 @@ export function TeamOverview({ team }: { team: Team }) {
   const { lines } = useTeamStats()
   const line = lines?.get(team.id)
   const history = useTeamHistory(team.id)
+  const gameday = useGamedayStops()
+  const gamedayLine = gameday.data ? teamGameday(gameday.data, team.id, team) : null
   const coaches = useQuery({ queryKey: ['coaches', team.id], queryFn: () => fetchCoaches(team.id), staleTime: 60 * 60_000 })
   const games = model.teamGames(team.id)
   const next = model.nextGame(team.id)
@@ -150,6 +153,7 @@ export function TeamOverview({ team }: { team: Team }) {
         <div className="program-row"><span className="muted">Stadium</span><span>{[team.venue, team.capacity ? number(team.capacity) : null].filter(Boolean).join(' · ') || '—'}</span></div>
         <div className="program-row"><span className="muted">Location</span><span>{[team.location?.city, team.location?.state].filter(Boolean).join(', ') || '—'}</span></div>
         <div className="program-row"><span className="muted">National titles</span><span>{titles.length ? `${titles.length} · ${titles.join(', ')}` : history.data ? 'None since tracking began' : '…'}</span></div>
+        <div className="program-row"><span className="muted">GameDay</span><span>{gamedayLine ? (gamedayLine.appearances ? `${gamedayLine.appearances} shows · hosted ${gamedayLine.homeShows} · ${gamedayLine.homeW}–${gamedayLine.homeL} at home` : 'No shows yet') : '…'}</span></div>
         <div className="program-row"><span className="muted">Heisman winners</span><span>{heismans.length ? heismans.join(', ') : history.data ? 'None since tracking began' : '…'}</span></div>
       </Tile>
     </>

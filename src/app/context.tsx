@@ -7,7 +7,7 @@ export type WindowSpec =
   | { type: 'player'; playerId: string; name?: string; teamId?: number | null; season?: number }
   | { type: 'top25' }
   | { type: 'undefeated' }
-  | { type: 'gameday' }
+  | { type: 'gameday'; week?: number; season?: number }
   | { type: 'search' }
   | { type: 'favorites' }
   | { type: 'account' }

@@ -10,8 +10,10 @@ import type { Game, Season, Team } from '../../data/types'
 import { ConfTag, Empty, ErrorBox, Loading, Plate, Tabs, Tile, imageUrl } from '../../shared/ui'
 import { Scores } from '../scores/Scores'
 import { Bracket } from '../rankings/Bracket'
+import { GameDayHistory } from '../gameday/GameDayHistory'
+import { isNeutral, useGamedayStops } from '../gameday/data'
 
-const VIEWS = ['SEASONS', 'ALL TIME'] as const
+const VIEWS = ['SEASONS', 'ALL TIME', 'GAMEDAY HISTORY'] as const
 type View = typeof VIEWS[number]
 
 const finalistsOf = (season: Season | null) =>
@@ -206,6 +208,7 @@ type AllTimeData = Awaited<ReturnType<typeof fetchAllTime>>
 function AllTime() {
   const { liveYear, openWindow, mobile } = useApp()
   const query = useQuery({ queryKey: ['all-time'], queryFn: fetchAllTime, staleTime: 30 * 60_000 })
+  const gameday = useGamedayStops()
   if (query.error) return <ErrorBox message={(query.error as Error).message} onRetry={() => void query.refetch()} />
   if (!query.data) return <Loading label="Loading the archive…" />
   const data: AllTimeData = query.data
@@ -235,6 +238,17 @@ function AllTime() {
     .slice(0, 8)
   const plate = (teamId: number | null | undefined) => (teamId && teams.get(teamId) ? <Plate team={teams.get(teamId)} size={24} /> : <span className="plate-empty" />)
   const seasons = [...data.seasons].sort((a, b) => b.year - a.year)
+  // Campus visits: shows on the host's campus, counted per host.
+  const visits = new Map<string, { label: string; teamId: number | null; count: number }>()
+  for (const stop of gameday.data ?? []) {
+    const host = stop.host_team_id ? teams.get(stop.host_team_id) : undefined
+    if (isNeutral(stop, host)) continue
+    const key = stop.host_team_id ? `t${stop.host_team_id}` : stop.host
+    const entry = visits.get(key) ?? { label: host?.school ?? stop.host, teamId: stop.host_team_id, count: 0 }
+    entry.count += 1
+    visits.set(key, entry)
+  }
+  const mostVisits = [...visits.values()].sort((a, b) => b.count - a.count).slice(0, 5)
 
   return (
     <div className={mobile ? 'archive-mobile' : 'alltime-grid scroll-y'}>
@@ -274,6 +288,16 @@ function AllTime() {
           </div>
         )) : <Empty>No AP Polls stored yet.</Empty>}
       </Tile>
+      <Tile title="MOST GAMEDAY VISITS">
+        {mostVisits.length ? mostVisits.map((entry, index) => (
+          <div key={entry.label} className="alltime-row">
+            <span className="muted num">#{index + 1}</span>
+            {plate(entry.teamId)}
+            <span className="grow truncate">{entry.label}</span>
+            <strong className="cond num">{entry.count} visits</strong>
+          </div>
+        )) : gameday.isPending ? <Loading /> : <Empty>The GameDay history arrives with the next weekly update.</Empty>}
+      </Tile>
       <Tile title={`BEST RECORD SINCE ${firstYear}`}>
         {bestRecords.map(([teamId, record], index) => (
           <div key={teamId} className="alltime-row">
@@ -303,9 +327,9 @@ function AllTime() {
 }
 
 export function Archive() {
-  const { seasons, liveYear } = useApp()
+  const { seasons, liveYear, mobile } = useApp()
   const [params, setParams] = useSearchParams()
-  const view: View = params.get('view') === 'alltime' ? 'ALL TIME' : 'SEASONS'
+  const view: View = params.get('view') === 'alltime' ? 'ALL TIME' : params.get('view') === 'gameday' ? 'GAMEDAY HISTORY' : 'SEASONS'
   const years = [...seasons].sort((a, b) => a.year - b.year)
   const archived = years.filter((season) => season.status === 'archived')
   const year = Number(params.get('season')) || archived.at(-1)?.year || liveYear
@@ -322,7 +346,7 @@ export function Archive() {
     <div className="archive">
       <div className="page-head page-head--tabs">
         <h1 className="cond">ARCHIVE</h1>
-        <Tabs items={VIEWS} value={view} onChange={(next) => update({ view: next === 'ALL TIME' ? 'alltime' : null, sub: null })} />
+        <Tabs items={VIEWS} value={view} onChange={(next) => update({ view: next === 'ALL TIME' ? 'alltime' : next === 'GAMEDAY HISTORY' ? 'gameday' : null, sub: null })} labels={mobile ? { 'GAMEDAY HISTORY': 'GAMEDAY' } : undefined} />
         <span className="grow" />
         {view === 'SEASONS' && (
           <div className="pills season-pills">
@@ -334,7 +358,7 @@ export function Archive() {
           </div>
         )}
       </div>
-      {view === 'ALL TIME' ? <AllTime /> : (
+      {view === 'ALL TIME' ? <AllTime /> : view === 'GAMEDAY HISTORY' ? <GameDayHistory /> : (
         <SeasonScope year={year} key={year}>
           {sub ? <SeasonSub sub={sub} onBack={() => update({ sub: null })} /> : <SeasonView onSub={(next) => update({ sub: next })} />}
         </SeasonScope>
