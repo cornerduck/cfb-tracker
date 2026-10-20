@@ -7,6 +7,7 @@ import { dayMonth, kickoffParts } from '../../shared/format'
 import { ConfTag, Empty, Flame, Pills, Plate, StarButton, Tabs, imageUrl } from '../../shared/ui'
 import { gameText } from '../rankings/Rankings'
 import { TeamHistoryTab, TeamOverview, TeamStatsTab } from './TeamTabs'
+import { Compare } from './Compare'
 
 const FILTERS = ['POWER 4', 'GROUP OF 6', 'INDEPENDENTS', 'MY TEAMS', 'ALL FBS'] as const
 type Filter = typeof FILTERS[number]
@@ -134,14 +135,16 @@ function TeamPage({ slug }: { slug: string }) {
 
 export function Teams() {
   const { slug } = useParams()
+  const [params, setParams] = useSearchParams()
   if (slug) return <TeamPage slug={slug} />
+  const view = params.get('view') === 'compare' ? 'COMPARE' : 'DIRECTORY'
   return (
     <div className="teams">
       <div className="page-head page-head--tabs">
         <h1 className="cond">TEAMS</h1>
-        <Tabs items={['DIRECTORY'] as const} value="DIRECTORY" onChange={() => undefined} />
+        <Tabs items={['DIRECTORY', 'COMPARE'] as const} value={view} onChange={(next) => setParams(next === 'COMPARE' ? { view: 'compare' } : {}, { replace: true })} />
       </div>
-      <Directory />
+      {view === 'COMPARE' ? <Compare /> : <Directory />}
     </div>
   )
 }

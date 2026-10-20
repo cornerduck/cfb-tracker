@@ -163,3 +163,39 @@ export type SeasonBundle = {
   heismanTracker: HeismanRow[]
   gameday: GamedayRow[]
 }
+
+export type PickMode = 'straight_up' | 'against_the_spread'
+
+export type PickRow = {
+  user_id: string
+  game_id: number
+  pick_team_id: number | null
+  mode: PickMode
+  locked: boolean
+  correct: boolean | null
+  spread: number | null
+  updated_at: string
+}
+
+export type Meeting = {
+  season: number | null
+  week: number | null
+  season_type: string | null
+  date: string | null
+  neutral: boolean
+  home: string | null
+  away: string | null
+  home_points: number | null
+  away_points: number | null
+  winner: string | null
+}
+
+export type HeadToHead = {
+  team_a_id: number
+  team_b_id: number
+  team_a_wins: number
+  team_b_wins: number
+  ties: number
+  meetings: Meeting[]
+  updated_at: string
+}

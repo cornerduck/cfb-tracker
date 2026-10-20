@@ -8,6 +8,7 @@ import { useSeasonModel, useSeasons } from './app/useSeasonData'
 import { SeasonScope } from './app/SeasonScope'
 import { Stats } from './features/stats/Stats'
 import { Archive } from './features/archive/Archive'
+import { Pickem } from './features/pickem/Pickem'
 import { supabaseConfigurationError } from './lib/supabase'
 import { Home } from './features/home/Home'
 import { Scores } from './features/scores/Scores'
@@ -57,15 +58,6 @@ function useIsMobile() {
     return () => media.removeEventListener('change', update)
   }, [])
   return mobile
-}
-
-function ComingSoon({ title, phase }: { title: string; phase: string }) {
-  return (
-    <div className="coming-soon">
-      <h1 className="cond">{title}</h1>
-      <p className="muted">This section is built in {phase}. The data is already imported.</p>
-    </div>
-  )
 }
 
 function Brand() {
@@ -264,7 +256,7 @@ function SignedInApp({ account }: { account: ReturnType<typeof useAccount> }) {
           <Route path="/stats" element={<Stats />} />
           <Route path="/teams" element={<Teams />} />
           <Route path="/teams/:slug" element={<Teams />} />
-          <Route path="/pickem" element={<ComingSoon title="PICK'EM" phase="phase 7" />} />
+          <Route path="/pickem" element={<Pickem />} />
           <Route path="/archive" element={<Archive />} />
           <Route path="/settings" element={<SettingsPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />

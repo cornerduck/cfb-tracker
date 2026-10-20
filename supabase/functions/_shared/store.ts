@@ -281,3 +281,14 @@ export const savePolls = async (
   }
   return saved;
 };
+
+// Locks started games and grades finished Pick'em picks (no API calls).
+export const gradePickem = async (supabase: Db) => {
+  // Grading never fails an update job; the app also grades on display.
+  const { data, error } = await supabase.rpc("grade_pickem_picks");
+  if (error) {
+    console.error("Could not grade Pick'em picks:", error.message);
+    return `failed: ${error.message}`;
+  }
+  return Number(data ?? 0);
+};
