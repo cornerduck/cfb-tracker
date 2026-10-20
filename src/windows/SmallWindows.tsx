@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { useApp } from '../app/context'
-import { abbr, confName, recordText } from '../data/model'
+import { confName, recordText } from '../data/model'
 import type { PollSource } from '../data/types'
 import { searchPlayers } from '../data/queries'
 import { Empty, Flame, Movement, Plate, Tabs } from '../shared/ui'
@@ -279,23 +279,3 @@ export function ErrorWindow() {
   )
 }
 
-export function GameDayWindow() {
-  const { model, closeWindow, openWindow } = useApp()
-  const rows = [...model.bundle.gameday].sort((a, b) => b.week - a.week)
-  return (
-    <WindowFrame className="small-window" title="COLLEGE GAMEDAY" onClose={closeWindow}>
-      <div className="window-scroll">
-        {rows.length ? rows.map((row) => {
-          const game = row.game_id ? model.gameById.get(row.game_id) : undefined
-          const host = model.team(row.team_id ?? game?.home_team_id)
-          return (
-            <button key={row.week} type="button" className="search-row" disabled={!game} onClick={() => game && openWindow({ type: 'game', gameId: game.id })}>
-              <span className="cond muted">WK {row.week}</span>
-              <span className="search-copy"><strong>{host?.location?.city ?? host?.school ?? 'TBA'}</strong><small className="muted">{game ? `${abbr(model.team(game.away_team_id))} ${game.away_points ?? ''} ${game.neutral_site ? 'vs' : '@'} ${abbr(model.team(game.home_team_id))} ${game.home_points ?? ''}` : ''}</small></span>
-            </button>
-          )
-        }) : <Empty>GameDay locations arrive with the GameDay update.</Empty>}
-      </div>
-    </WindowFrame>
-  )
-}

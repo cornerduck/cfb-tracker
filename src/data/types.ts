@@ -199,3 +199,24 @@ export type HeadToHead = {
   meetings: Meeting[]
   updated_at: string
 }
+
+export type GamedayStop = {
+  season: number
+  stop: number
+  show_date: string | null
+  visitor: string
+  host: string
+  visitor_rank: number | null
+  host_rank: number | null
+  visitor_points: number | null
+  host_points: number | null
+  city: string | null
+  state: string | null
+  site: string | null
+  notes: string | null
+  guest_picker: string | null
+  corso_pick: string | null
+  host_team_id: number | null
+  visitor_team_id: number | null
+  game_id: number | null
+}

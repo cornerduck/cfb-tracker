@@ -5,6 +5,7 @@ import type {
   ConferenceSeason,
   Game,
   GamedayRow,
+  GamedayStop,
   HeadToHead,
   HeismanRow,
   Line,
@@ -236,4 +237,13 @@ export async function refreshHeadToHead(teamA: number, teamB: number) {
   const { data, error } = await client().functions.invoke('head-to-head', { body: { team_a_id: teamA, team_b_id: teamB } })
   if (error) throw new Error(await readError(error as { message: string; context?: unknown }))
   return (data as { series: HeadToHead }).series
+}
+
+// ---------------------------------------------------------------- GameDay
+
+export async function fetchGamedayStops() {
+  return await loadAll<GamedayStop>(
+    (from, to) => client().from('gameday_stops').select('*').order('season').order('stop').range(from, to),
+    'GameDay history',
+  )
 }

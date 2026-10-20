@@ -9,6 +9,7 @@ import { SeasonScope } from './app/SeasonScope'
 import { Stats } from './features/stats/Stats'
 import { Archive } from './features/archive/Archive'
 import { Pickem } from './features/pickem/Pickem'
+import { GameDayWindow } from './features/gameday/GameDayWindow'
 import { supabaseConfigurationError } from './lib/supabase'
 import { Home } from './features/home/Home'
 import { Scores } from './features/scores/Scores'
@@ -20,7 +21,7 @@ import { ErrorBox, Loading } from './shared/ui'
 import { shortDateTime } from './shared/format'
 import { GameWindow } from './windows/GameWindow'
 import { PlayerWindow } from './windows/PlayerWindow'
-import { AccountWindow, ErrorWindow, FavoritesWindow, GameDayWindow, SearchWindow, Top25Window, UndefeatedWindow } from './windows/SmallWindows'
+import { AccountWindow, ErrorWindow, FavoritesWindow, SearchWindow, Top25Window, UndefeatedWindow } from './windows/SmallWindows'
 
 const TABS: Array<{ path: string; label: string }> = [
   { path: '/', label: 'HOME' },
@@ -189,7 +190,7 @@ function Windows({ spec }: { spec: WindowSpec | null }) {
     case 'favorites': return <FavoritesWindow />
     case 'account': return <AccountWindow />
     case 'error': return <ErrorWindow />
-    case 'gameday': return <GameDayWindow />
+    case 'gameday': return <SeasonScope year={spec.season}><GameDayWindow week={spec.week} /></SeasonScope>
   }
 }
 

@@ -324,3 +324,12 @@ with the same stages.
 - Edge Function `head-to-head` returns the all-time series for the Compare screen. It caches the result in
   `head_to_head` and only asks CFBD again after the two teams have played a new game (one call per refresh,
   at most 20 per day). Every call is logged in `update_log` and counts toward the monthly budget.
+
+## GameDay (October 2026)
+
+- Migration `20261020140000_gameday_history.sql` adds `gameday_stops`: every College GameDay show since 1993.
+- The Sunday, Monday and manual update jobs read the Wikipedia list
+  "List of College GameDay (football TV program) locations" through the MediaWiki API (no CFBD calls),
+  store every show, link shows of tracked seasons to their games and fill `gameday` per week.
+  A GameDay failure never fails the update job; the job details show `gameday_error` instead.
+- The first import happens with the next Sunday or Monday run, or right away with Update now in Settings.

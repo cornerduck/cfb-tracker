@@ -3,8 +3,9 @@ import { abbr, recordText, teamColor } from '../../data/model'
 import type { Team } from '../../data/types'
 import { countdown, kickoffParts } from '../../shared/format'
 import { imageUrl } from '../../shared/ui'
+import { currentGamedayRow } from '../gameday/GameDayWindow'
 
-function Pennant({ team, side }: { team: Team | undefined; side: 'left' | 'right' }) {
+export function Pennant({ team, side }: { team: Team | undefined; side: 'left' | 'right' }) {
   const left = side === 'left'
   return (
     <svg width="74" height="40" viewBox="0 0 74 40" aria-hidden="true">
@@ -15,14 +16,24 @@ function Pennant({ team, side }: { team: Team | undefined; side: 'left' | 'right
   )
 }
 
-// College GameDay: the show's location for the coming week. The weekly
-// GameDay import arrives with phase 8; until then the tile says so.
+// The show airs from 9:00 to 12:00 Eastern on game day.
+export function showStartTime(start: string | null) {
+  if (!start) return null
+  const date = new Date(start)
+  // Late kickoffs (after midnight UTC) still belong to the Eastern game day.
+  const eastern = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/New_York', year: 'numeric', month: '2-digit', day: '2-digit' }).format(date)
+  const offset = new Intl.DateTimeFormat('en-US', { timeZone: 'America/New_York', timeZoneName: 'shortOffset' }).formatToParts(date).find((part) => part.type === 'timeZoneName')?.value.replace('GMT', '') || '-5'
+  const [, sign, hours] = offset.match(/^([+-])(\d{1,2})/) ?? ['', '-', '5']
+  return Date.parse(`${eastern}T09:00:00${sign}${hours.padStart(2, '0')}:00`)
+}
+
+// College GameDay: the show's location for the coming week, added on Monday
+// of game week from the Wikipedia list.
 export function GameDayTile() {
   const { model, period, timeZone, openWindow, mobile } = useApp()
   const next = period ? model.nextPeriodAfter(period) ?? period : null
   const week = next ? model.awardWeekFor(next) : null
-  const row = model.bundle.gameday.find((item) => item.week === week) ??
-    (period ? model.bundle.gameday.find((item) => item.week === model.awardWeekFor(period)) : undefined)
+  const row = currentGamedayRow(model, period ? model.awardWeekFor(period) : null, week)
   const game = row?.game_id ? model.gameById.get(row.game_id) : undefined
   const host = model.team(row?.team_id ?? game?.home_team_id)
 
@@ -47,19 +58,14 @@ export function GameDayTile() {
   const home = model.team(game.home_team_id)
   const rankOf = (teamId: number) => model.apRankAtKickoff(teamId, game)
   // The show airs from 9:00 to 12:00 Eastern on game day.
-  const showStart = game.start_time ? (() => {
-    const date = new Date(game.start_time)
-    const eastern = new Intl.DateTimeFormat('en-CA', { timeZone: 'America/New_York', year: 'numeric', month: '2-digit', day: '2-digit' }).format(date)
-    const offset = new Intl.DateTimeFormat('en-US', { timeZone: 'America/New_York', timeZoneName: 'shortOffset' }).formatToParts(date).find((part) => part.type === 'timeZoneName')?.value.replace('GMT', '') ?? '-5'
-    return Date.parse(`${eastern}T09:00:00${offset.length <= 3 ? `${offset.replace(/^([+-])(\d)$/, '$10$2')}:00` : offset}`)
-  })() : null
+  const showStart = showStartTime(game.start_time)
   const remaining = showStart && showStart > Date.now() ? countdown(showStart).text : null
   return (
     <section className={`gameday-tile${mobile ? ' gameday-tile--mobile' : ''}`} style={{ borderColor: teamColor(host) }}>
       <button type="button" className="gameday-photo" style={{ background: teamColor(host), backgroundImage: photo ? `linear-gradient(to top, rgba(0,0,0,.65), rgba(0,0,0,0) 60%), url(${photo})` : undefined }} onClick={() => openWindow({ type: 'gameday' })}>
         <span className="varsity gameday-kicker">COLLEGE GAMEDAY · WK {game.week}</span>
-        <span className="varsity gameday-city">{(host?.location?.city ?? host?.school ?? '').toUpperCase()}</span>
-        <span className="varsity gameday-state">{(host?.location?.state ?? '').toUpperCase()}</span>
+        <span className="varsity gameday-city">{String(row.result.city ?? host?.location?.city ?? host?.school ?? '').toUpperCase()}</span>
+        <span className="varsity gameday-state">{String(row.result.state ?? host?.location?.state ?? '').toUpperCase()}</span>
       </button>
       <div className="gameday-body">
         <div className="gameday-matchup">
