@@ -809,7 +809,7 @@
 .roster { display: flex; flex-direction: column; gap: 12px; }
 .roster-bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
 .roster-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); grid-auto-rows: max-content; gap: 2px 16px; }
-.roster-row { display: grid; grid-template-columns: 40px minmax(0, 1fr) 44px 40px 32px; align-items: center; gap: 10px; padding: 6px 4px; border: 0; border-bottom: 1px solid var(--border); background: none; color: inherit; text-align: left; }
+.roster-row { display: grid; grid-template-columns: 40px minmax(0, 1fr) 44px 40px auto; align-items: center; gap: 10px; padding: 6px 4px; border: 0; border-bottom: 1px solid var(--border); background: none; color: inherit; text-align: left; }
 .roster-row:hover { background: var(--surface-2, rgba(255, 255, 255, 0.04)); }
 .roster-name { display: flex; flex-direction: column; min-width: 0; }
 .roster-jersey, .roster-class { text-align: right; font-size: 13px; }

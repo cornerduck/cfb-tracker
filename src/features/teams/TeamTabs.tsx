@@ -370,6 +370,8 @@ export function TeamRoster({ team }: { team: Team }) {
     }
     return { fromStats: true, entries: [...seen.values()] }
   }, [roster.data, players.data])
+  // CFBD sometimes reports the same class for every player. Then the column says nothing and is hidden.
+  const showClass = new Set(entries.map((entry) => entry.classYear).filter((value) => value !== null)).size > 1
   if (roster.error) return <ErrorBox message={roster.error.message} onRetry={() => void roster.refetch()} />
   if (roster.isLoading || players.isLoading) return <Loading label="Loading roster…" />
   if (!entries.length) return <Empty>No roster for {team.school} in {model.year} yet.</Empty>
@@ -406,7 +408,7 @@ export function TeamRoster({ team }: { team: Team }) {
                 </span>
                 <span className="cond num muted roster-jersey">{entry.jersey !== null ? `#${entry.jersey}` : ''}</span>
                 <span className="cond roster-pos">{entry.position ?? ''}</span>
-                <span className="cond muted roster-class">{classLabel(entry.classYear)}</span>
+                {showClass && <span className="cond muted roster-class">{classLabel(entry.classYear)}</span>}
               </button>
             ))}
           </div>
