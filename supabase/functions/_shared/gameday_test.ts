@@ -11,7 +11,8 @@ const assertEquals = (actual: unknown, expected: unknown, message = "") => {
 const HTML = `
 <div class="mw-heading mw-heading2"><h2 id="1990s">1990s</h2></div>
 <table class="wikitable"><tbody>
-<tr><th>Date</th><th colspan="2">Visitor</th><th colspan="2">Host</th><th>City</th><th>Location</th><th>Notes</th><th>Lee Corso pick</th></tr>
+<tr><th>Date</th><th colspan="2">Visiting team</th><th colspan="2">Home team</th><th>City</th><th>Location</th><th>Notes</th><th>Lee Corso pick
+</th></tr>
 <tr><td>November 13</td><td><span>No. 1</span>&nbsp;Florida State</td><td>24</td><td>2&nbsp;Notre Dame</td><td><b>31</b></td><td>South Bend, Indiana</td><td>Joyce Center</td><td>Game of the Century<sup class="reference"><a>[1]</a></sup></td><td>Florida State</td></tr>
 </tbody></table>
 <table class="wikitable"><tbody>
