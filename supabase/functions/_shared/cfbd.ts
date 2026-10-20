@@ -115,6 +115,44 @@ export const mapTeam = (value: unknown, isFbs: boolean) => {
   };
 };
 
+// ---------------------------------------------------------------- roster
+
+// One row per FBS team and player. FCS and unknown teams are skipped.
+export const mapRoster = (
+  data: unknown[],
+  season: number,
+  idByName: Map<string, number>,
+  fbsIds: Set<number>,
+) => {
+  const rows = new Map<string, JsonObject>();
+  for (const raw of data) {
+    const item = jsonObject(raw);
+    const playerId = identifier(item.id);
+    const firstName = optionalString(item.firstName);
+    const lastName = optionalString(item.lastName);
+    const fullName = [firstName, lastName].filter(Boolean).join(" ");
+    const teamId = teamIdFor(item.team, idByName);
+    if (!playerId || !fullName || teamId === null || !fbsIds.has(teamId)) continue;
+    rows.set(`${teamId}:${playerId}`, {
+      season,
+      team_id: teamId,
+      player_id: playerId,
+      first_name: firstName,
+      last_name: lastName,
+      full_name: fullName,
+      jersey: integerValue(item.jersey),
+      position: optionalString(item.position),
+      class_year: integerValue(item.year),
+      height: integerValue(item.height),
+      weight: integerValue(item.weight),
+      home_city: optionalString(item.homeCity),
+      home_state: optionalString(item.homeState),
+      home_country: optionalString(item.homeCountry),
+    });
+  }
+  return [...rows.values()];
+};
+
 // ---------------------------------------------------------------- games
 
 export const cfpRoundFrom = (playoff: JsonObject, notes: string) => {

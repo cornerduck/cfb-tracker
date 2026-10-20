@@ -147,6 +147,21 @@ export type PlayerSeasonStat = {
   stats: Record<string, string | number | null>
 }
 
+export type RosterPlayer = {
+  season: number
+  team_id: number
+  player_id: string
+  full_name: string
+  jersey: number | null
+  position: string | null
+  class_year: number | null
+  height: number | null
+  weight: number | null
+  home_city: string | null
+  home_state: string | null
+  home_country: string | null
+}
+
 export type SeasonBundle = {
   year: number
   season: Season | null

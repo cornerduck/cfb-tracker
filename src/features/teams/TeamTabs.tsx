@@ -1,13 +1,13 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useApp } from '../../app/context'
-import { fetchCoaches, fetchTeamHistory, fetchTeamPlayers } from '../../data/queries'
+import { fetchCoaches, fetchTeamHistory, fetchTeamPlayers, fetchTeamRoster } from '../../data/queries'
 import { abbr, confName, recordText, type SeasonModel } from '../../data/model'
 import type { Game, PlayerSeasonStat, Team } from '../../data/types'
 import { GameTile } from '../../shared/GameTile'
 import { dayMonth, kickoffParts, number } from '../../shared/format'
 import { statNumber } from '../../shared/stats'
-import { Empty, ErrorBox, Loading, Plate, Tile } from '../../shared/ui'
+import { Empty, ErrorBox, Loading, PlayerAvatar, Plate, Tile } from '../../shared/ui'
 import { gameText } from '../../shared/gameText'
 import { useTeamStats } from '../stats/Stats'
 import { teamGameday, useGamedayStops } from '../gameday/data'
@@ -327,6 +327,91 @@ export function TeamHistoryTab({ team }: { team: Team }) {
     <div className="team-history-grid">
       {table}
       <div className="team-col">{since}{honorTile}</div>
+    </div>
+  )
+}
+
+// ---------------------------------------------------------------- roster
+
+const ROSTER_GROUPS = [
+  { key: 'OFFENSE', positions: ['QB', 'RB', 'FB', 'HB', 'WR', 'TE', 'OL', 'OT', 'OG', 'C', 'G', 'T', 'IOL'] },
+  { key: 'DEFENSE', positions: ['DL', 'DE', 'DT', 'NT', 'EDGE', 'LB', 'OLB', 'ILB', 'MLB', 'DB', 'CB', 'S', 'FS', 'SS', 'NB'] },
+  { key: 'SPECIAL TEAMS', positions: ['K', 'PK', 'P', 'LS', 'KR', 'PR', 'H'] },
+] as const
+type RosterEntry = { id: string; name: string; jersey: number | null; position: string | null; classYear: number | null; height: number | null; weight: number | null; hometown: string }
+
+const CLASS_LABELS = ['FR', 'SO', 'JR', 'SR']
+const classLabel = (year: number | null) => (year === null || year < 1 ? '' : year > 4 ? 'GR' : CLASS_LABELS[year - 1])
+const heightText = (inches: number | null) => (inches ? `${Math.floor(inches / 12)}'${inches % 12}"` : '')
+
+export function useTeamRoster(year: number, teamId: number) {
+  return useQuery({ queryKey: ['team-roster', year, teamId], queryFn: () => fetchTeamRoster(year, teamId), staleTime: 30 * 60_000 })
+}
+
+export function TeamRoster({ team }: { team: Team }) {
+  const { model, openWindow } = useApp()
+  const roster = useTeamRoster(model.year, team.id)
+  const players = useTeamPlayers(model.year, team.id)
+  const [filter, setFilter] = useState<string>('ALL')
+  const { entries, fromStats } = useMemo(() => {
+    if (roster.data?.length) {
+      return {
+        fromStats: false,
+        entries: roster.data.map((row): RosterEntry => ({
+          id: row.player_id, name: row.full_name, jersey: row.jersey, position: row.position, classYear: row.class_year, height: row.height, weight: row.weight,
+          hometown: [row.home_city, row.home_state ?? row.home_country].filter(Boolean).join(', '),
+        })),
+      }
+    }
+    // Fallback until a roster is imported: everyone with season statistics.
+    const seen = new Map<string, RosterEntry>()
+    for (const row of players.data ?? []) {
+      if (!seen.has(row.player_id)) seen.set(row.player_id, { id: row.player_id, name: row.player_name, jersey: null, position: row.position, classYear: null, height: null, weight: null, hometown: '' })
+    }
+    return { fromStats: true, entries: [...seen.values()] }
+  }, [roster.data, players.data])
+  if (roster.error) return <ErrorBox message={roster.error.message} onRetry={() => void roster.refetch()} />
+  if (roster.isLoading || players.isLoading) return <Loading label="Loading roster…" />
+  if (!entries.length) return <Empty>No roster for {team.school} in {model.year} yet.</Empty>
+
+  const groupOf = (position: string | null) => ROSTER_GROUPS.find((group) => (group.positions as readonly string[]).includes((position ?? '').toUpperCase()))?.key ?? 'OTHER'
+  const sections = [...ROSTER_GROUPS.map((group) => group.key as string), 'OTHER']
+    .map((key) => ({
+      key,
+      rows: entries.filter((entry) => groupOf(entry.position) === key).sort((a, b) => (a.position ?? '').localeCompare(b.position ?? '') || (a.jersey ?? 999) - (b.jersey ?? 999) || a.name.localeCompare(b.name)),
+    }))
+    .filter((section) => section.rows.length && (filter === 'ALL' || section.key === filter))
+  const filters = ['ALL', ...ROSTER_GROUPS.map((group) => group.key as string)]
+
+  return (
+    <div className="roster">
+      <div className="roster-bar">
+        <div className="pills">
+          {filters.map((item) => (
+            <button key={item} type="button" className={`pill cond${item === filter ? ' active' : ''}`} aria-pressed={item === filter} onClick={() => setFilter(item)}>{item}</button>
+          ))}
+        </div>
+        <span className="muted small">{entries.length} players</span>
+      </div>
+      {fromStats && <p className="muted small">The full roster is not imported yet. Showing players with {model.year} statistics.</p>}
+      {sections.map((section) => (
+        <Tile key={section.key} title={section.key}>
+          <div className="roster-grid">
+            {section.rows.map((entry) => (
+              <button key={entry.id} type="button" className="roster-row" onClick={() => openWindow({ type: 'player', playerId: entry.id, name: entry.name, teamId: team.id, season: model.year })}>
+                <PlayerAvatar playerId={entry.id} team={team} size={40} />
+                <span className="roster-name truncate">
+                  <strong>{entry.name}</strong>
+                  <span className="muted small truncate">{[entry.hometown, [heightText(entry.height), entry.weight ? `${entry.weight} lb` : ''].filter(Boolean).join(' · ')].filter(Boolean).join(' · ')}</span>
+                </span>
+                <span className="cond num muted roster-jersey">{entry.jersey !== null ? `#${entry.jersey}` : ''}</span>
+                <span className="cond roster-pos">{entry.position ?? ''}</span>
+                <span className="cond muted roster-class">{classLabel(entry.classYear)}</span>
+              </button>
+            ))}
+          </div>
+        </Tile>
+      ))}
     </div>
   )
 }
