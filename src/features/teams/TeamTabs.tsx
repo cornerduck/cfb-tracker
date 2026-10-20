@@ -351,6 +351,7 @@ export function TeamRoster({ team }: { team: Team }) {
   const roster = useTeamRoster(model.year, team.id)
   const players = useTeamPlayers(model.year, team.id)
   const [filter, setFilter] = useState<string>('ALL')
+  const [onlyStats, setOnlyStats] = useState(true)
   const { entries, fromStats } = useMemo(() => {
     if (roster.data?.length) {
       return {
@@ -372,11 +373,15 @@ export function TeamRoster({ team }: { team: Team }) {
   if (roster.isLoading || players.isLoading) return <Loading label="Loading roster…" />
   if (!entries.length) return <Empty>No roster for {team.school} in {model.year} yet.</Empty>
 
+  // By default only players with season statistics are listed. Without any statistics yet, everyone is shown.
+  const statIds = new Set((players.data ?? []).map((row) => row.player_id))
+  const limited = onlyStats && !fromStats && statIds.size > 0
+  const visible = limited ? entries.filter((entry) => statIds.has(entry.id)) : entries
   const groupOf = (position: string | null) => ROSTER_GROUPS.find((group) => (group.positions as readonly string[]).includes((position ?? '').toUpperCase()))?.key ?? 'OTHER'
   const sections = [...ROSTER_GROUPS.map((group) => group.key as string), 'OTHER']
     .map((key) => ({
       key,
-      rows: entries.filter((entry) => groupOf(entry.position) === key).sort((a, b) => (a.position ?? '').localeCompare(b.position ?? '') || (a.jersey ?? 999) - (b.jersey ?? 999) || a.name.localeCompare(b.name)),
+      rows: visible.filter((entry) => groupOf(entry.position) === key).sort((a, b) => (a.position ?? '').localeCompare(b.position ?? '') || (a.jersey ?? 999) - (b.jersey ?? 999) || a.name.localeCompare(b.name)),
     }))
     .filter((section) => section.rows.length && (filter === 'ALL' || section.key === filter))
   const filters = ['ALL', ...ROSTER_GROUPS.map((group) => group.key as string)]
@@ -389,7 +394,11 @@ export function TeamRoster({ team }: { team: Team }) {
             <button key={item} type="button" className={`pill cond${item === filter ? ' active' : ''}`} aria-pressed={item === filter} onClick={() => setFilter(item)}>{item}</button>
           ))}
         </div>
-        <span className="muted small">{entries.length} players</span>
+        <span className="grow" />
+        {!fromStats && statIds.size > 0 && (
+          <button type="button" className={`pill cond${limited ? ' active' : ''}`} aria-pressed={limited} onClick={() => setOnlyStats(!onlyStats)}>WITH STATS ONLY</button>
+        )}
+        <span className="muted small">{visible.length}{limited ? ` of ${entries.length}` : ''} players</span>
       </div>
       {fromStats && <p className="muted small">The full roster is not imported yet. Showing players with {model.year} statistics.</p>}
       {sections.map((section) => (
