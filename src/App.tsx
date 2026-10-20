@@ -5,6 +5,9 @@ import PasswordRecoveryScreen from './PasswordRecoveryScreen'
 import { AppContext, type AppState, type WindowSpec, useApp } from './app/context'
 import { useAccount } from './app/useAccount'
 import { useSeasonModel, useSeasons } from './app/useSeasonData'
+import { SeasonScope } from './app/SeasonScope'
+import { Stats } from './features/stats/Stats'
+import { Archive } from './features/archive/Archive'
 import { supabaseConfigurationError } from './lib/supabase'
 import { Home } from './features/home/Home'
 import { Scores } from './features/scores/Scores'
@@ -186,8 +189,8 @@ function Shell({ children }: { children: ReactNode }) {
 function Windows({ spec }: { spec: WindowSpec | null }) {
   if (!spec) return null
   switch (spec.type) {
-    case 'game': return <GameWindow gameId={spec.gameId} />
-    case 'player': return <PlayerWindow playerId={spec.playerId} name={spec.name} teamId={spec.teamId} />
+    case 'game': return <SeasonScope year={spec.season}><GameWindow gameId={spec.gameId} /></SeasonScope>
+    case 'player': return <SeasonScope year={spec.season}><PlayerWindow playerId={spec.playerId} name={spec.name} teamId={spec.teamId} /></SeasonScope>
     case 'top25': return <Top25Window />
     case 'undefeated': return <UndefeatedWindow />
     case 'search': return <SearchWindow />
@@ -258,11 +261,11 @@ function SignedInApp({ account }: { account: ReturnType<typeof useAccount> }) {
           <Route path="/scores" element={<Scores />} />
           <Route path="/rankings" element={<Rankings />} />
           <Route path="/standings" element={<Standings />} />
-          <Route path="/stats" element={<ComingSoon title="STATS" phase="the next update" />} />
+          <Route path="/stats" element={<Stats />} />
           <Route path="/teams" element={<Teams />} />
           <Route path="/teams/:slug" element={<Teams />} />
           <Route path="/pickem" element={<ComingSoon title="PICK'EM" phase="phase 7" />} />
-          <Route path="/archive" element={<ComingSoon title="ARCHIVE" phase="the next update" />} />
+          <Route path="/archive" element={<Archive />} />
           <Route path="/settings" element={<SettingsPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

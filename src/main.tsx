@@ -13,6 +13,7 @@ import '@fontsource/graduate/400.css'
 import './styles/tokens.css'
 import './styles/app.css'
 import './styles/account.css'
+import './styles/stats.css'
 import App from './App.tsx'
 
 const queryClient = new QueryClient({
