@@ -3,11 +3,11 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { useApp } from '../../app/context'
 import { fetchPlayerSeason } from '../../data/queries'
-import { type SeasonModel, abbr, recordText, teamColor } from '../../data/model'
+import { type SeasonModel, recordText } from '../../data/model'
 import type { Game, WeeklyAward } from '../../data/types'
 import { GameTile } from '../../shared/GameTile'
 import { shortDateTime } from '../../shared/format'
-import { Empty, Flame, Movement, Plate, Tile } from '../../shared/ui'
+import { Empty, Flame, Movement, Plate, PlayerAvatar, Tile } from '../../shared/ui'
 import { playerLine } from '../../shared/stats'
 import { GameDayTile } from './GameDayTile'
 import { OffseasonHome, offseasonState } from './Offseason'
@@ -194,7 +194,7 @@ function SeasonHome() {
           return (
             <button key={row.player_id} type="button" className="heisman-leader" onClick={() => openWindow({ type: 'player', playerId: row.player_id, name: row.player_name, teamId: row.team_id })}>
               <span className="heisman-rank cond num">1</span>
-              <span className="heisman-badge cond" style={{ background: teamColor(team) }}>{abbr(team)}</span>
+              <PlayerAvatar playerId={row.player_id} team={team} size={48} />
               <span className="heisman-copy">
                 <span className="cond heisman-name truncate">{row.player_name.toUpperCase()}</span>
                 <span className="muted small truncate">{[stats.position, team?.school, playerLine('', stats.line)].filter(Boolean).join(' · ')}</span>
@@ -207,7 +207,7 @@ function SeasonHome() {
         return (
           <button key={row.player_id} type="button" className="heisman-row" onClick={() => openWindow({ type: 'player', playerId: row.player_id, name: row.player_name, teamId: row.team_id })}>
             <span className="cond num muted heisman-row-rank">{row.rank}</span>
-            <Plate team={team} size={24} />
+            <PlayerAvatar playerId={row.player_id} team={team} size={28} />
             <span className="grow truncate">{row.player_name}{leaderStats(row.player_id).position ? ` · ${leaderStats(row.player_id).position}` : ''}</span>
             <span className="cond num secondary">{(row.score * 100).toFixed(1)}</span>
           </button>
@@ -235,7 +235,7 @@ function SeasonHome() {
         const next = nextLine(model, team!.id, timeZone)
         return (
           <button key={team!.id} type="button" className="mine-row" onClick={() => navigate(`/teams/${team!.slug}`)}>
-            <span className="mine-badge cond" style={{ background: teamColor(team) }}>{abbr(team)}</span>
+            <Plate team={team} size={40} />
             <span className="mine-copy">
               <span className="mine-top">
                 <span className="cond mine-name">{team!.school.toUpperCase()}</span>

@@ -216,6 +216,19 @@ function SignedInApp({ account }: { account: ReturnType<typeof useAccount> }) {
   const closeWindow = useCallback(() => setWindowSpec(null), [])
   const location = useLocation()
   useEffect(() => setWindowSpec(null), [location.pathname])
+  // A new browser session always opens on Home, even when the address still
+  // holds the last page (for example a bookmark saved on Rankings).
+  const navigate = useNavigate()
+  useEffect(() => {
+    try {
+      if (sessionStorage.getItem('strdys-booted')) return
+      sessionStorage.setItem('strdys-booted', '1')
+    } catch {
+      return
+    }
+    if (location.pathname !== '/') navigate('/', { replace: true })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   if (seasons.error || season.error) {
     return <main className="center-screen"><ErrorBox message={((seasons.error ?? season.error) as Error).message} onRetry={() => { void seasons.refetch(); void season.refetch() }} /></main>

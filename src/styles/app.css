@@ -199,6 +199,8 @@
 }
 .plate img { width: 82%; height: 82%; object-fit: contain; }
 .plate-text { white-space: nowrap; }
+.pavatar { display: inline-flex; align-items: flex-end; justify-content: center; flex-shrink: 0; overflow: hidden; }
+.pavatar img { width: 100%; height: 100%; object-fit: cover; object-position: center top; }
 .plate-empty { width: 22px; height: 22px; border-radius: 5px; background: #23262B; flex-shrink: 0; }
 
 .flame { display: inline-flex; align-items: center; gap: 2px; color: var(--upset); font-family: var(--font-cond); font-size: 13px; font-weight: 700; }
@@ -365,7 +367,9 @@
 .gameday-kicker { font-size: 13px; color: #FFE3CC; letter-spacing: 0.12em; }
 .gameday-city { font-size: 36px; line-height: 1.05; }
 .gameday-state { font-size: 14px; color: #FFE3CC; letter-spacing: 0.2em; }
-.gameday-body { flex: 1; min-height: 0; padding: 12px 16px 14px; display: flex; flex-direction: column; gap: 12px; }
+.gameday-body { flex: 1; min-height: 0; padding: 12px 16px 14px; display: flex; flex-direction: column; gap: 12px; overflow-y: auto; scrollbar-width: thin; scrollbar-color: #4A3B2E transparent; }
+.gameday-body > * { flex-shrink: 0; }
+.gameday-photo--plain { height: auto; min-height: 96px; }
 .gameday-matchup { display: flex; align-items: center; justify-content: space-between; }
 .gameday-side { display: flex; flex-direction: column; align-items: center; gap: 3px; font-size: 13px; color: var(--text-2); }
 .gameday-at { font-size: 18px; color: var(--gd-accent); }
@@ -516,7 +520,7 @@
 
 /* ================================================================ teams */
 
-.directory { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; align-content: start; }
+.directory { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); grid-auto-rows: max-content; gap: 14px; align-content: start; }
 .directory-card { padding: 0; gap: 0; }
 .directory-head { display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-bottom: 1px solid var(--border); }
 .directory-head h2 { font-size: 18px; font-weight: 700; letter-spacing: 0.08em; }

@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useApp } from '../../app/context'
-import { type Record3, type SeasonModel, abbr, confAbbr, confName, recordText, teamColor } from '../../data/model'
+import { type Record3, type SeasonModel, abbr, confAbbr, confName, recordText } from '../../data/model'
 import { type ConferenceStandings, type StandingRow, conferenceStandings } from '../../data/standings'
 import type { Conference } from '../../data/types'
 import { dayMonth, kickoffParts } from '../../shared/format'
@@ -91,7 +91,7 @@ function SidePanels({ model, standings, order }: { model: SeasonModel; standings
     const team = model.team(teamId)
     return (
       <div className="title-side">
-        <span className="title-badge cond" style={{ background: teamColor(team) }}>{abbr(team)}</span>
+        <Plate team={team} size={52} />
         <small className="muted">{label}</small>
       </div>
     )

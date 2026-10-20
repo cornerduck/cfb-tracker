@@ -8,7 +8,7 @@ import type { PlayerGameStat } from '../data/types'
 import { UPSET_LABEL, gameStatusText } from '../shared/GameTile'
 import { kickoffParts } from '../shared/format'
 import { statNumber } from '../shared/stats'
-import { Empty, ErrorBox, Loading, Tabs } from '../shared/ui'
+import { Empty, ErrorBox, Loading, Plate, Tabs } from '../shared/ui'
 import { WindowFrame } from './WindowFrame'
 
 const TEAM_STATS: Array<{ key: string; label: string; lowerBetter?: boolean; parse?: 'ratio' | 'penalty' | 'time' }> = [
@@ -130,7 +130,7 @@ export function GameWindow({ gameId }: { gameId: number }) {
               return (
                 <button key={`${category}-${side.teamId}`} type="button" className="performer" onClick={() => openWindow({ type: 'player', playerId: row.player_id, name: row.player_name, teamId: row.team_id })}>
                   <span className="cond muted performer-cat">{category === 'defensive' ? 'DEFENSE' : category.toUpperCase()}</span>
-                  <span className="mini-badge cond" style={{ background: teamColor(model.team(side.teamId)) }}>{abbr(model.team(side.teamId))}</span>
+                  <Plate team={model.team(side.teamId)} size={24} />
                   <span className="grow truncate">{row.player_name}</span>
                   <span className="num secondary">{performerLine(row, category, players)}</span>
                 </button>
@@ -209,7 +209,7 @@ export function GameWindow({ gameId }: { gameId: number }) {
           const lost = winner !== null && winner !== side.teamId
           const block = (
             <button type="button" className={`hero-team${index ? ' right' : ''}${lost ? ' lost' : ''}`} onClick={() => { closeWindow(); navigate(`/teams/${team?.slug}`) }}>
-              <span className="hero-badge cond" style={{ background: teamColor(team) }}>{abbr(team)}</span>
+              <Plate team={team} size={mobile ? 44 : 64} />
               <span className="hero-copy">
                 <strong className="cond">{seed ? <small className="muted">({seed}) </small> : rank ? <small className="muted">{rank} </small> : null}{(mobile ? abbr(team) : team?.school ?? 'TBD').toUpperCase()}</strong>
                 <span className="muted small">{teamLabel(side.teamId)}</span>
