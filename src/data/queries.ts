@@ -122,3 +122,77 @@ export async function searchPlayers(year: number, query: string) {
   )
   return (rows ?? []) as PlayerSeasonStat[]
 }
+
+export async function fetchPlayerSeasonCategory(year: number, category: string) {
+  return await loadAll<PlayerSeasonStat>(
+    (from, to) => client().from('player_season_stats').select('season,player_id,player_name,team_id,position,category,stats')
+      .eq('season', year).eq('category', category).order('player_id').range(from, to),
+    'player season statistics',
+  )
+}
+
+export async function fetchTeamPlayers(year: number, teamId: number) {
+  const rows = await single(client().from('player_season_stats').select('*').eq('season', year).eq('team_id', teamId), 'team players')
+  return (rows ?? []) as PlayerSeasonStat[]
+}
+
+export type CoachRow = { season: number; team_id: number; coach_name: string; wins: number; losses: number; ties: number }
+
+export async function fetchCoaches(teamId: number) {
+  const rows = await single(client().from('coaches').select('season,team_id,coach_name,wins,losses,ties').eq('team_id', teamId).order('season', { ascending: false }), 'coaches')
+  return (rows ?? []) as CoachRow[]
+}
+
+export async function fetchTeamHistory(teamId: number) {
+  const db = client()
+  const [teamSeasons, games, seasons, polls, upsets] = await Promise.all([
+    single(db.from('team_seasons').select('*').eq('team_id', teamId).order('season', { ascending: false }), 'team seasons'),
+    loadAll<Game>((from, to) => db.from('games').select(GAME_FIELDS).or(`home_team_id.eq.${teamId},away_team_id.eq.${teamId}`).order('id').range(from, to), 'team games'),
+    single(db.from('seasons').select('*').order('year', { ascending: false }), 'seasons'),
+    loadAll<PollRow>((from, to) => db.from('polls').select('season,season_type,week,source,rank,team_id,points,first_place_votes').eq('team_id', teamId).eq('source', 'AP').range(from, to), 'team rankings'),
+    loadAll<WeeklyAward>((from, to) => db.from('weekly_awards').select('*').eq('award_type', 'upset').range(from, to), 'upsets'),
+  ])
+  return {
+    teamSeasons: (teamSeasons ?? []) as TeamSeason[],
+    games,
+    seasons: (seasons ?? []) as Season[],
+    polls,
+    upsetsWon: upsets.filter((award) => Number(award.details.winner_team_id) === teamId),
+  }
+}
+
+export type TeamSeasonStatRow = { season: number; team_id: number; category: string; stats: Record<string, string | number | null> }
+
+export async function fetchTeamSeasonStats(year: number) {
+  return await loadAll<TeamSeasonStatRow>(
+    (from, to) => client().from('team_season_stats').select('season,team_id,category,stats').eq('season', year).order('team_id').range(from, to),
+    'team season statistics',
+  )
+}
+
+export async function fetchAllTime() {
+  const db = client()
+  const [seasons, numberOnes, upsets, teamSeasons, gameday] = await Promise.all([
+    single(db.from('seasons').select('*').order('year', { ascending: false }), 'seasons'),
+    loadAll<PollRow>((from, to) => db.from('polls').select('season,season_type,week,source,rank,team_id,points,first_place_votes').eq('source', 'AP').eq('rank', 1).range(from, to), 'number one teams'),
+    loadAll<WeeklyAward>((from, to) => db.from('weekly_awards').select('*').eq('award_type', 'upset').range(from, to), 'upsets'),
+    loadAll<TeamSeason>((from, to) => db.from('team_seasons').select('*').order('season').order('team_id').range(from, to), 'team seasons'),
+    loadAll<GamedayRow>((from, to) => db.from('gameday').select('*').range(from, to), 'GameDay'),
+  ])
+  const seasonRows = (seasons ?? []) as Season[]
+  const gameIds = [...new Set([...upsets.map((row) => row.game_id), ...seasonRows.map((season) => season.title_game_id)].filter((id): id is number => id !== null))]
+  const games: Game[] = []
+  for (let offset = 0; offset < gameIds.length; offset += 150) {
+    const rows = await single(db.from('games').select(GAME_FIELDS).in('id', gameIds.slice(offset, offset + 150)), 'archive games')
+    games.push(...((rows ?? []) as Game[]))
+  }
+  // All FBS teams plus any FCS winners of stored upsets.
+  const teams = await loadAll<Team>((from, to) => db.from('teams').select(TEAM_FIELDS).eq('is_fbs', true).order('id').range(from, to), 'teams')
+  const known = new Set(teams.map((team) => team.id))
+  const missing = [...new Set(games.flatMap((game) => [game.home_team_id, game.away_team_id]))].filter((id) => !known.has(id))
+  for (let offset = 0; offset < missing.length; offset += 150) {
+    const rows = await single(db.from('teams').select(TEAM_FIELDS).in('id', missing.slice(offset, offset + 150)), 'teams')
+    teams.push(...((rows ?? []) as Team[]))
+  }
+  return { seasons: seasonRows, numberOnes, upsets, teamSeasons, gameday, games, teams }
+}

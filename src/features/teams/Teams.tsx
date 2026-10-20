@@ -3,10 +3,10 @@ import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { useApp } from '../../app/context'
 import { confAbbr, confName, recordText, teamColor } from '../../data/model'
 import { conferenceStandings } from '../../data/standings'
-import { GameTile } from '../../shared/GameTile'
 import { dayMonth, kickoffParts } from '../../shared/format'
-import { ConfTag, Empty, Flame, Pills, Plate, StarButton, Tabs, Tile, imageUrl } from '../../shared/ui'
+import { ConfTag, Empty, Flame, Pills, Plate, StarButton, Tabs, imageUrl } from '../../shared/ui'
 import { gameText } from '../rankings/Rankings'
+import { TeamHistoryTab, TeamOverview, TeamStatsTab } from './TeamTabs'
 
 const FILTERS = ['POWER 4', 'GROUP OF 6', 'INDEPENDENTS', 'MY TEAMS', 'ALL FBS'] as const
 type Filter = typeof FILTERS[number]
@@ -68,12 +68,15 @@ function Directory() {
   )
 }
 
-const TEAM_TABS = ['OVERVIEW', 'SCHEDULE'] as const
+const TEAM_TABS = ['OVERVIEW', 'SCHEDULE', 'STATS', 'HISTORY'] as const
+type TeamTab = typeof TEAM_TABS[number]
 
 function TeamPage({ slug }: { slug: string }) {
   const { model, favorites, account, timeZone, openWindow, period } = useApp()
   const navigate = useNavigate()
-  const [tab, setTab] = useState<typeof TEAM_TABS[number]>('OVERVIEW')
+  const [params, setParams] = useSearchParams()
+  const tab: TeamTab = TEAM_TABS.find((item) => item.toLowerCase() === params.get('tab')) ?? 'OVERVIEW'
+  const setTab = (next: TeamTab) => setParams(next === 'OVERVIEW' ? {} : { tab: next.toLowerCase() }, { replace: true })
   const team = [...model.teams.values()].find((item) => item.slug === slug)
   const order = period?.order ?? Infinity
   const standings = useMemo(() => {
@@ -86,7 +89,6 @@ function TeamPage({ slug }: { slug: string }) {
   const conf = model.confRecord(team.id)
   const rank = model.apRankAfter(team.id, order)
   const games = model.teamGames(team.id)
-  const next = model.nextGame(team.id)
   const position = standings?.groups.flatMap((group) => group.rows).findIndex((row) => row.teamId === team.id) ?? -1
   const stadium = imageUrl('stadiums', team.slug, ['jpg', 'jpeg', 'webp', 'png'])
 
@@ -98,40 +100,13 @@ function TeamPage({ slug }: { slug: string }) {
         <div className="team-hero-copy">
           <span className="cond small">{[confName(conference), team.location?.city && `${team.location.city}, ${team.location.state}`].filter(Boolean).join(' · ').toUpperCase()}</span>
           <h1 className="cond">{rank ? <span className="hero-rank">#{rank} </span> : null}{team.school.toUpperCase()} <span className="mascot">{team.mascot?.toUpperCase()}</span></h1>
-          <span className="cond num">{recordText(record)}{conference && confAbbr(conference) !== 'IND' ? ` · ${recordText(conf)} ${confAbbr(conference)}` : ''} <Flame count={model.flame(team.id)} size={14} /></span>
+          <span className="cond num">{recordText(record)}{conference && confAbbr(conference) !== 'IND' ? ` · ${recordText(conf)} ${confAbbr(conference)}` : ''} <Flame count={model.flame(team.id)} size={14} />{position >= 0 && conference && confAbbr(conference) !== 'IND' && <span className="hero-standing"> {position + 1}{['st', 'nd', 'rd'][position] ?? 'th'} in {confName(conference)}</span>}</span>
         </div>
         <span className="grow" />
         <StarButton active={favorites.has(team.id)} disabled={account.favoriteSaving} onClick={() => void account.toggleFavorite(team.id)} label="Favorite" />
       </header>
       <Tabs items={TEAM_TABS} value={tab} onChange={setTab} />
-      {tab === 'OVERVIEW' ? (
-        <div className="team-overview">
-          <Tile title="NEXT GAME">
-            {next ? <GameTile model={model} game={next} timeZone={timeZone} onOpen={(gameId) => openWindow({ type: 'game', gameId })} /> : <Empty>Season complete.</Empty>}
-          </Tile>
-          <Tile title="SEASON">
-            <div className="numbers-grid">
-              <div><span>Record</span><strong className="cond num">{recordText(record)}</strong></div>
-              <div><span>Conference</span><strong className="cond num">{conference && confAbbr(conference) !== 'IND' ? `${recordText(conf)} · ${position + 1}${['st', 'nd', 'rd'][position] ?? 'th'}` : '—'}</strong></div>
-              <div><span>AP rank</span><strong className="cond num">{rank ? `#${rank}` : 'Unranked'}</strong></div>
-              <div><span>Stadium</span><strong className="cond small">{team.venue ?? '—'}</strong></div>
-            </div>
-          </Tile>
-          <Tile title="LAST RESULTS">
-            {model.resultsThrough(team.id).slice(-5).reverse().map((result) => {
-              const text = gameText(model, team.id, result.game, true)
-              return (
-                <button key={result.game.id} type="button" className="log-row" onClick={() => openWindow({ type: 'game', gameId: result.game.id })}>
-                  <span className="cond muted log-week">{model.periodByKey.get(model.periodKeyOf(result.game))?.short}</span>
-                  <span className={text.outcome === 'W' ? 'win' : 'loss'}>{text.outcome}</span>
-                  <span className="grow truncate">{text.text}</span>
-                </button>
-              )
-            })}
-            {!model.resultsThrough(team.id).length && <Empty>No games played yet.</Empty>}
-          </Tile>
-        </div>
-      ) : (
+      {tab === 'OVERVIEW' ? <TeamOverview team={team} /> : tab === 'STATS' ? <TeamStatsTab team={team} /> : tab === 'HISTORY' ? <TeamHistoryTab team={team} /> : (
         <section className="tile schedule">
           {games.map((game) => {
             const home = game.home_team_id === team.id
