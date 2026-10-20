@@ -173,7 +173,7 @@ export const parseGamedayStops = (html: string): GamedayStop[] => {
   let previousSeason = 1992;
   for (const table of parseTables(html)) {
     const headerIndex = table.rows.findIndex((row) => row.filter((cell) => cell.header).length >= row.length / 2 &&
-      row.some((cell) => /date/i.test(cell.text)) && row.some((cell) => /host/i.test(cell.text)));
+      row.some((cell) => /date/i.test(cell.text)) && row.some((cell) => /host|home/i.test(cell.text)));
     if (headerIndex < 0) continue;
     // Name each column; a blank column after Visitor or Host holds its score.
     const names: string[] = [];
