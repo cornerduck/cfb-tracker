@@ -5,7 +5,7 @@ import { SeasonScope } from '../../app/SeasonScope'
 import { recordText, teamColor, type SeasonModel } from '../../data/model'
 import { countdown, shortDateTime } from '../../shared/format'
 import { Empty, Plate, Tile } from '../../shared/ui'
-import { seasonUpsets } from '../archive/Archive'
+import { seasonUpsets } from '../../data/upsets'
 
 export type OffseasonState = { recapYear: number | null; kickoff: number; kickoffKnown: boolean }
 

@@ -5,7 +5,7 @@ import { confAbbr, confName, recordText, teamColor } from '../../data/model'
 import { conferenceStandings } from '../../data/standings'
 import { dayMonth, kickoffParts } from '../../shared/format'
 import { ConfTag, Empty, Flame, Pills, Plate, StarButton, Tabs, imageUrl } from '../../shared/ui'
-import { gameText } from '../rankings/Rankings'
+import { gameText } from '../../shared/gameText'
 import { TeamHistoryTab, TeamOverview, TeamStatsTab } from './TeamTabs'
 import { Compare } from './Compare'
 

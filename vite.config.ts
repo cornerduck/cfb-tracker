@@ -30,10 +30,21 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['strdys-icon.svg'],
+      includeAssets: ['strdys-icon.svg', 'favicon.svg', 'apple-touch-icon.png'],
       workbox: {
         globPatterns: ['**/*.{js,css,html,svg,woff2}'],
         navigateFallback: 'index.html',
+        // Logos and photos load on demand and are then kept on the device.
+        runtimeCaching: [
+          {
+            urlPattern: ({ url }) => url.pathname.includes('/images/'),
+            handler: 'StaleWhileRevalidate',
+            options: {
+              cacheName: 'strdys-images',
+              expiration: { maxEntries: 600, maxAgeSeconds: 60 * 60 * 24 * 60 },
+            },
+          },
+        ],
       },
       manifest: {
         name: 'STRDYS',
@@ -45,12 +56,10 @@ export default defineConfig({
         start_url: '/cfb-tracker/',
         scope: '/cfb-tracker/',
         icons: [
-          {
-            src: 'strdys-icon.svg',
-            sizes: '512x512',
-            type: 'image/svg+xml',
-            purpose: 'any maskable',
-          },
+          { src: 'icon-192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
+          { src: 'icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },
+          { src: 'icon-maskable-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
+          { src: 'strdys-icon.svg', sizes: 'any', type: 'image/svg+xml', purpose: 'any' },
         ],
       },
     }),

@@ -8,6 +8,7 @@ import { abbr, confAbbr, recordText, teamColor, type SeasonModel } from '../../d
 import { conferenceLeader, conferenceStandings } from '../../data/standings'
 import type { Game, Season, Team } from '../../data/types'
 import { ConfTag, Empty, ErrorBox, Loading, Plate, Tabs, Tile, imageUrl } from '../../shared/ui'
+import { seasonUpsets } from '../../data/upsets'
 import { Scores } from '../scores/Scores'
 import { Bracket } from '../rankings/Bracket'
 import { GameDayHistory } from '../gameday/GameDayHistory'
@@ -28,12 +29,6 @@ const scoreLine = (model: SeasonModel, game: Game) => {
   return sides.map((side) => `${abbr(model.team(side.id))} ${side.points}`).join(' · ')
 }
 
-export function seasonUpsets(model: SeasonModel) {
-  return model.games.filter((game) => game.status === 'final')
-    .map((game) => ({ game, upset: model.upset(game) }))
-    .filter((entry): entry is { game: Game; upset: NonNullable<ReturnType<SeasonModel['upset']>> } => entry.upset !== null)
-    .sort((a, b) => (b.upset.winnerSpread ?? 99) - (a.upset.winnerSpread ?? 99))
-}
 
 function UpsetRow({ model, game, spread, index }: { model: SeasonModel; game: Game; spread: number | null; index?: number }) {
   const { openWindow } = useApp()

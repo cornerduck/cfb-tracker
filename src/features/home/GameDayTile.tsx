@@ -1,4 +1,6 @@
+import { useNavigate } from 'react-router-dom'
 import { useApp } from '../../app/context'
+import { hostResult, isNeutral, teamGameday, useGamedayStops } from '../gameday/data'
 import { abbr, recordText, teamColor } from '../../data/model'
 import type { Team } from '../../data/types'
 import { countdown, kickoffParts } from '../../shared/format'
@@ -31,6 +33,8 @@ export function showStartTime(start: string | null) {
 // of game week from the Wikipedia list.
 export function GameDayTile() {
   const { model, period, timeZone, openWindow, mobile } = useApp()
+  const navigate = useNavigate()
+  const stops = useGamedayStops()
   const next = period ? model.nextPeriodAfter(period) ?? period : null
   const week = next ? model.awardWeekFor(next) : null
   const row = currentGamedayRow(model, period ? model.awardWeekFor(period) : null, week)
@@ -59,6 +63,9 @@ export function GameDayTile() {
   const rankOf = (teamId: number) => model.apRankAtKickoff(teamId, game)
   // The show airs from 9:00 to 12:00 Eastern on game day.
   const showStart = showStartTime(game.start_time)
+  const before = (stops.data ?? []).filter((stop) => stop.game_id !== game.id && (stop.show_date ?? '') < (game.start_time ?? '').slice(0, 10))
+  const hostLine = host && stops.data ? teamGameday(before, host.id, host) : null
+  const recent = before.filter((stop) => stop.season === model.year).slice(-3).reverse()
   const remaining = showStart && showStart > Date.now() ? countdown(showStart).text : null
   return (
     <section className={`gameday-tile${mobile ? ' gameday-tile--mobile' : ''}`} style={{ borderColor: teamColor(host) }}>
@@ -81,8 +88,27 @@ export function GameDayTile() {
         </div>
         <div className="gameday-facts">
           <div><span>Guest picker</span><strong className="cond">{row.guest_picker ?? 'TBA'}</strong></div>
-          <div><span>Venue</span><strong className="cond truncate">{game.venue ?? 'TBA'}</strong></div>
+          {hostLine && host
+            ? <div><span>{abbr(host)} w/ GameDay</span><strong className="cond num">{hostLine.homeW}–{hostLine.homeL} at home</strong></div>
+            : <div><span>Venue</span><strong className="cond truncate">{game.venue ?? 'TBA'}</strong></div>}
         </div>
+        {!mobile && recent.length > 0 && (
+          <div className="gameday-recent">
+            <span className="cond gameday-recent-head">RECENT STOPS</span>
+            {recent.map((stop) => {
+              const result = hostResult(stop)
+              const neutral = isNeutral(stop, model.team(stop.host_team_id))
+              return (
+                <div key={stop.stop} className="gameday-recent-row">
+                  <span className="cond muted">{stop.game_id && model.gameById.get(stop.game_id) ? model.periodByKey.get(model.periodKeyOf(model.gameById.get(stop.game_id)!))?.short : ''}</span>
+                  <span className="grow truncate">{stop.city}</span>
+                  <strong className={`cond num ${neutral ? '' : result === 'W' ? 'win' : result === 'L' ? 'loss' : ''}`}>{result ? (neutral ? `${Math.max(stop.host_points!, stop.visitor_points!)}–${Math.min(stop.host_points!, stop.visitor_points!)}` : `${result} ${stop.host_points}–${stop.visitor_points}`) : ''}</strong>
+                </div>
+              )
+            })}
+          </div>
+        )}
+        {!mobile && <button type="button" className="outline-button cond gameday-all" onClick={() => navigate('/archive?view=gameday')}>ALL GAMEDAY STOPS</button>}
       </div>
     </section>
   )
