@@ -6,6 +6,7 @@ import {
   mapLines,
   mapPlayerSeasonStats,
   mapPolls,
+  mapRoster,
   mapTeam,
   mapTeamGameStats,
 } from "./cfbd.ts";
@@ -144,4 +145,19 @@ Deno.test("heisman weeks rank qualified players", () => {
   ];
   const weeks = computeHeismanWeeks(games, rows, [{ week: 2, team_id: 1, rank: 3 }], new Map());
   assertEquals(weeks[0].ranked.map((player) => player.player_id), ["a", "b"]);
+});
+
+Deno.test("roster rows keep FBS players only and read the CFBD fields", () => {
+  const ids = new Map([["indiana", 84]]);
+  const rows = mapRoster(
+    [
+      { id: 4567, firstName: "Fernando", lastName: "Mendoza", team: "Indiana", jersey: 15, position: "QB", year: 3, height: 77, weight: 225, homeCity: "Miami", homeState: "FL" },
+      { id: 1, firstName: "Some", lastName: "Player", team: "Unknown State" },
+    ],
+    2025,
+    ids,
+    new Set([84]),
+  );
+  assertEquals(rows.length, 1);
+  assertEquals([rows[0].player_id, rows[0].full_name, rows[0].team_id, rows[0].jersey, rows[0].class_year], ["4567", "Fernando Mendoza", 84, 15, 3]);
 });

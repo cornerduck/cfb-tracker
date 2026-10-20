@@ -13,6 +13,7 @@ import type {
   PickRow,
   PlayerGameStat,
   PlayerSeasonStat,
+  RosterPlayer,
   PollRow,
   Season,
   SeasonBundle,
@@ -144,6 +145,11 @@ export async function fetchPlayerSeasonCategory(year: number, category: string) 
 export async function fetchTeamPlayers(year: number, teamId: number) {
   const rows = await single(client().from('player_season_stats').select('*').eq('season', year).eq('team_id', teamId), 'team players')
   return (rows ?? []) as PlayerSeasonStat[]
+}
+
+export async function fetchTeamRoster(year: number, teamId: number) {
+  const rows = await single(client().from('roster').select('*').eq('season', year).eq('team_id', teamId).order('jersey', { ascending: true, nullsFirst: false }), 'team roster')
+  return (rows ?? []) as RosterPlayer[]
 }
 
 export type CoachRow = { season: number; team_id: number; coach_name: string; wins: number; losses: number; ties: number }

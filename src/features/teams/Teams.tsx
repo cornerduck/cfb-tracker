@@ -6,7 +6,7 @@ import { conferenceStandings } from '../../data/standings'
 import { dayMonth, kickoffParts } from '../../shared/format'
 import { ConfTag, Empty, Flame, Pills, Plate, StarButton, Tabs, imageUrl } from '../../shared/ui'
 import { gameText } from '../../shared/gameText'
-import { TeamHistoryTab, TeamOverview, TeamStatsTab } from './TeamTabs'
+import { TeamHistoryTab, TeamOverview, TeamRoster, TeamStatsTab } from './TeamTabs'
 import { Compare } from './Compare'
 
 const FILTERS = ['POWER 4', 'GROUP OF 6', 'INDEPENDENTS', 'MY TEAMS', 'ALL FBS'] as const
@@ -69,7 +69,7 @@ function Directory() {
   )
 }
 
-const TEAM_TABS = ['OVERVIEW', 'SCHEDULE', 'STATS', 'HISTORY'] as const
+const TEAM_TABS = ['OVERVIEW', 'SCHEDULE', 'STATS', 'ROSTER', 'HISTORY'] as const
 type TeamTab = typeof TEAM_TABS[number]
 
 function TeamPage({ slug }: { slug: string }) {
@@ -107,7 +107,7 @@ function TeamPage({ slug }: { slug: string }) {
         <StarButton active={favorites.has(team.id)} disabled={account.favoriteSaving} onClick={() => void account.toggleFavorite(team.id)} label="Favorite" />
       </header>
       <Tabs items={TEAM_TABS} value={tab} onChange={setTab} />
-      {tab === 'OVERVIEW' ? <TeamOverview team={team} /> : tab === 'STATS' ? <TeamStatsTab team={team} /> : tab === 'HISTORY' ? <TeamHistoryTab team={team} /> : (
+      {tab === 'OVERVIEW' ? <TeamOverview team={team} /> : tab === 'STATS' ? <TeamStatsTab team={team} /> : tab === 'ROSTER' ? <TeamRoster team={team} /> : tab === 'HISTORY' ? <TeamHistoryTab team={team} /> : (
         <section className="tile schedule">
           {games.map((game) => {
             const home = game.home_team_id === team.id

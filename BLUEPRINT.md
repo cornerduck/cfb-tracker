@@ -236,7 +236,7 @@ Special Teams), Heisman Tracker (top 10 with split bar, Season Field).
 
 **Teams** – Directory (no records; star toggles favorites), Compare (team pickers, head-to-head strip,
 leaders of team A left, season comparison middle, leaders of team B right), Team page tabs
-Overview (next game card), Schedule, Stats (incl. points by game), History (current season highlighted).
+Overview (next game card), Schedule, Stats (incl. points by game), Roster (grouped by offense, defense and special teams, player photo next to each name, roster rows are only added or updated, never deleted), History (current season highlighted).
 
 **Pick'em** – This Week (slate, picks, progress, mode switch, My Season, Week by Week) and My Results
 (summary, week bars, picks of any week with week arrows).
