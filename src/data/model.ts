@@ -121,7 +121,7 @@ export class SeasonModel {
       ...this.games.filter((game) => game.season_type === 'regular' && game.week !== null).map((game) => game.week!),
     ]
     this.lastRegularWeek = Math.max(1, ...regularWeeks)
-    const ccg = this.games.find((game) => game.season_type === 'regular' && /championship/i.test(game.notes ?? '') && game.conference_game)
+    const ccg = this.games.find((game) => game.season_type === 'regular' && /championship/i.test(game.notes ?? '') && !/^fcs/i.test(game.notes ?? ''))
     this.confChampWeek = ccg?.week ?? null
 
     const periods: Period[] = []

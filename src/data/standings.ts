@@ -44,8 +44,10 @@ export function conferenceStandings(model: SeasonModel, conferenceId: number, or
   if (!conference) return null
   const teamIds = model.teamsIn(conferenceId)
   const isIndependent = confAbbr(conference) === 'IND'
+  // CFBD marks conference title games as conference_game = false, so the
+  // notes and the two teams' conference decide.
   const titleGame = model.games.find((game) =>
-    game.season_type === 'regular' && /championship/i.test(game.notes ?? '') && game.conference_game &&
+    game.season_type === 'regular' && /championship/i.test(game.notes ?? '') &&
     teamIds.includes(game.home_team_id) && teamIds.includes(game.away_team_id) && model.gameOrder(game) <= order) ?? null
   const champion = titleGame ? model.winnerId(titleGame) : null
   const now = Date.now()

@@ -275,7 +275,7 @@ export function TeamHistoryTab({ team }: { team: Team }) {
       ? `National champion${lastPost && opponent ? ` · beat ${name(opponent)} ${score}` : ''}`
       : row.postseason_result ?? (lastPost && opponent ? `${won(lastPost) ? 'W' : 'L'} ${score} vs ${name(opponent)}${lastPost.bowl_name ? ` · ${lastPost.bowl_name}` : lastPost.cfp_round ? ` · CFP ${lastPost.cfp_round}` : ''}` : season?.status === 'live' ? 'In progress' : '—')
     const conference = row.conference_id ? model.conferences.get(row.conference_id) : null
-    const confTitle = own.find((game) => game.season_type !== 'postseason' && /championship/i.test(game.notes ?? '') && game.conference_game && won(game))
+    const confTitle = own.find((game) => game.season_type !== 'postseason' && /championship/i.test(game.notes ?? '') && !/^fcs/i.test(game.notes ?? '') && won(game))
     return { row, season, record: { w: row.wins, l: row.losses, t: row.ties }, confRecord, finalRank, postseason, conference, confTitle, weeksRanked: seasonPolls.length, weeksAtOne: seasonPolls.filter((poll) => poll.rank === 1).length }
   })
   const first = Math.min(...rows.map((entry) => entry.row.season), model.year)
