@@ -338,10 +338,8 @@ const ROSTER_GROUPS = [
   { key: 'DEFENSE', positions: ['DL', 'DE', 'DT', 'NT', 'EDGE', 'LB', 'OLB', 'ILB', 'MLB', 'DB', 'CB', 'S', 'FS', 'SS', 'NB'] },
   { key: 'SPECIAL TEAMS', positions: ['K', 'PK', 'P', 'LS', 'KR', 'PR', 'H'] },
 ] as const
-type RosterEntry = { id: string; name: string; jersey: number | null; position: string | null; classYear: number | null; height: number | null; weight: number | null; hometown: string }
+type RosterEntry = { id: string; name: string; jersey: number | null; position: string | null; height: number | null; weight: number | null; hometown: string }
 
-const CLASS_LABELS = ['FR', 'SO', 'JR', 'SR']
-const classLabel = (year: number | null) => (year === null || year < 1 ? '' : year > 4 ? 'GR' : CLASS_LABELS[year - 1])
 const heightText = (inches: number | null) => (inches ? `${Math.floor(inches / 12)}'${inches % 12}"` : '')
 
 export function useTeamRoster(year: number, teamId: number) {
@@ -358,7 +356,7 @@ export function TeamRoster({ team }: { team: Team }) {
       return {
         fromStats: false,
         entries: roster.data.map((row): RosterEntry => ({
-          id: row.player_id, name: row.full_name, jersey: row.jersey, position: row.position, classYear: row.class_year, height: row.height, weight: row.weight,
+          id: row.player_id, name: row.full_name, jersey: row.jersey, position: row.position, height: row.height, weight: row.weight,
           hometown: [row.home_city, row.home_state ?? row.home_country].filter(Boolean).join(', '),
         })),
       }
@@ -366,7 +364,7 @@ export function TeamRoster({ team }: { team: Team }) {
     // Fallback until a roster is imported: everyone with season statistics.
     const seen = new Map<string, RosterEntry>()
     for (const row of players.data ?? []) {
-      if (!seen.has(row.player_id)) seen.set(row.player_id, { id: row.player_id, name: row.player_name, jersey: null, position: row.position, classYear: null, height: null, weight: null, hometown: '' })
+      if (!seen.has(row.player_id)) seen.set(row.player_id, { id: row.player_id, name: row.player_name, jersey: null, position: row.position, height: null, weight: null, hometown: '' })
     }
     return { fromStats: true, entries: [...seen.values()] }
   }, [roster.data, players.data])
@@ -406,7 +404,7 @@ export function TeamRoster({ team }: { team: Team }) {
                 </span>
                 <span className="cond num muted roster-jersey">{entry.jersey !== null ? `#${entry.jersey}` : ''}</span>
                 <span className="cond roster-pos">{entry.position ?? ''}</span>
-                <span className="cond muted roster-class">{classLabel(entry.classYear)}</span>
+                
               </button>
             ))}
           </div>
