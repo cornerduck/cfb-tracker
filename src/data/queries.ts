@@ -218,20 +218,10 @@ const readError = async (error: { message: string; context?: unknown }) => {
 }
 
 export async function savePick(gameId: number, mode: PickMode, teamId: number | null) {
-  const db = client()
-  const { data } = await db.auth.getSession()
-  const userId = data.session?.user.id
-  if (!userId) throw new Error('Sign in again to save picks.')
-  if (teamId === null) {
-    const { error } = await db.from('pickem_picks').delete().eq('user_id', userId).eq('game_id', gameId).eq('mode', mode)
-    if (error) throw new Error(error.message)
-    return null
-  }
-  const { data: row, error } = await db.from('pickem_picks')
-    .upsert({ user_id: userId, game_id: gameId, mode, pick_team_id: teamId }, { onConflict: 'user_id,game_id,mode' })
-    .select('user_id,game_id,pick_team_id,mode,locked,correct,spread,updated_at').single()
+  const { data, error } = await client().rpc('save_pickem_pick', { p_game_id: gameId, p_mode: mode, p_team_id: teamId })
   if (error) throw new Error(/lock at kickoff/i.test(error.message) ? 'This game has kicked off; the pick is locked.' : error.message)
-  return row as PickRow
+  const row = data as PickRow | null
+  return row && row.game_id ? row : null
 }
 
 // ---------------------------------------------------------------- compare
