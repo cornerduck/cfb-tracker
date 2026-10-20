@@ -5,8 +5,11 @@ import type {
   ConferenceSeason,
   Game,
   GamedayRow,
+  HeadToHead,
   HeismanRow,
   Line,
+  PickMode,
+  PickRow,
   PlayerGameStat,
   PlayerSeasonStat,
   PollRow,
@@ -195,4 +198,52 @@ export async function fetchAllTime() {
     teams.push(...((rows ?? []) as Team[]))
   }
   return { seasons: seasonRows, numberOnes, upsets, teamSeasons, gameday, games, teams }
+}
+
+// ---------------------------------------------------------------- Pick'em
+
+export async function fetchPicks(year: number) {
+  const rows = await loadAll<PickRow & { games?: unknown }>(
+    (from, to) => client().from('pickem_picks').select('user_id,game_id,pick_team_id,mode,locked,correct,spread,updated_at,games!inner(season)')
+      .eq('games.season', year).order('game_id').range(from, to),
+    'picks',
+  )
+  return rows.map(({ games: _games, ...row }) => row as PickRow)
+}
+
+const readError = async (error: { message: string; context?: unknown }) => {
+  const context = error.context as Response | undefined
+  const body = context && typeof context.json === 'function' ? await context.json().catch(() => null) : null
+  return (body && typeof body.error === 'string' ? body.error : null) ?? error.message
+}
+
+export async function savePick(gameId: number, mode: PickMode, teamId: number | null) {
+  const db = client()
+  const { data } = await db.auth.getSession()
+  const userId = data.session?.user.id
+  if (!userId) throw new Error('Sign in again to save picks.')
+  if (teamId === null) {
+    const { error } = await db.from('pickem_picks').delete().eq('user_id', userId).eq('game_id', gameId).eq('mode', mode)
+    if (error) throw new Error(error.message)
+    return null
+  }
+  const { data: row, error } = await db.from('pickem_picks')
+    .upsert({ user_id: userId, game_id: gameId, mode, pick_team_id: teamId }, { onConflict: 'user_id,game_id,mode' })
+    .select('user_id,game_id,pick_team_id,mode,locked,correct,spread,updated_at').single()
+  if (error) throw new Error(/lock at kickoff/i.test(error.message) ? 'This game has kicked off; the pick is locked.' : error.message)
+  return row as PickRow
+}
+
+// ---------------------------------------------------------------- compare
+
+export async function fetchHeadToHead(teamA: number, teamB: number) {
+  const [low, high] = teamA < teamB ? [teamA, teamB] : [teamB, teamA]
+  const row = await single(client().from('head_to_head').select('*').eq('team_a_id', low).eq('team_b_id', high).maybeSingle(), 'head to head')
+  return row as HeadToHead | null
+}
+
+export async function refreshHeadToHead(teamA: number, teamB: number) {
+  const { data, error } = await client().functions.invoke('head-to-head', { body: { team_a_id: teamA, team_b_id: teamB } })
+  if (error) throw new Error(await readError(error as { message: string; context?: unknown }))
+  return (data as { series: HeadToHead }).series
 }

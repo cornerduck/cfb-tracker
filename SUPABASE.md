@@ -314,3 +314,13 @@ The `recompute` stage rebuilds awards, Heisman and the season summary of a
 season without any CFBD calls and does not change the season status. The
 workflow's **import_season** field imports an earlier season (2014 or later)
 with the same stages.
+
+## Pick'em and Compare (October 2026)
+
+- Migration `20261020120000_pickem_compare.sql` enforces the Pick'em rules in the database: picks can only be
+  saved or removed before kickoff, only for one of the two teams, and against-the-spread picks store the line
+  they were made against. Every update job locks started games and grades finished picks (`grade_pickem_picks`,
+  no API calls).
+- Edge Function `head-to-head` returns the all-time series for the Compare screen. It caches the result in
+  `head_to_head` and only asks CFBD again after the two teams have played a new game (one call per refresh,
+  at most 20 per day). Every call is logged in `update_log` and counts toward the monthly budget.

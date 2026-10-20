@@ -18,6 +18,7 @@ import {
 } from "../_shared/cfbd.ts";
 import {
   type Db,
+  gradePickem,
   loadTeamLookups,
   recomputeHeisman,
   recomputeWeeklyAwards,
@@ -375,6 +376,7 @@ const executeJob = async (job: Job, supabase: Db, apiKey: string, calls: CallCou
     details.weeks = weeks;
     details.schedule = (await syncGames(supabase, apiKey, calls, period, lookups, true)).count;
     details.team_records = await updateTeamRecords(supabase, SEASON, lookups.fbsIds);
+    details.pickem_graded = await gradePickem(supabase);
     details.polls = await syncPolls(supabase, apiKey, calls, lookups);
     Object.assign(details, await syncSeasonStats(supabase, apiKey, calls, lookups));
     details.coaches = await syncCoaches(supabase, apiKey, calls, lookups);
@@ -397,6 +399,7 @@ const executeJob = async (job: Job, supabase: Db, apiKey: string, calls: CallCou
   if (job === "near-live") {
     Object.assign(details, await syncScoreboard(supabase, apiKey, calls, period, lookups));
     details.team_records = await updateTeamRecords(supabase, SEASON, lookups.fbsIds);
+    details.pickem_graded = await gradePickem(supabase);
     return details;
   }
 
@@ -433,6 +436,7 @@ const executeJob = async (job: Job, supabase: Db, apiKey: string, calls: CallCou
     );
   }
   details.team_records = await updateTeamRecords(supabase, SEASON, lookups.fbsIds);
+  details.pickem_graded = await gradePickem(supabase);
 
   if (["weekly", "winter"].includes(job) && needsBoxscores) {
     details.weekly_awards = await recomputeWeeklyAwards(supabase, SEASON, lookups.fbsIds, [

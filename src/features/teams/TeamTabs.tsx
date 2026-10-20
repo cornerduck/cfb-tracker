@@ -14,7 +14,7 @@ import { METRICS, formatMetric, type TeamStatLine } from '../stats/teamStats'
 
 // ---------------------------------------------------------------- shared
 
-function useTeamPlayers(year: number, teamId: number) {
+export function useTeamPlayers(year: number, teamId: number) {
   return useQuery({ queryKey: ['team-players', year, teamId], queryFn: () => fetchTeamPlayers(year, teamId), staleTime: 30 * 60_000 })
 }
 
@@ -22,9 +22,9 @@ export function useTeamHistory(teamId: number) {
   return useQuery({ queryKey: ['team-history', teamId], queryFn: () => fetchTeamHistory(teamId), staleTime: 30 * 60_000 })
 }
 
-type Leader = { label: string; short: string; row: PlayerSeasonStat; text: string }
+export type Leader = { label: string; short: string; row: PlayerSeasonStat; text: string }
 
-function teamLeaders(rows: PlayerSeasonStat[]): Leader[] {
+export function teamLeaders(rows: PlayerSeasonStat[]): Leader[] {
   const best = (category: string, key: string) => rows.filter((row) => row.category === category)
     .sort((a, b) => statNumber(b.stats, key) - statNumber(a.stats, key))[0]
   const list: Array<Leader | null> = []
