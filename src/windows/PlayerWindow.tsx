@@ -55,7 +55,7 @@ export function PlayerWindow({ playerId, name, teamId }: { playerId: string; nam
   return (
     <WindowFrame className="player-window" onClose={closeWindow}>
       <div className="player-hero" style={{ background: `linear-gradient(90deg, ${teamColor(team)}55, transparent 70%)` }}>
-        <span className="player-photo" style={photo ? { backgroundImage: `url(${photo})` } : { background: teamColor(team) }}>{!photo && <span className="cond">{abbr(team)}</span>}</span>
+        <span className="player-photo" style={photo ? { background: `url(${photo}) center top / cover no-repeat, linear-gradient(to bottom, ${teamColor(team)}, ${teamColor(team)}99)` } : { background: teamColor(team) }}>{!photo && <span className="cond">{abbr(team)}</span>}</span>
         <div>
           <h2 className="cond">{playerName.toUpperCase()}</h2>
           <p className="muted">{[position, team?.school, model.year].filter(Boolean).join(' · ')}</p>
