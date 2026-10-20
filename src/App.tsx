@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react'
+import { Suspense, lazy, useCallback, useEffect, useMemo, useState, type ReactNode } from 'react'
 import { NavLink, Navigate, Route, Routes, useLocation, useNavigate } from 'react-router-dom'
 import AuthScreen from './AuthScreen'
 import PasswordRecoveryScreen from './PasswordRecoveryScreen'
@@ -6,22 +6,24 @@ import { AppContext, type AppState, type WindowSpec, useApp } from './app/contex
 import { useAccount } from './app/useAccount'
 import { useSeasonModel, useSeasons } from './app/useSeasonData'
 import { SeasonScope } from './app/SeasonScope'
-import { Stats } from './features/stats/Stats'
-import { Archive } from './features/archive/Archive'
-import { Pickem } from './features/pickem/Pickem'
-import { GameDayWindow } from './features/gameday/GameDayWindow'
 import { supabaseConfigurationError } from './lib/supabase'
 import { Home } from './features/home/Home'
-import { Scores } from './features/scores/Scores'
-import { Rankings } from './features/rankings/Rankings'
-import { Standings } from './features/standings/Standings'
-import { Teams } from './features/teams/Teams'
-import { SettingsPage } from './features/account/SettingsPage'
 import { ErrorBox, Loading } from './shared/ui'
 import { shortDateTime } from './shared/format'
-import { GameWindow } from './windows/GameWindow'
-import { PlayerWindow } from './windows/PlayerWindow'
 import { AccountWindow, ErrorWindow, FavoritesWindow, SearchWindow, Top25Window, UndefeatedWindow } from './windows/SmallWindows'
+import { GameDayWindow } from './features/gameday/GameDayWindow'
+
+// Every screen except Home loads on first use.
+const Scores = lazy(() => import('./features/scores/Scores').then((module) => ({ default: module.Scores })))
+const Rankings = lazy(() => import('./features/rankings/Rankings').then((module) => ({ default: module.Rankings })))
+const Standings = lazy(() => import('./features/standings/Standings').then((module) => ({ default: module.Standings })))
+const Teams = lazy(() => import('./features/teams/Teams').then((module) => ({ default: module.Teams })))
+const SettingsPage = lazy(() => import('./features/account/SettingsPage').then((module) => ({ default: module.SettingsPage })))
+const GameWindow = lazy(() => import('./windows/GameWindow').then((module) => ({ default: module.GameWindow })))
+const PlayerWindow = lazy(() => import('./windows/PlayerWindow').then((module) => ({ default: module.PlayerWindow })))
+const Stats = lazy(() => import('./features/stats/Stats').then((module) => ({ default: module.Stats })))
+const Archive = lazy(() => import('./features/archive/Archive').then((module) => ({ default: module.Archive })))
+const Pickem = lazy(() => import('./features/pickem/Pickem').then((module) => ({ default: module.Pickem })))
 
 const TABS: Array<{ path: string; label: string }> = [
   { path: '/', label: 'HOME' },
@@ -249,6 +251,7 @@ function SignedInApp({ account }: { account: ReturnType<typeof useAccount> }) {
   return (
     <AppContext.Provider value={state}>
       <Shell>
+        <Suspense fallback={<Loading />}>
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/scores" element={<Scores />} />
@@ -262,8 +265,9 @@ function SignedInApp({ account }: { account: ReturnType<typeof useAccount> }) {
           <Route path="/settings" element={<SettingsPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
+        </Suspense>
       </Shell>
-      <Windows spec={windowSpec} />
+      <Suspense fallback={null}><Windows spec={windowSpec} /></Suspense>
     </AppContext.Provider>
   )
 }

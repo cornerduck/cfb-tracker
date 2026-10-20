@@ -8,7 +8,7 @@ import { dayMonth } from '../shared/format'
 import { statNumber } from '../shared/stats'
 import { Empty, ErrorBox, Loading, Tabs, imageUrl } from '../shared/ui'
 import { WindowFrame } from './WindowFrame'
-import { gameText } from '../features/rankings/Rankings'
+import { gameText } from '../shared/gameText'
 import { nextLine } from '../features/home/Home'
 
 const SEASON_COLUMNS: Record<string, string[]> = {

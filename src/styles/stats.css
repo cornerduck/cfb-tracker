@@ -364,3 +364,12 @@
   .off-tiles { grid-template-columns: 1fr 1fr; gap: 10px; }
   .off-name { font-size: 32px; }
 }
+
+.gameday-recent { display: flex; flex-direction: column; gap: 2px; }
+.gameday-recent-head { font-size: 12px; letter-spacing: 0.16em; color: #B9A898; margin-bottom: 2px; }
+.gameday-recent-row { display: flex; align-items: center; gap: 10px; padding: 5px 0; border-bottom: 1px solid #2A221B; font-size: 14px; }
+.gameday-recent-row > :first-child { width: 36px; }
+.gameday-all { margin-top: auto; border-color: var(--gd-accent); color: var(--gd-accent); letter-spacing: 0.16em; }
+
+/* Pills never wrap inside; the row scrolls sideways on phones. */
+.pill { white-space: nowrap; flex: none; }
