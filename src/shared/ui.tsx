@@ -30,6 +30,19 @@ export function Plate({ team, size = 24, dark = false }: { team: Team | undefine
   )
 }
 
+// Player photo on a team-colored base. Without a photo file the team logo
+// plate is shown instead.
+export function PlayerAvatar({ playerId, team, size = 36, round = true }: { playerId: string | null | undefined; team: Team | undefined | null; size?: number; round?: boolean }) {
+  const [failed, setFailed] = useState(false)
+  const src = playerId ? imageUrl('players', playerId, ['png', 'jpg', 'jpeg', 'webp']) : null
+  if (!src || failed) return <Plate team={team} size={size} />
+  return (
+    <span className="pavatar" style={{ width: size, height: size, borderRadius: round ? '50%' : Math.max(4, size * 0.2), background: `linear-gradient(to bottom, ${teamColor(team)}, ${teamColor(team)}99)` }} aria-hidden="true">
+      <img src={src} alt="" loading="lazy" onError={() => setFailed(true)} />
+    </span>
+  )
+}
+
 export function Flame({ count, size = 12 }: { count: number | null; size?: number }) {
   if (!count) return null
   return (

@@ -113,6 +113,12 @@ export async function fetchPlayerSeason(year: number, playerIds: string[]) {
   return (rows ?? []) as PlayerSeasonStat[]
 }
 
+// Every stored season of one player, for the Career tab.
+export async function fetchPlayerCareer(playerId: string) {
+  const rows = await single(client().from('player_season_stats').select('*').eq('player_id', playerId).order('season'), 'player career statistics')
+  return (rows ?? []) as PlayerSeasonStat[]
+}
+
 export async function fetchPlayerGames(playerId: string) {
   const rows = await single(client().from('game_player_stats').select('*').eq('player_id', playerId), 'player game log')
   return (rows ?? []) as PlayerGameStat[]

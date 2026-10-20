@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useSearchParams } from 'react-router-dom'
 import { useApp } from '../../app/context'
-import { abbr, formatSpread } from '../../data/model'
+import { abbr } from '../../data/model'
 import { fetchPicks, savePick } from '../../data/queries'
 import type { Game, PickMode, PickRow } from '../../data/types'
 import { kickoffParts } from '../../shared/format'
@@ -11,12 +11,8 @@ import { isLocked, outcomeOf, pct, seasonLine, slateFor, weekLines, type Outcome
 
 const VIEWS = ['THIS WEEK', 'MY RESULTS'] as const
 type View = typeof VIEWS[number]
-const MODES: Array<{ mode: PickMode; label: string; short: string }> = [
-  { mode: 'straight_up', label: 'STRAIGHT UP', short: 'SU' },
-  { mode: 'against_the_spread', label: 'AGAINST THE SPREAD', short: 'ATS' },
-]
-
-const lineText = (value: number) => (value === 0 ? 'PK' : value > 0 ? `+${formatSpread(value)}` : `−${formatSpread(Math.abs(value))}`)
+// Only straight-up picks. The spread stays visible as game information.
+const MODE: PickMode = 'straight_up'
 
 function usePicks(year: number) {
   const queryClient = useQueryClient()
@@ -48,20 +44,16 @@ function usePicks(year: number) {
 
 const OUTCOME_LABEL: Record<Outcome, string> = { correct: 'CORRECT', wrong: 'WRONG', push: 'PUSH', pending: '' }
 
-function PickCard({ game, mode, pick, badges, onPick }: {
+function PickCard({ game, pick, badges, onPick }: {
   game: Game
-  mode: PickMode
   pick: PickRow | undefined
   badges: { gameday: boolean; mine: boolean }
   onPick: (teamId: number | null) => void
 }) {
   const { model, timeZone, openWindow } = useApp()
   const locked = isLocked(game)
-  const spread = model.spreads.get(game.id) ?? null
   const kickoff = kickoffParts(game.start_time, timeZone)
   const outcome = pick ? outcomeOf(pick, game) : 'pending'
-  const atsBlocked = mode === 'against_the_spread' && spread === null
-  const pickSpread = pick?.spread ?? spread
   const head = game.status === 'final'
     ? `FINAL · ${Math.max(game.home_points ?? 0, game.away_points ?? 0)}–${Math.min(game.home_points ?? 0, game.away_points ?? 0)}`
     : game.status === 'in_progress' ? 'LIVE' : `${kickoff.day} ${kickoff.time}`
@@ -82,14 +74,13 @@ function PickCard({ game, mode, pick, badges, onPick }: {
         const team = model.team(teamId)
         const rank = model.apRankAtKickoff(teamId, game)
         const chosen = pick?.pick_team_id === teamId
-        const teamLine = pickSpread === null ? null : index === 1 ? pickSpread : -pickSpread
         const state = chosen ? (outcome === 'correct' ? ' correct' : outcome === 'wrong' ? ' wrong' : ' chosen') : ''
         return (
           <button
             key={teamId}
             type="button"
             className={`pick-team${state}`}
-            disabled={locked || atsBlocked}
+            disabled={locked}
             aria-pressed={chosen}
             onClick={() => onPick(chosen ? null : teamId)}
           >
@@ -97,13 +88,11 @@ function PickCard({ game, mode, pick, badges, onPick }: {
             <Plate team={team} size={28} />
             <span className="muted num pick-rank">{rank ?? ''}</span>
             <span className="cond pick-name truncate">{(team?.school ?? 'TBD').toUpperCase()}</span>
-            {mode === 'against_the_spread' && teamLine !== null && <span className="cond num pick-line">{lineText(teamLine)}</span>}
             {game.status !== 'scheduled' && <span className="cond num pick-score">{index === 1 ? game.home_points : game.away_points}</span>}
             <span className="pick-check" aria-hidden="true">{chosen ? (outcome === 'wrong' ? '✕' : '✓') : ''}</span>
           </button>
         )
       })}
-      {atsBlocked && !locked && <p className="muted small">No line yet. Spread picks open once the line is posted.</p>}
     </article>
   )
 }
@@ -140,15 +129,15 @@ function WeekBar({ line, onClick, active = false }: { line: WeekLine; onClick?: 
   )
 }
 
-function ThisWeek({ mode, setMode, picksState }: { mode: PickMode; setMode: (mode: PickMode) => void; picksState: ReturnType<typeof usePicks> }) {
+function ThisWeek({ picksState }: { picksState: ReturnType<typeof usePicks> }) {
   const { model, period, favorites, setPeriodKey, mobile } = useApp()
   const { picks, save, error, clearError } = picksState
   if (!period) return <Empty>No week selected.</Empty>
   const slate = slateFor(model, period.key, favorites, picks)
-  const pickFor = (gameId: number) => picks.find((pick) => pick.game_id === gameId && pick.mode === mode)
+  const pickFor = (gameId: number) => picks.find((pick) => pick.game_id === gameId && pick.mode === MODE)
   const picked = slate.filter((entry) => pickFor(entry.game.id)?.pick_team_id).length
   const index = model.periods.findIndex((item) => item.key === period.key)
-  const lines = weekLines(model, picks, mode)
+  const lines = weekLines(model, picks, MODE)
 
   const board = (
     <section className="pick-main">
@@ -159,17 +148,12 @@ function ThisWeek({ mode, setMode, picksState }: { mode: PickMode; setMode: (mod
         {!mobile && <span className="muted small">Picks lock at each game's kickoff</span>}
         <span className="grow" />
         <span className="cond pick-progress"><strong className="num">{picked} / {slate.length}</strong> PICKED <span className="pick-progress-bar"><span style={{ width: `${slate.length ? (picked / slate.length) * 100 : 0}%` }} /></span></span>
-        <div className="mode-switch" role="tablist">
-          {MODES.map((item) => (
-            <button key={item.mode} type="button" role="tab" aria-selected={mode === item.mode} className={`cond${mode === item.mode ? ' active' : ''}`} onClick={() => setMode(item.mode)}>{mobile ? item.short : item.label}</button>
-          ))}
-        </div>
       </div>
       {error && <div className="pick-error" role="alert"><span>{error}</span><button type="button" className="tile-link" onClick={clearError}>Dismiss</button></div>}
       <div className={`pick-grid${mobile ? '' : ' scroll-y'}`}>
         {slate.map((entry) => (
-          <PickCard key={entry.game.id} game={entry.game} mode={mode} pick={pickFor(entry.game.id)} badges={entry}
-            onPick={(teamId) => save({ gameId: entry.game.id, mode, teamId })} />
+          <PickCard key={entry.game.id} game={entry.game} pick={pickFor(entry.game.id)} badges={entry}
+            onPick={(teamId) => save({ gameId: entry.game.id, mode: MODE, teamId })} />
         ))}
         {!slate.length && <Empty>No games on the slate this week. The slate holds every game with an AP Top 25 team, the GameDay game and your favorite teams.</Empty>}
       </div>
@@ -183,16 +167,14 @@ function Results({ picksState }: { picksState: ReturnType<typeof usePicks> }) {
   const { model, mobile, openWindow } = useApp()
   const { picks } = picksState
   const su = weekLines(model, picks, 'straight_up')
-  const ats = weekLines(model, picks, 'against_the_spread')
   const suSeason = seasonLine(su)
-  const atsSeason = seasonLine(ats)
-  const weekKeys = [...new Set([...su, ...ats].map((line) => line.key))]
+  const weekKeys = [...new Set(su.map((line) => line.key))]
   const order = new Map(model.periods.map((period, index) => [period.key, index]))
   weekKeys.sort((a, b) => (order.get(b) ?? 0) - (order.get(a) ?? 0))
   const [selected, setSelected] = useState<string | null>(null)
   const key = selected && weekKeys.includes(selected) ? selected : weekKeys[0] ?? null
   const position = key ? weekKeys.indexOf(key) : -1
-  const weekPicks = picks.filter((pick) => pick.pick_team_id !== null && (() => {
+  const weekPicks = picks.filter((pick) => pick.mode === MODE && pick.pick_team_id !== null && (() => {
     const game = model.gameById.get(pick.game_id)
     return game && model.periodKeyOf(game) === key
   })())
@@ -202,16 +184,16 @@ function Results({ picksState }: { picksState: ReturnType<typeof usePicks> }) {
   const summary = (
     <Tile title="SEASON SUMMARY">
       <div className="stat-boxes">
-        <div className="stat-box"><span className="muted small">Straight up</span><strong className="cond num">{suSeason.w}–{suSeason.l}</strong></div>
+        <div className="stat-box"><span className="muted small">Record</span><strong className="cond num">{suSeason.w}–{suSeason.l}</strong></div>
         <div className="stat-box"><span className="muted small">Hit rate</span><strong className="cond num">{pct(suSeason.rate)}</strong></div>
-        <div className="stat-box"><span className="muted small">Against the spread</span><strong className="cond num">{atsSeason.w}–{atsSeason.l}{atsSeason.rate !== null ? <small className="muted"> · {pct(atsSeason.rate)}</small> : null}</strong></div>
+        <div className="stat-box"><span className="muted small">Last week</span><strong className="cond num">{suSeason.last ? `${suSeason.last.w}–${suSeason.last.l}` : '—'}</strong></div>
         <div className="stat-box"><span className="muted small">Best week</span><strong className="cond num">{suSeason.best ? `${suSeason.best.w}–${suSeason.best.l} · ${suSeason.best.short}` : '—'}</strong></div>
       </div>
     </Tile>
   )
   const weeks = (
-    <Tile title="WEEK BY WEEK · STRAIGHT UP" className={mobile ? '' : 'scroll-y'}>
-      {su.length ? su.map((line) => <WeekBar key={line.key} line={line} active={line.key === key} onClick={() => setSelected(line.key)} />) : <Empty>No straight-up picks yet.</Empty>}
+    <Tile title="WEEK BY WEEK" className={mobile ? '' : 'scroll-y'}>
+      {su.length ? su.map((line) => <WeekBar key={line.key} line={line} active={line.key === key} onClick={() => setSelected(line.key)} />) : <Empty>No picks yet.</Empty>}
     </Tile>
   )
   const list = (
@@ -234,7 +216,7 @@ function Results({ picksState }: { picksState: ReturnType<typeof usePicks> }) {
           <button key={`${pick.game_id}-${pick.mode}`} type="button" className="result-row" onClick={() => openWindow({ type: 'game', gameId: game.id })}>
             <span className={`result-mark ${outcome}`}>{outcome === 'correct' ? '✓' : outcome === 'wrong' ? '✕' : outcome === 'push' ? '=' : '·'}</span>
             <strong className="cond">{abbr(model.team(game.away_team_id))} {game.neutral_site ? 'vs' : '@'} {abbr(model.team(game.home_team_id))}</strong>
-            <span className="grow truncate muted">You: {model.team(pick.pick_team_id)?.school}{pick.mode === 'against_the_spread' && pick.spread !== null ? ` ${lineText(pick.pick_team_id === game.home_team_id ? pick.spread : -pick.spread)} · ATS` : ''}</span>
+            <span className="grow truncate muted">You: {model.team(pick.pick_team_id)?.school}</span>
             <span className="muted num">{score}</span>
           </button>
         )
@@ -255,7 +237,6 @@ export function Pickem() {
   const { model, mobile } = useApp()
   const [params, setParams] = useSearchParams()
   const view: View = params.get('view') === 'results' ? 'MY RESULTS' : 'THIS WEEK'
-  const mode: PickMode = params.get('mode') === 'ats' ? 'against_the_spread' : 'straight_up'
   const update = (next: Record<string, string | null>) => {
     const merged = new URLSearchParams(params)
     for (const [key, value] of Object.entries(next)) {
@@ -274,7 +255,7 @@ export function Pickem() {
       {picksState.query.error ? <ErrorBox message={(picksState.query.error as Error).message} onRetry={() => void picksState.query.refetch()} />
         : picksState.query.isPending ? <Loading label="Loading your picks…" />
           : view === 'THIS WEEK'
-            ? <ThisWeek mode={mode} setMode={(next) => update({ mode: next === 'against_the_spread' ? 'ats' : null })} picksState={picksState} />
+            ? <ThisWeek picksState={picksState} />
             : <Results picksState={picksState} />}
     </div>
   )

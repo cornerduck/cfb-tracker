@@ -128,15 +128,15 @@ Scheduled Supabase jobs. All times **Europe/Berlin**.
 - **Weekly awards** (Sunday): Upset of the Week (biggest spread won by an underdog), Game of the Week
   (closest margin, overtime breaks ties), Blowout of the Week (largest margin between FBS teams),
   Performance of the Week (best individual line by a defined points formula).
-- **Top performers** in the game window: per team, the leader in passing yards, rushing yards,
-  receiving yards and tackles (sacks, then interceptions break ties) – eight rows.
+- **Top performers** in the game window: per game, the best player of either team in passing yards, rushing yards,
+  receiving yards and tackles (sacks, then interceptions break ties) – four rows.
 - **Heisman tracker:** stat-based only. QB, RB, WR. Score = 70 % production (percentile vs same position:
   yards, TDs, efficiency, turnovers) + 30 % team success (win % plus a bonus for the AP ranking).
   Season Field = everyone ever in the weekly top 10. The real winner is added in December.
 - **Stats qualifying:** rate stats need a minimum (e.g. 15 pass attempts per team game, similar NCAA-style rules
   elsewhere); totals have no minimum.
 - **Pick'em slate** (Monday): every game with an AP Top 25 team, the GameDay game, and every game of a favorite team.
-  Picks lock at kickoff. Modes: straight up and against the spread.
+  Picks lock at kickoff. Straight up only; the closing spread is shown as game information.
 - **Search** finds FBS teams and players only (no FCS team pages). Recent searches show only before typing.
 
 ---

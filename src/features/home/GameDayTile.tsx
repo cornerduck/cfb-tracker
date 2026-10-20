@@ -69,7 +69,7 @@ export function GameDayTile() {
   const remaining = showStart && showStart > Date.now() ? countdown(showStart).text : null
   return (
     <section className={`gameday-tile${mobile ? ' gameday-tile--mobile' : ''}`} style={{ borderColor: teamColor(host) }}>
-      <button type="button" className="gameday-photo" style={{ background: teamColor(host), backgroundImage: photo ? `linear-gradient(to top, rgba(0,0,0,.65), rgba(0,0,0,0) 60%), url(${photo})` : undefined }} onClick={() => openWindow({ type: 'gameday' })}>
+      <button type="button" className={`gameday-photo${photo ? '' : ' gameday-photo--plain'}`} style={{ background: teamColor(host), backgroundImage: photo ? `linear-gradient(to top, rgba(0,0,0,.65), rgba(0,0,0,0) 60%), url(${photo})` : undefined }} onClick={() => openWindow({ type: 'gameday' })}>
         <span className="varsity gameday-kicker">COLLEGE GAMEDAY · WK {game.week}</span>
         <span className="varsity gameday-city">{String(row.result.city ?? host?.location?.city ?? host?.school ?? '').toUpperCase()}</span>
         <span className="varsity gameday-state">{String(row.result.state ?? host?.location?.state ?? '').toUpperCase()}</span>

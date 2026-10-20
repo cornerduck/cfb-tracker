@@ -1,4 +1,5 @@
 import { type ReactNode, useEffect, useRef, useState } from 'react'
+import { useApp } from '../app/context'
 
 // Desktop: a centered window. Mobile: a bottom sheet that closes when dragged
 // down, but only while its content is scrolled to the top.
@@ -10,6 +11,7 @@ export function WindowFrame({ title, kicker, actions, children, onClose, classNa
   onClose: () => void
   className?: string
 }) {
+  const { backWindow, windowDepth } = useApp()
   const panel = useRef<HTMLDivElement>(null)
   const start = useRef<number | null>(null)
   const [offset, setOffset] = useState(0)
@@ -60,6 +62,7 @@ export function WindowFrame({ title, kicker, actions, children, onClose, classNa
       >
         <span className="sheet-handle" aria-hidden="true" />
         <header className="window-head">
+          {windowDepth > 1 && <button type="button" className="back-button cond" aria-label="Back" onClick={backWindow}>‹ BACK</button>}
           <div className="window-title">
             {kicker && <span className="window-kicker cond">{kicker}</span>}
             {title && <h2 className="cond">{title}</h2>}

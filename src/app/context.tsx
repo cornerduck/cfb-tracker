@@ -25,6 +25,8 @@ export type AppState = {
   setPeriodKey: (key: string) => void
   openWindow: (spec: WindowSpec) => void
   closeWindow: () => void
+  backWindow: () => void
+  windowDepth: number
   mobile: boolean
 }
 

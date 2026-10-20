@@ -3,10 +3,10 @@ import { useQueries, useQuery } from '@tanstack/react-query'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useApp } from '../../app/context'
 import { fetchPlayerSeason, fetchPlayerSeasonCategory, fetchTeamSeasonStats } from '../../data/queries'
-import { abbr, confAbbr, recordText, teamColor } from '../../data/model'
+import { confAbbr, recordText, teamColor } from '../../data/model'
 import type { HeismanRow, PlayerSeasonStat } from '../../data/types'
 import { playerLine } from '../../shared/stats'
-import { ConfTag, Empty, ErrorBox, Loading, Movement, Pills, Plate, Tabs, Tile } from '../../shared/ui'
+import { ConfTag, Empty, ErrorBox, Loading, Movement, Pills, Plate, PlayerAvatar, Tabs, Tile } from '../../shared/ui'
 import { BOARDS, LEADERS, formatValue, indexPlayers, leaderOf, type PlayerEntry } from './playerStats'
 import { METRICS, buildTeamStats, formatMetric } from './teamStats'
 
@@ -130,7 +130,7 @@ function Players() {
                     <td className="rk num">{rank ?? ''}</td>
                     <td className="player-col">
                       <span className="player-cell">
-                        <Plate team={team} size={26} />
+                        <PlayerAvatar playerId={player.id} team={team} size={30} />
                         <span className="player-copy"><strong className="truncate">{player.name}</strong><small className="muted truncate">{[team?.school, player.position].filter(Boolean).join(' · ')}</small></span>
                       </span>
                     </td>
@@ -157,7 +157,7 @@ function Players() {
           const team = model.team(best.player.teamId)
           return (
             <button key={item.label} type="button" className="leader-row" onClick={() => openWindow({ type: 'player', playerId: best.player.id, name: best.player.name, teamId: best.player.teamId })}>
-              <Plate team={team} size={26} />
+              <PlayerAvatar playerId={best.player.id} team={team} size={30} />
               <span className="grow leader-copy"><small className="cond muted">{item.label}</small><span className="truncate">{best.player.name} · {team?.school}</span></span>
               <strong className="cond num">{formatValue(best.value, item.digits)}</strong>
             </button>
@@ -349,7 +349,7 @@ function Heisman() {
           <button key={row.player_id} type="button" className={`ht-row${row.rank === 1 ? ' first' : ''}`} onClick={() => openWindow({ type: 'player', playerId: row.player_id, name: row.player_name, teamId: row.team_id })}>
             <span className="cond num ht-rank">{row.rank}</span>
             <Movement current={row.rank} previous={previous.get(row.player_id) ?? null} isNew={previousWeek !== null && !previous.has(row.player_id)} />
-            <span className="ht-badge cond" style={{ background: teamColor(team) }}>{abbr(team)}</span>
+            <PlayerAvatar playerId={row.player_id} team={team} size={38} />
             <span className="ht-copy">
               <strong className="cond truncate">{row.player_name}</strong>
               <small className="muted truncate">{[line.position, team?.school, team && recordText(model.record(team.id))].filter(Boolean).join(' · ')}</small>
@@ -370,7 +370,7 @@ function Heisman() {
         const team = model.team(entry.row.team_id)
         return (
           <button key={entry.row.player_id} type="button" className="field-row" onClick={() => openWindow({ type: 'player', playerId: entry.row.player_id, name: entry.row.player_name, teamId: entry.row.team_id })}>
-            <span className="field-player"><Plate team={team} size={20} /><span className="truncate">{entry.row.player_name} · {team?.school}</span></span>
+            <span className="field-player"><PlayerAvatar playerId={entry.row.player_id} team={team} size={22} /><span className="truncate">{entry.row.player_name} · {team?.school}</span></span>
             <strong className="cond num">#{entry.peak}</strong>
             <span className="muted num">{entry.weeks}</span>
             {entry.now ? <strong className="cond num">#{entry.now}</strong> : <span className="muted small cond">OUT WK {entry.last + 1 > model.lastRegularWeek ? 'POST' : entry.last + 1}</span>}
