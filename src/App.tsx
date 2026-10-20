@@ -212,10 +212,14 @@ function SignedInApp({ account }: { account: ReturnType<typeof useAccount> }) {
       return null
     }
   })
-  const [windowSpec, setWindowSpec] = useState<WindowSpec | null>(null)
-  const closeWindow = useCallback(() => setWindowSpec(null), [])
+  // Windows form a stack so a player opened from a game can go back to it.
+  const [windowStack, setWindowStack] = useState<WindowSpec[]>([])
+  const openWindowSpec = useCallback((spec: WindowSpec) => setWindowStack((stack) => [...stack, spec]), [])
+  const closeWindow = useCallback(() => setWindowStack([]), [])
+  const backWindow = useCallback(() => setWindowStack((stack) => stack.slice(0, -1)), [])
+  const windowSpec = windowStack.at(-1) ?? null
   const location = useLocation()
-  useEffect(() => setWindowSpec(null), [location.pathname])
+  useEffect(() => setWindowStack([]), [location.pathname])
   // A new browser session always opens on Home, even when the address still
   // holds the last page (for example a bookmark saved on Rankings).
   const navigate = useNavigate()
@@ -256,8 +260,10 @@ function SignedInApp({ account }: { account: ReturnType<typeof useAccount> }) {
         // Session storage is optional.
       }
     },
-    openWindow: setWindowSpec,
+    openWindow: openWindowSpec,
     closeWindow,
+    backWindow,
+    windowDepth: windowStack.length,
     mobile,
   }
 

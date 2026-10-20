@@ -8,7 +8,7 @@ import type { PlayerGameStat } from '../data/types'
 import { UPSET_LABEL, gameStatusText } from '../shared/GameTile'
 import { kickoffParts } from '../shared/format'
 import { statNumber } from '../shared/stats'
-import { Empty, ErrorBox, Loading, Plate, Tabs } from '../shared/ui'
+import { Empty, ErrorBox, Loading, Plate, PlayerAvatar, Tabs } from '../shared/ui'
 import { WindowFrame } from './WindowFrame'
 
 const TEAM_STATS: Array<{ key: string; label: string; lowerBetter?: boolean; parse?: 'ratio' | 'penalty' | 'time' }> = [
@@ -47,8 +47,9 @@ const PLAYER_TABLES: Array<{ category: string; title: string; columns: string[];
   { category: 'punting', title: 'PUNTING', columns: ['NO', 'YDS', 'AVG', 'In 20', 'LONG'], sort: 'YDS' },
 ]
 
-function leader(rows: PlayerGameStat[], teamId: number, category: string, key: string) {
-  const candidates = rows.filter((row) => row.team_id === teamId && row.category === category)
+// Best player of the whole game in a category, whichever team he plays for.
+function leader(rows: PlayerGameStat[], category: string, key: string) {
+  const candidates = rows.filter((row) => row.category === category)
   if (category === 'defensive') {
     const interceptions = new Map(rows.filter((row) => row.category === 'interceptions').map((row) => [row.player_id, statNumber(row.stats, 'INT')]))
     candidates.sort((a, b) => statNumber(b.stats, 'TOT') - statNumber(a.stats, 'TOT') || statNumber(b.stats, 'SACKS') - statNumber(a.stats, 'SACKS') ||
@@ -124,18 +125,18 @@ export function GameWindow({ gameId }: { gameId: number }) {
         <h3 className="cond">TOP PERFORMERS</h3>
         {detail.isLoading ? <Loading /> : players.length ? (
           <div className="performers">
-            {(['passing', 'rushing', 'receiving', 'defensive'] as const).flatMap((category) => sides.map((side) => {
-              const row = leader(players, side.teamId, category, 'YDS')
+            {(['passing', 'rushing', 'receiving', 'defensive'] as const).map((category) => {
+              const row = leader(players, category, 'YDS')
               if (!row) return null
               return (
-                <button key={`${category}-${side.teamId}`} type="button" className="performer" onClick={() => openWindow({ type: 'player', playerId: row.player_id, name: row.player_name, teamId: row.team_id })}>
+                <button key={category} type="button" className="performer" onClick={() => openWindow({ type: 'player', playerId: row.player_id, name: row.player_name, teamId: row.team_id })}>
                   <span className="cond muted performer-cat">{category === 'defensive' ? 'DEFENSE' : category.toUpperCase()}</span>
-                  <Plate team={model.team(side.teamId)} size={24} />
+                  <PlayerAvatar playerId={row.player_id} team={model.team(row.team_id)} size={28} />
                   <span className="grow truncate">{row.player_name}</span>
                   <span className="num secondary">{performerLine(row, category, players)}</span>
                 </button>
               )
-            }))}
+            })}
           </div>
         ) : <Empty>{game.status === 'scheduled' ? 'Box scores appear after kickoff.' : 'Player stats arrive with the Sunday update.'}</Empty>}
       </div>
@@ -185,7 +186,7 @@ export function GameWindow({ gameId }: { gameId: number }) {
                   <tbody>
                     {rows.map((row) => (
                       <tr key={row.player_id} onClick={() => openWindow({ type: 'player', playerId: row.player_id, name: row.player_name, teamId: row.team_id })}>
-                        <td className="truncate">{row.player_name}</td>
+                        <td className="truncate"><span className="player-cell"><PlayerAvatar playerId={row.player_id} team={team} size={22} /><span className="truncate">{row.player_name}</span></span></td>
                         {table.columns.map((column) => <td key={column} className="num">{row.stats[column] ?? '–'}</td>)}
                       </tr>
                     ))}

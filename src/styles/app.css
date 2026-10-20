@@ -801,3 +801,7 @@
   .standings-mobile .st-head { font-size: 10px; letter-spacing: 0.06em; }
   .standings-mobile .streak { font-size: 13px; }
 }
+
+.back-button { border: 1px solid var(--border-2); border-radius: 6px; background: none; color: var(--text-2); padding: 4px 10px; font-size: 13px; letter-spacing: 0.1em; flex-shrink: 0; }
+.back-button:hover { color: var(--text); }
+.career-total td { border-top: 1px solid var(--border-2); }
