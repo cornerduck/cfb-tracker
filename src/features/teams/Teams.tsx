@@ -4,7 +4,7 @@ import { useApp } from '../../app/context'
 import { confAbbr, confName, recordText, teamColor } from '../../data/model'
 import { conferenceStandings } from '../../data/standings'
 import { dayMonth, kickoffParts } from '../../shared/format'
-import { ConfTag, Empty, Flame, Pills, Plate, StarButton, Tabs, imageUrl } from '../../shared/ui'
+import { ConfPlate, Empty, Flame, Pills, Plate, StarButton, Tabs, imageUrl } from '../../shared/ui'
 import { gameText } from '../../shared/gameText'
 import { TeamHistoryTab, TeamOverview, TeamRoster, TeamStatsTab } from './TeamTabs'
 import { Compare } from './Compare'
@@ -45,7 +45,7 @@ function Directory() {
           return (
             <section key={conference.id} className="tile directory-card">
               <header className="directory-head">
-                <ConfTag code={confAbbr(conference)} />
+                <ConfPlate conference={conference} />
                 <h2 className="cond">{confName(conference).toUpperCase()}</h2>
                 <span className="grow" />
                 <span className="muted small">{teams.length} teams</span>
@@ -99,7 +99,7 @@ function TeamPage({ slug }: { slug: string }) {
       <header className="team-hero" style={{ background: `linear-gradient(90deg, ${teamColor(team)}, ${teamColor(team)}66 55%, transparent), ${stadium ? `url(${stadium}) center/cover` : '#15171A'}` }}>
         <Plate team={team} size={64} />
         <div className="team-hero-copy">
-          <span className="cond small">{[confName(conference), team.location?.city && `${team.location.city}, ${team.location.state}`].filter(Boolean).join(' · ').toUpperCase()}</span>
+          <span className="cond small team-hero-place">{conference && <ConfPlate conference={conference} small />}{[confName(conference), team.location?.city && `${team.location.city}, ${team.location.state}`].filter(Boolean).join(' · ').toUpperCase()}</span>
           <h1 className="cond">{rank ? <span className="hero-rank">#{rank} </span> : null}{team.school.toUpperCase()} <span className="mascot">{team.mascot?.toUpperCase()}</span></h1>
           <span className="cond num">{recordText(record)}{conference && confAbbr(conference) !== 'IND' ? ` · ${recordText(conf)} ${confAbbr(conference)}` : ''} <Flame count={model.flame(team.id)} size={14} />{position >= 0 && conference && confAbbr(conference) !== 'IND' && <span className="hero-standing"> {position + 1}{['st', 'nd', 'rd'][position] ?? 'th'} in {confName(conference)}</span>}</span>
         </div>

@@ -5,7 +5,7 @@ import { type Record3, type SeasonModel, abbr, confAbbr, confName, recordText } 
 import { type ConferenceStandings, type StandingRow, conferenceStandings } from '../../data/standings'
 import type { Conference } from '../../data/types'
 import { dayMonth, kickoffParts } from '../../shared/format'
-import { Empty, Plate, StarButton, Tile } from '../../shared/ui'
+import { ConfPlate, Empty, Plate, StarButton, Tile } from '../../shared/ui'
 
 const STATUS_LABEL = { title: 'TITLE SPOT', leader: 'LEADER', alive: 'ALIVE', eliminated: 'ELIMINATED' } as const
 
@@ -156,7 +156,7 @@ export function Standings() {
 
   const navItem = (conference: Conference) => (
     <button key={conference.id} type="button" className={`conf-link${conference.id === conferenceId ? ' active' : ''}`} onClick={() => setSelected(conference.id)}>
-      <span className="conf-plate cond">{confAbbr(conference)}</span>
+      <ConfPlate conference={conference} />
       <span className="conf-link-copy"><strong className="cond">{confName(conference).toUpperCase()}</strong><small className="muted">{leaderText(model, all.get(conference.id) ?? null)}</small></span>
     </button>
   )
@@ -164,7 +164,7 @@ export function Standings() {
   const main = (
     <section className="tile standings-main">
       <header className="standings-head">
-        <span className="conf-plate conf-plate--lg cond">{confAbbr(standings.conference)}</span>
+        <ConfPlate conference={standings.conference} large />
         <h1 className="cond">{confName(standings.conference).toUpperCase()}</h1>
         <span className="muted small">{teamCount} teams{independent ? '' : standings.hasDivisions ? ' · two divisions · division winners meet in the title game' : ' · top two meet in the title game'}</span>
         <span className="grow" />
@@ -181,7 +181,7 @@ export function Standings() {
       <div className="standings-mobile">
         <h1 className="cond page-title">STANDINGS</h1>
         <label className="conf-select">
-          <span className="conf-plate cond">{confAbbr(standings.conference)}</span>
+          <ConfPlate conference={standings.conference} />
           <span className="conf-link-copy"><strong className="cond">{confName(standings.conference).toUpperCase()}</strong><small className="muted">{teamCount} teams · tap to switch conference</small></span>
           <select aria-label="Conference" value={conferenceId ?? ''} onChange={(event) => setSelected(Number(event.target.value))}>
             {conferences.map((conference) => <option key={conference.id} value={conference.id}>{confName(conference)}</option>)}

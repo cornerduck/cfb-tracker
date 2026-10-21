@@ -1,6 +1,6 @@
 import { useState, type ReactNode } from 'react'
-import type { Team } from '../data/types'
-import { abbr, teamColor } from '../data/model'
+import type { Conference, Team } from '../data/types'
+import { abbr, confAbbr, teamColor } from '../data/model'
 
 const imageFiles = new Set(typeof __IMAGE_FILES__ === 'undefined' ? [] : __IMAGE_FILES__)
 
@@ -58,6 +58,19 @@ export function Movement({ current, previous, isNew }: { current: number; previo
   const diff = previous - current
   if (!diff) return <span className="move move--flat">—</span>
   return <span className={`move cond num ${diff > 0 ? 'up' : 'down'}`}>{diff > 0 ? '▲' : '▼'}{Math.abs(diff)}</span>
+}
+
+// Conference logo on a light plate (public/images/conferences/<slug>.png).
+// Without a logo file the plate shows the conference abbreviation.
+export function ConfPlate({ conference, large = false, small = false }: { conference: Conference | null | undefined; large?: boolean; small?: boolean }) {
+  const [failed, setFailed] = useState(false)
+  const src = conference ? imageUrl('conferences', conference.slug, ['png', 'webp', 'svg']) : null
+  const logo = Boolean(src) && !failed
+  return (
+    <span className={`conf-plate${large ? ' conf-plate--lg' : ''}${small ? ' conf-plate--sm' : ''}${logo ? ' conf-plate--logo' : ''} cond`}>
+      {logo ? <img src={src!} alt="" loading="lazy" onError={() => setFailed(true)} /> : confAbbr(conference)}
+    </span>
+  )
 }
 
 export function ConfTag({ code }: { code: string }) {
