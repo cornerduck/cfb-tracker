@@ -29,15 +29,13 @@ export function showStartTime(start: string | null) {
   return Date.parse(`${eastern}T09:00:00${sign}${hours.padStart(2, '0')}:00`)
 }
 
-// College GameDay: the show's location for the coming week, added on Monday
+// College GameDay: the show's location for the selected week, added on Monday
 // of game week from the Wikipedia list.
 export function GameDayTile() {
   const { model, period, timeZone, openWindow, mobile } = useApp()
   const navigate = useNavigate()
   const stops = useGamedayStops()
-  const next = period ? model.nextPeriodAfter(period) ?? period : null
-  const week = next ? model.awardWeekFor(next) : null
-  const row = currentGamedayRow(model, period ? model.awardWeekFor(period) : null, week)
+  const row = currentGamedayRow(model, period ? model.awardWeekFor(period) : null)
   const game = row?.game_id ? model.gameById.get(row.game_id) : undefined
   const host = model.team(row?.team_id ?? game?.home_team_id)
 
@@ -45,7 +43,7 @@ export function GameDayTile() {
     return (
       <section className={`gameday-tile gameday-tile--empty${mobile ? ' gameday-tile--mobile' : ''}`}>
         <div className="gameday-photo" style={{ background: '#3A2A1C' }}>
-          <span className="varsity gameday-kicker">COLLEGE GAMEDAY{next ? ` · ${next.short}` : ''}</span>
+          <span className="varsity gameday-kicker">COLLEGE GAMEDAY{period ? ` · ${period.short}` : ''}</span>
           <span className="varsity gameday-city">TBA</span>
         </div>
         <div className="gameday-body">

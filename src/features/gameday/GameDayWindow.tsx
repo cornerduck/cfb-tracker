@@ -20,9 +20,10 @@ const ordinal = (value: number) => {
   return `${value}${suffix}`
 }
 
-// The GameDay row the Home tile shows: next week's show, else this week's.
-export function currentGamedayRow(model: SeasonModel, periodWeek: number | null, nextWeek: number | null): GamedayRow | undefined {
-  return model.bundle.gameday.find((item) => item.week === nextWeek) ?? model.bundle.gameday.find((item) => item.week === periodWeek)
+// The GameDay row for the selected week. The show is announced on Monday of
+// game week, so a week without a row yet has no location (TBA).
+export function currentGamedayRow(model: SeasonModel, periodWeek: number | null): GamedayRow | undefined {
+  return model.bundle.gameday.find((item) => item.week === periodWeek)
 }
 
 function topLine(rows: PlayerGameStat[], category: string, teamName: (id: number) => string) {
@@ -35,10 +36,9 @@ export function GameDayWindow({ week }: { week?: number }) {
   const { model, period, timeZone, closeWindow, openWindow, mobile } = useApp()
   const navigate = useNavigate()
   const stopsQuery = useGamedayStops()
-  const next = period ? model.nextPeriodAfter(period) ?? period : null
   const row = week !== undefined
     ? model.bundle.gameday.find((item) => item.week === week)
-    : currentGamedayRow(model, period ? model.awardWeekFor(period) : null, next ? model.awardWeekFor(next) : null)
+    : currentGamedayRow(model, period ? model.awardWeekFor(period) : null)
   const game = row?.game_id ? model.gameById.get(row.game_id) : undefined
   const host = model.team(row?.team_id ?? game?.home_team_id)
   const detail = useQuery({ queryKey: ['game-detail', game?.id], queryFn: () => fetchGameDetail(game!.id), enabled: game?.status === 'final', staleTime: 10 * 60_000 })
