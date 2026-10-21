@@ -209,7 +209,7 @@ Tabular figures for all numbers.
 
 **Home** – week title (mobile: arrows and dropdown to switch week), Undefeated pill (desktop) / tile at the bottom (mobile),
 weekly awards (logo plates, Stunner stamp), AP Top 5, Heisman race, biggest results, My Teams,
-College GameDay tile (campus photo, pennants with logo plates, countdown to the show, guest picker, host record,
+College GameDay tile for the selected week (campus photo, pennants with logo plates, countdown to the show, guest picker, host record,
 recent stops). After the game the GameDay tile and window switch to the final state (score, cover, top performers,
 guest pick result, box score link). Offseason Home: countdown in three boxes, champion banner, season recap,
 My Teams final, offseason calendar.
