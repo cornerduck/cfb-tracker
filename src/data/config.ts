@@ -22,3 +22,19 @@ export const SEASON_CONFIG: Record<number, SeasonConfig> = {
 }
 
 export const seasonConfig = (year: number): SeasonConfig => SEASON_CONFIG[year] ?? { cfpReleases: [], titleGameVenue: null }
+
+// Divisions the API does not always deliver. Sun Belt keeps East and West
+// divisions; the division winners meet in the title game. Keyed by team slug.
+// Source for 2026: Sun Belt football media days (sunbeltsports.org).
+const SUN_BELT_EAST = ['app-state', 'coastal-carolina', 'georgia-southern', 'georgia-state', 'james-madison', 'marshall', 'old-dominion']
+const SUN_BELT_WEST_BASE = ['arkansas-state', 'louisiana', 'ul-monroe', 'south-alabama', 'southern-miss', 'troy']
+
+export function fallbackDivisions(year: number, conferenceSlug: string | undefined): { names: string[]; byTeam: Map<string, string> } | null {
+  if (conferenceSlug !== 'sun-belt') return null
+  // Texas State left for the Pac-12 and Louisiana Tech joined in 2026.
+  const west = [...SUN_BELT_WEST_BASE, year >= 2026 ? 'louisiana-tech' : 'texas-state']
+  const byTeam = new Map<string, string>()
+  for (const slug of SUN_BELT_EAST) byTeam.set(slug, 'East')
+  for (const slug of west) byTeam.set(slug, 'West')
+  return { names: ['East', 'West'], byTeam }
+}

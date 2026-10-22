@@ -270,8 +270,8 @@ export type HeismanCandidate = {
 };
 
 // Reconstructs the tracker week by week from cumulative box-score production.
-// Score = 70 % production percentile within the position (yards, touchdowns,
-// efficiency, turnovers) + 30 % team success (win % and an AP ranking bonus).
+// Score = 80 % production percentile within the position (yards, touchdowns,
+// efficiency, turnovers) + 20 % team success (win % and an AP ranking bonus).
 export const computeHeismanWeeks = (
   games: GameRow[],
   playerRows: PlayerGameRow[],
@@ -442,7 +442,7 @@ export const computeHeismanWeeks = (
         player_name: candidate.player.player_name,
         team_id: candidate.player.team_id,
         yards: candidate.yards,
-        score: Number((0.7 * production + 0.3 * candidate.teamSuccess).toFixed(6)),
+        score: Number((0.8 * production + 0.2 * candidate.teamSuccess).toFixed(6)),
       };
     }).sort((a, b) =>
       b.score - a.score || b.yards - a.yards || a.player_name.localeCompare(b.player_name)

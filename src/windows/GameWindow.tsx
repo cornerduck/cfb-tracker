@@ -227,8 +227,8 @@ export function GameWindow({ gameId }: { gameId: number }) {
         <div className="hero-center cond">
           <span>{game.status === 'scheduled' ? kickoff.time : gameStatusText(model, game, timeZone).split(' · ')[0]}</span>
           <span className="muted">{game.neutral_site ? 'vs' : '@'}</span>
+          {upset && <span className={`stamp stamp--${upset.tier} stamp--hero cond`}>{UPSET_LABEL[upset.tier]}{upset.winnerSpread ? ` · +${formatSpread(upset.winnerSpread)}` : ''}</span>}
         </div>
-        {upset && <span className={`stamp stamp--${upset.tier} stamp--hero cond`}>{UPSET_LABEL[upset.tier]}{upset.winnerSpread ? ` · +${formatSpread(upset.winnerSpread)}` : ''}</span>}
       </div>
       <Tabs items={['SUMMARY', 'PLAYER STATS'] as const} value={tab} onChange={setTab} />
       <div className="window-scroll">

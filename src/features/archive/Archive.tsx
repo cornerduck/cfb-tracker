@@ -11,6 +11,7 @@ import { ConfTag, Empty, ErrorBox, Loading, Plate, Tabs, Tile, imageUrl } from '
 import { seasonUpsets } from '../../data/upsets'
 import { Scores } from '../scores/Scores'
 import { Bracket } from '../rankings/Bracket'
+import { Stats } from '../stats/Stats'
 import { GameDayHistory } from '../gameday/GameDayHistory'
 import { isNeutral, useGamedayStops } from '../gameday/data'
 
@@ -47,7 +48,9 @@ function UpsetRow({ model, game, spread, index }: { model: SeasonModel; game: Ga
   )
 }
 
-function SeasonView({ onSub }: { onSub: (sub: 'games' | 'bracket') => void }) {
+type Sub = 'games' | 'bracket' | 'stats'
+
+function SeasonView({ onSub }: { onSub: (sub: Sub) => void }) {
   const { model, openWindow, mobile } = useApp()
   const navigate = useNavigate()
   const [full25, setFull25] = useState(false)
@@ -81,6 +84,7 @@ function SeasonView({ onSub }: { onSub: (sub: 'games' | 'bracket') => void }) {
         {hero && <span className="cond champion-mascot">{champion ? hero.mascot?.toUpperCase() : 'NO. 1 IN THE AP POLL'}</span>}
         {titleGame && titleGame.status === 'final' && <span className="champion-score cond"><small>TITLE GAME</small> {scoreLine(model, titleGame)}</span>}
         <button type="button" className="outline-button cond champion-link" onClick={() => (live ? navigate('/scores') : onSub('games'))}>EVERY {year} GAME AND BOX SCORE →</button>
+        {!live && <button type="button" className="outline-button cond champion-link" onClick={() => onSub('stats')}>{year} PLAYER AND TEAM STATS →</button>}
       </div>
       {photo && !mobile && <img className="champion-photo" src={photo} alt="" />}
     </section>
@@ -138,7 +142,7 @@ function SeasonView({ onSub }: { onSub: (sub: 'games' | 'bracket') => void }) {
     <Tile title="PLAYOFF" action={cfpGames.length ? 'Full bracket →' : undefined} onAction={() => onSub('bracket')}>
       {cfpGames.length ? (
         <div className="playoff-boxes">
-          <div><span className="muted small">No. 1 seed</span><strong className="cond">{model.team(seedOne)?.school ?? '—'}</strong></div>
+          {seedOne !== null && <div><span className="muted small">No. 1 seed</span><strong className="cond">{model.team(seedOne)?.school ?? '—'}</strong></div>}
           <div><span className="muted small">Champion</span><strong className="cond">{champion?.school ?? 'TBD'}</strong></div>
           <div><span className="muted small">Runner-up</span><strong className="cond">{model.team(runnerUp)?.school ?? 'TBD'}</strong></div>
         </div>
@@ -188,12 +192,12 @@ function SeasonView({ onSub }: { onSub: (sub: 'games' | 'bracket') => void }) {
   )
 }
 
-function SeasonSub({ sub, onBack }: { sub: 'games' | 'bracket'; onBack: () => void }) {
+function SeasonSub({ sub, onBack }: { sub: Sub; onBack: () => void }) {
   const { model } = useApp()
   return (
     <div className="archive-sub">
       <button type="button" className="back-link cond" onClick={onBack}>← {model.year} SEASON</button>
-      {sub === 'games' ? <Scores /> : <Bracket />}
+      {sub === 'games' ? <Scores /> : sub === 'stats' ? <Stats embedded /> : <Bracket />}
     </div>
   )
 }
@@ -209,14 +213,20 @@ function AllTime() {
   const data: AllTimeData = query.data
   const teams = new Map<number, Team>(data.teams.map((team) => [team.id, team]))
   const gameById = new Map(data.games.map((game) => [game.id, game]))
-  const firstYear = Math.min(...data.seasons.map((season) => season.year))
+  const storedYears = [...new Set(data.teamSeasons.map((row) => row.season))]
+  const firstYear = storedYears.length ? Math.min(...storedYears) : Math.min(...data.seasons.map((season) => season.year))
 
   const weeksAtOne = new Map<number, number>()
   for (const row of data.numberOnes) weeksAtOne.set(row.team_id, (weeksAtOne.get(row.team_id) ?? 0) + 1)
   const mostWeeks = [...weeksAtOne.entries()].sort((a, b) => b[1] - a[1]).slice(0, 5)
 
+  // Only teams that were FBS in every stored season count, so recent
+  // FBS arrivals do not get ranked against a shorter history.
+  const yearsByTeam = new Map<number, Set<number>>()
+  for (const row of data.teamSeasons) yearsByTeam.set(row.team_id, (yearsByTeam.get(row.team_id) ?? new Set<number>()).add(row.season))
   const records = new Map<number, { w: number; l: number; t: number }>()
   for (const row of data.teamSeasons) {
+    if (yearsByTeam.get(row.team_id)!.size < storedYears.length) continue
     const record = records.get(row.team_id) ?? { w: 0, l: 0, t: 0 }
     record.w += row.wins
     record.l += row.losses
@@ -294,6 +304,7 @@ function AllTime() {
         )) : gameday.isPending ? <Loading /> : <Empty>The GameDay history arrives with the next weekly update.</Empty>}
       </Tile>
       <Tile title={`BEST RECORD SINCE ${firstYear}`}>
+        <p className="muted small">FBS teams in every season since {firstYear}</p>
         {bestRecords.map(([teamId, record], index) => (
           <div key={teamId} className="alltime-row">
             <span className="muted num">#{index + 1}</span>
@@ -328,7 +339,7 @@ export function Archive() {
   const years = [...seasons].sort((a, b) => a.year - b.year)
   const archived = years.filter((season) => season.status === 'archived')
   const year = Number(params.get('season')) || archived.at(-1)?.year || liveYear
-  const sub = params.get('sub') === 'games' || params.get('sub') === 'bracket' ? params.get('sub') as 'games' | 'bracket' : null
+  const sub = params.get('sub') === 'games' || params.get('sub') === 'bracket' || params.get('sub') === 'stats' ? params.get('sub') as Sub : null
   const update = (next: Record<string, string | null>) => {
     const merged = new URLSearchParams(params)
     for (const [key, value] of Object.entries(next)) {

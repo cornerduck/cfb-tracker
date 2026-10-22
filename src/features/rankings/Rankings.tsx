@@ -7,7 +7,7 @@ import { type PollRelease, type SeasonModel, confAbbr, recordText } from '../../
 import { projectField } from '../../data/standings'
 import type { PollSource } from '../../data/types'
 import { countdown, fullDateTime, number } from '../../shared/format'
-import { ConfTag, Empty, Flame, Movement, Plate, Tabs, Tile } from '../../shared/ui'
+import { ConfPlate, ConfTag, Empty, Flame, Movement, Plate, Tabs, Tile } from '../../shared/ui'
 import { Bracket } from './Bracket'
 
 const VIEWS = ['AP POLL', 'COACHES', 'CFP RANKINGS', 'PLAYOFF BRACKET'] as const
@@ -223,7 +223,7 @@ export function Rankings() {
         <Movement current={row.rank} previous={prev} isNew={Boolean(previous) && prev === null} />
         <span className="rank-team"><Plate team={team} size={24} /><span className="cond rank-name truncate">{view === 'CFP RANKINGS' ? team?.school.toUpperCase() : team?.school}</span><Flame count={model.flame(row.team_id, before)} /></span>
         <span className="cond num muted">{record}</span>
-        <ConfTag code={confAbbr(model.conferenceOf(row.team_id))} />
+        <ConfPlate conference={model.conferenceOf(row.team_id)} small />
         {view === 'CFP RANKINGS' ? (
           <>
             <span className="field-cell">{field ? <><span className="seed-chip cond">SEED {field.seed}</span>{field.bye && <span className="cond muted">BYE</span>}{field.autoBid && !field.bye && <span className="cond muted small">AUTO BID</span>}</> : <span className="muted small">Out</span>}</span>

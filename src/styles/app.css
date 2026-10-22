@@ -243,7 +243,7 @@
 .stamp--big { border-color: var(--upset); background: #2A1A0E; }
 .stamp--stunner { border-color: var(--stunner); background: var(--stunner); color: #fff; box-shadow: 0 0 16px rgba(229, 72, 77, 0.55); transform: rotate(-6deg); }
 .stamp--corner { top: 10px; right: 10px; bottom: auto; transform: rotate(6deg); }
-.stamp--hero { top: 46px; right: 110px; bottom: auto; font-size: 14px; transform: rotate(4deg); }
+.stamp--hero { position: static; margin-top: 10px; white-space: nowrap; font-size: 14px; transform: rotate(-3deg); }
 
 /* ================================================================ game tile */
 
@@ -457,12 +457,15 @@
 .projected-note { color: var(--text-2); font-size: 13px; display: flex; align-items: center; gap: 10px; }
 .pill-tag { padding: 1px 10px; border: 1px solid var(--upset); border-radius: 4px; color: var(--upset); font-weight: 700; letter-spacing: 0.12em; font-size: 13px; }
 .bracket-grid { flex: 1; display: grid; grid-template-columns: repeat(4, minmax(200px, 1fr)); gap: 22px; min-height: 0; }
+.bracket-grid--four { grid-template-columns: repeat(2, minmax(220px, 1fr)); max-width: 720px; }
 .bracket-col { display: flex; flex-direction: column; gap: 8px; min-height: 0; }
 .bracket-col h3 { font-size: 14px; letter-spacing: 0.14em; color: var(--text-2); }
 .bracket-col-body { flex: 1; display: flex; flex-direction: column; justify-content: space-around; gap: 12px; }
 .bracket-col--final .bracket-col-body { justify-content: center; }
 .bracket-card { display: flex; flex-direction: column; border: 1px solid var(--border); border-radius: 6px; background: var(--inner); text-align: left; overflow: hidden; }
-.bracket-card:disabled { cursor: default; }
+.bracket-card { cursor: pointer; }
+.bracket-card.disabled { cursor: default; }
+.bracket-slot.linked:hover { background: var(--row-hover, rgba(255, 255, 255, 0.06)); }
 .bracket-slot { display: flex; align-items: center; gap: 8px; padding: 8px 10px; border-bottom: 1px solid var(--row-line); font-weight: 600; font-size: 15px; }
 .bracket-slot.tbd { color: var(--muted); }
 .bracket-slot.won { color: var(--text); }
@@ -770,7 +773,7 @@
   .hero-badge { width: 44px; height: 44px; font-size: 14px; }
   .hero-copy strong { font-size: 20px; }
   .hero-score { font-size: 44px; }
-  .stamp--hero { top: auto; bottom: 8px; right: 50%; transform: translateX(50%) rotate(-4deg); font-size: 11px; }
+  .stamp--hero { margin-top: 4px; font-size: 11px; }
   .game-summary { grid-template-columns: 1fr; margin: -12px -16px -20px; }
   .game-summary-left { border-right: 0; border-bottom: 1px solid var(--border); padding: 12px 16px; }
   .game-summary-right { padding: 12px 16px; }
@@ -788,6 +791,7 @@
   .tab { padding: 10px 10px 12px; font-size: 14px; }
   .bracket-mobile { display: flex; flex-direction: column; gap: 14px; }
   .bracket-grid { grid-template-columns: repeat(4, 220px); overflow-x: auto; }
+  .bracket-grid.bracket-grid--four { grid-template-columns: repeat(2, 220px); }
   .text-input { width: 100%; }
   .schedule-row { grid-template-columns: 40px 28px minmax(0, 1fr) auto; }
   .schedule-row > :nth-child(2) { display: none; }
