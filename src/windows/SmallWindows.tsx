@@ -5,7 +5,7 @@ import { useApp } from '../app/context'
 import { confName, recordText } from '../data/model'
 import type { PollSource } from '../data/types'
 import { searchPlayers } from '../data/queries'
-import { Empty, Flame, Movement, Plate, Tabs } from '../shared/ui'
+import { Empty, Flame, Movement, Plate, PlayerAvatar, Tabs } from '../shared/ui'
 import { nextLine } from '../features/home/Home'
 import { WindowFrame } from './WindowFrame'
 
@@ -204,7 +204,7 @@ export function SearchWindow() {
               const team = model.team(player.teamId)
               return (
                 <button key={player.id} type="button" className="search-row" onClick={() => { void account.saveRecentSearch(player.name); openWindow({ type: 'player', playerId: player.id, name: player.name, teamId: player.teamId }) }}>
-                  <Plate team={team} size={30} />
+                  <PlayerAvatar playerId={player.id} team={team} size={30} />
                   <span className="search-copy"><strong>{player.name}</strong><small className="muted">{[player.position, team?.school, player.yards ? `${player.yards} yds` : null].filter(Boolean).join(' · ')}</small></span>
                 </button>
               )

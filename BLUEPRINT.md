@@ -130,8 +130,8 @@ Scheduled Supabase jobs. All times **Europe/Berlin**.
   Performance of the Week (best individual line by a defined points formula).
 - **Top performers** in the game window: per game, the best player of either team in passing yards, rushing yards,
   receiving yards and tackles (sacks, then interceptions break ties) – four rows.
-- **Heisman tracker:** stat-based only. QB, RB, WR. Score = 70 % production (percentile vs same position:
-  yards, TDs, efficiency, turnovers) + 30 % team success (win % plus a bonus for the AP ranking).
+- **Heisman tracker:** stat-based only. QB, RB, WR. Score = 80 % production (percentile vs same position:
+  yards, TDs, efficiency, turnovers) + 20 % team success (win % plus a bonus for the AP ranking).
   Season Field = everyone ever in the weekly top 10. The real winner is added in December.
 - **Stats qualifying:** rate stats need a minimum (e.g. 15 pass attempts per team game, similar NCAA-style rules
   elsewhere); totals have no minimum.

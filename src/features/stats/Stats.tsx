@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import { useQueries, useQuery } from '@tanstack/react-query'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useApp } from '../../app/context'
@@ -6,7 +6,7 @@ import { fetchPlayerSeason, fetchPlayerSeasonCategory, fetchTeamSeasonStats } fr
 import { confAbbr, recordText, teamColor } from '../../data/model'
 import type { HeismanRow, PlayerSeasonStat } from '../../data/types'
 import { playerLine } from '../../shared/stats'
-import { ConfTag, Empty, ErrorBox, Loading, Movement, Pills, Plate, PlayerAvatar, Tabs, Tile } from '../../shared/ui'
+import { ConfPlate, Empty, ErrorBox, Loading, Movement, Pills, Plate, PlayerAvatar, Tabs, Tile } from '../../shared/ui'
 import { BOARDS, LEADERS, formatValue, indexPlayers, leaderOf, type PlayerEntry } from './playerStats'
 import { METRICS, buildTeamStats, formatMetric } from './teamStats'
 
@@ -42,6 +42,17 @@ export function useTeamStats() {
   return { lines, error: query.error as Error | null, retry: () => void query.refetch() }
 }
 
+// Inside the archive the page URL already carries the season, so the stats
+// views keep their own tab and board state instead of using the query string.
+const EmbeddedStats = createContext(false)
+function useStatsParams(): [URLSearchParams, (next: Record<string, string>) => void] {
+  const embedded = useContext(EmbeddedStats)
+  const [urlParams, setUrlParams] = useSearchParams()
+  const [local, setLocal] = useState(() => new URLSearchParams())
+  if (embedded) return [local, (next) => setLocal(new URLSearchParams(next))]
+  return [urlParams, (next) => setUrlParams(next, { replace: true })]
+}
+
 function ConferenceSelect({ value, onChange }: { value: number | null; onChange: (value: number | null) => void }) {
   const conferences = useApp().model.conferenceList()
   return (
@@ -54,11 +65,11 @@ function ConferenceSelect({ value, onChange }: { value: number | null; onChange:
 
 function Players() {
   const { model, openWindow, mobile } = useApp()
-  const [params, setParams] = useSearchParams()
+  const [params, setParams] = useStatsParams()
   const board = BOARDS.find((item) => item.key === params.get('board')) ?? BOARDS[0]
   const setBoard = (label: string) => {
     const next = BOARDS.find((item) => item.label === label)!
-    setParams({ view: 'players', board: next.key }, { replace: true })
+    setParams({ view: 'players', board: next.key })
   }
   const [sort, setSort] = useState<{ key: string; asc: boolean } | null>(null)
   const [conferenceId, setConferenceId] = useState<number | null>(null)
@@ -134,7 +145,7 @@ function Players() {
                         <span className="player-copy"><strong className="truncate">{player.name}</strong><small className="muted truncate">{[team?.school, player.position].filter(Boolean).join(' · ')}</small></span>
                       </span>
                     </td>
-                    {!mobile && <td>{conference && <ConfTag code={confAbbr(conference)} />}</td>}
+                    {!mobile && <td>{conference && <ConfPlate conference={conference} small />}</td>}
                     {visibleColumns.map((item) => <td key={item.key} className={`num${item.key === sortKey ? ' sorted' : ''}`}>{formatValue(item.value(player), item.digits)}</td>)}
                   </tr>
                 )
@@ -250,7 +261,7 @@ function Teams() {
                   <tr key={line.teamId} onClick={() => team && navigate(`/teams/${team.slug}?tab=stats`)}>
                     <td className="rk num">{index + 1}</td>
                     <td className="player-col"><span className="player-cell"><Plate team={team} size={26} /><strong className="truncate">{team?.school}</strong></span></td>
-                    {!mobile && <td>{conference && <ConfTag code={confAbbr(conference)} />}</td>}
+                    {!mobile && <td>{conference && <ConfPlate conference={conference} small />}</td>}
                     {visible.map((metric) => <td key={metric.key} className={`num${metric.key === sortKey ? ' sorted' : ''}`}>{formatMetric(metric, line.values[metric.key])}</td>)}
                   </tr>
                 )
@@ -382,11 +393,15 @@ function Heisman() {
   return mobile ? <div className="stats-mobile">{list}{side}</div> : <div className="heisman-layout">{list}{side}</div>
 }
 
-export function Stats() {
+export function Stats({ embedded = false }: { embedded?: boolean }) {
+  return <EmbeddedStats.Provider value={embedded}><StatsPage /></EmbeddedStats.Provider>
+}
+
+function StatsPage() {
   const { model, currentPeriod: period, mobile } = useApp()
-  const [params, setParams] = useSearchParams()
+  const [params, setParams] = useStatsParams()
   const view = (Object.keys(VIEW_PARAM) as View[]).find((item) => VIEW_PARAM[item] === params.get('view')) ?? 'PLAYERS'
-  const setView = (next: View) => setParams({ view: VIEW_PARAM[next] }, { replace: true })
+  const setView = (next: View) => setParams({ view: VIEW_PARAM[next] })
   const through = period ? (period.kind === 'week' ? `through week ${period.week}` : `through ${period.label.toLowerCase()}`) : ''
   return (
     <div className="stats">

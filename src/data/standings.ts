@@ -1,6 +1,7 @@
 // Conference standings, race status and the projected CFP field.
 
 import type { Conference, Game } from './types'
+import { fallbackDivisions } from './config'
 import { type PollRelease, type Record3, SeasonModel, confAbbr, confName } from './model'
 
 export type RaceStatus = 'title' | 'leader' | 'alive' | 'eliminated'
@@ -74,8 +75,12 @@ export function conferenceStandings(model: SeasonModel, conferenceId: number, or
     return { conference, groups: [{ division: null, rows }], hasDivisions: false, champion: null, titleGame: null, leaders: [] }
   }
 
-  const divisions = (model.divisions.get(conferenceId) ?? []).filter(Boolean)
-  const divisionOf = (teamId: number) => model.teamSeasons.get(teamId)?.division ?? null
+  const stored = (model.divisions.get(conferenceId) ?? []).filter(Boolean)
+  const fallback = stored.length > 1 ? null : fallbackDivisions(model.year, conference.slug)
+  const divisions = fallback ? fallback.names : stored
+  const divisionOf = (teamId: number) => fallback
+    ? fallback.byTeam.get(model.team(teamId)?.slug ?? '') ?? null
+    : model.teamSeasons.get(teamId)?.division ?? null
   const hasDivisions = divisions.length > 1 && rows.every((row) => divisionOf(row.teamId))
   const groups: StandingsGroup[] = hasDivisions
     ? divisions.map((division) => ({ division, rows: rows.filter((row) => divisionOf(row.teamId) === division) }))

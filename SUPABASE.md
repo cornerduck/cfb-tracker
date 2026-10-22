@@ -79,7 +79,7 @@ rerun that stage before continuing. Only run `awards` last; that final stage
 marks 2025 as archived.
 
 Heisman weekly ranks are reconstructed from cumulative player box-score
-production and team results using the blueprint's 70% production / 30% team
+production and team results using the blueprint's 80% production / 20% team
 success weighting; passing/rushing/receiving activity is used to infer a
 player's position because the game-stat feed does not include position. The
 database/API does not supply this app-specific weekly tracker history directly.
