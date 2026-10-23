@@ -24,6 +24,7 @@ const PlayerWindow = lazy(() => import('./windows/PlayerWindow').then((module) =
 const Stats = lazy(() => import('./features/stats/Stats').then((module) => ({ default: module.Stats })))
 const Archive = lazy(() => import('./features/archive/Archive').then((module) => ({ default: module.Archive })))
 const Pickem = lazy(() => import('./features/pickem/Pickem').then((module) => ({ default: module.Pickem })))
+const Draft = lazy(() => import('./features/draft/Draft').then((module) => ({ default: module.Draft })))
 
 const TABS: Array<{ path: string; label: string }> = [
   { path: '/', label: 'HOME' },
@@ -33,6 +34,7 @@ const TABS: Array<{ path: string; label: string }> = [
   { path: '/stats', label: 'STATS' },
   { path: '/teams', label: 'TEAMS' },
   { path: '/pickem', label: "PICK'EM" },
+  { path: '/draft', label: 'DRAFT' },
   { path: '/archive', label: 'ARCHIVE' },
 ]
 
@@ -47,6 +49,7 @@ const MORE_ITEMS: Array<{ path: string; label: string; icon: string }> = [
   { path: '/stats', label: 'Stats', icon: 'M4 20V10M10 20V4M16 20v-7' },
   { path: '/teams', label: 'Teams', icon: 'M12 3l8 3v6c0 4.5-3.4 8-8 9-4.6-1-8-4.5-8-9V6z' },
   { path: '/pickem', label: "Pick'em", icon: 'M5 12l4 4 10-10' },
+  { path: '/draft', label: 'Draft', icon: 'M5 4h14v16H5zM9 9h6M9 13h6' },
   { path: '/archive', label: 'Archive', icon: 'M3 5h18v4H3zM5 9v11h14V9M10 13h4' },
   { path: '/settings', label: 'Settings', icon: 'M12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6zM12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9 7 7M17 17l2.1 2.1M4.9 19.1 7 17M17 7l2.1-2.1' },
 ]
@@ -280,6 +283,7 @@ function SignedInApp({ account }: { account: ReturnType<typeof useAccount> }) {
           <Route path="/teams" element={<Teams />} />
           <Route path="/teams/:slug" element={<Teams />} />
           <Route path="/pickem" element={<Pickem />} />
+          <Route path="/draft" element={<Draft />} />
           <Route path="/archive" element={<Archive />} />
           <Route path="/settings" element={<SettingsPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />

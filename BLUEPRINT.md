@@ -81,6 +81,7 @@ so app usage never costs API calls. A completed season is never rewritten unless
 | coaches | head coach per team and season with record |
 | head_to_head | all-time series between two teams (computed on demand, cached) |
 | pickem_picks | per user and game: pick, mode (straight up / against the spread), locked, correct |
+| big_boards | per user and draft year: up to 100 player ids in rank order (Mock Draft Simulator) |
 | profiles | per user: display name, favorite team ids, time zone, recent searches |
 | update_log | every run: time, job, trigger (schedule / manual), status, API calls used, error |
 
@@ -196,10 +197,10 @@ Tabular figures for all numbers.
 
 ## 9. Navigation
 
-- **Desktop top bar:** STRDYS mark · tabs **Home, Scores, Rankings, Standings, Stats, Teams, Pick'em, Archive**
+- **Desktop top bar:** STRDYS mark · tabs **Home, Scores, Rankings, Standings, Stats, Teams, Pick'em, Draft, Archive**
   · search · week selector (weeks of the current season only) · favorites star (menu) · update dot · account menu.
 - **Mobile bottom bar:** Home, Scores, Rankings, Standings, More. **More** opens a sheet with
-  Stats, Teams, Pick'em, Archive, Settings and sign out. Search and account at the top.
+  Stats, Teams, Pick'em, Draft, Archive, Settings and sign out. Search and account at the top.
 - Everything is clickable: team → team page; player → player window; game → game window;
   tile headings and "→" links → the full tab.
 
@@ -240,6 +241,13 @@ Overview (next game card), Schedule, Stats (incl. points by game), Roster (group
 
 **Pick'em** – This Week (slate, picks, progress, mode switch, My Season, Week by Week) and My Results
 (summary, week bars, picks of any week with week arrows).
+
+**Draft** – Big Board (phase 1 of the Mock Draft Simulator, see `design/` for the planned screens): your own
+board of up to 100 players per draft year. Search the roster of the season before the draft by name, position
+and school, add players, reorder them (drag on desktop, arrows everywhere) and remove them. Every row shows
+photo, position, school, conference, height and weight and the stat line of that season. A mock needs 64
+players, the rest is reserve. Pick order, the mock itself, saved mocks and the real drafts in the archive follow
+in later phases.
 
 **Archive** – Seasons (season switcher with every archived season; champion banner, Heisman with winner highlighted,
 final Top 10, playoff, conference champions, upsets, facts, "Every game and box score" → Scores of that season),

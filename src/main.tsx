@@ -14,6 +14,7 @@ import './styles/tokens.css'
 import './styles/app.css'
 import './styles/account.css'
 import './styles/stats.css'
+import './styles/draft.css'
 import App from './App.tsx'
 
 const queryClient = new QueryClient({
