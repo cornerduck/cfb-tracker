@@ -92,6 +92,23 @@ Template syntax: `{{ value }}` = data, `<sc-for>` = repeated item, `<sc-if>` = s
 - `PickemResults.dc.html` – Pick'em · My Results
 - `MPickemResults.dc.html` – Pick'em · My Results · Mobile
 
+## Draft
+
+Static mockups with sample data. Not built yet; see the Mock Draft concept document.
+
+- `DraftBigBoard.dc.html` – Draft · Big Board · Desktop
+- `MDraftBigBoard.dc.html` – Draft · Big Board · Mobile
+- `DraftPicks.dc.html` – Draft · Pick order · Desktop
+- `MDraftPicks.dc.html` – Draft · Pick order · Mobile
+- `DraftMock.dc.html` – Draft · Mock draft in progress · Desktop
+- `MDraftMock.dc.html` – Draft · Mock draft in progress · Mobile
+- `DraftFinal.dc.html` – Draft · Mock draft finished · Desktop
+- `MDraftFinal.dc.html` – Draft · Mock draft finished · Mobile
+- `DraftMyMocks.dc.html` – Draft · My mocks · Desktop
+- `MDraftMyMocks.dc.html` – Draft · My mocks · Mobile
+- `ArchiveDraft.dc.html` – Archive · NFL draft first round · Desktop
+- `MArchiveDraft.dc.html` – Archive · NFL draft first round · Mobile
+
 ## Archive
 
 - `Archive.dc.html` – Archive · Season 2025
