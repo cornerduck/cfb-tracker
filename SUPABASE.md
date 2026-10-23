@@ -375,8 +375,11 @@ with the same stages.
 - To fill it: after the merge and a successful deploy, open **Actions → Supabase → Run workflow**, select branch
   **main**, check **Import the first round of the real NFL drafts**, leave the other options as they are and run
   it. The last step prints the number of picks per draft year. Run it again after a new season is archived.
-- The NFL abbreviation comes from the team nickname (for example "Las Vegas Raiders" and "Oakland Raiders" both
-  give LV), so logos work for older drafts too.
+- CFBD often names the team of a pick only by its city ("Tennessee", "New York"). The import therefore also
+  reads `/draft/teams` and resolves the team by `nflTeamId`, else by a unique city, else by the nickname ("Las
+  Vegas Raiders" and "Oakland Raiders" both give LV). A bare "New York" or "Los Angeles" without a team id stays
+  without abbreviation. The app resolves a missing abbreviation against `nfl_teams` as well, so a repeated import
+  only improves the stored data.
 
 ## GameDay (October 2026)
 

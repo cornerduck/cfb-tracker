@@ -1,16 +1,19 @@
 import { useQuery } from '@tanstack/react-query'
 import { useMemo } from 'react'
-import { fetchDraftPicks, fetchNflTeams, type MockDraftRow } from '../../data/queries'
+import { fetchDraftPicks, fetchNflTeams, type MockDraftRow, type NflTeamRow } from '../../data/queries'
 import type { RosterPlayer } from '../../data/types'
 import { Empty, ErrorBox, Loading, Plate } from '../../shared/ui'
 import { useApp } from '../../app/context'
+import { draftTeam } from './draftTeam'
 import { NflPlate } from './NflPlate'
 import { compareToReal, type CompareRow, type CompareStatus } from './compare'
 
+const NO_TEAMS: NflTeamRow[] = []
 const LABEL: Record<CompareStatus, string> = { exact: 'EXACT', moved: 'CLOSE', out: 'MISS', none: '' }
 
-function Row({ row, color, player }: { row: CompareRow; color: string; player: RosterPlayer | null }) {
+function Row({ row, teams, player }: { row: CompareRow; teams: readonly NflTeamRow[]; player: RosterPlayer | null }) {
   const { model } = useApp()
+  const nfl = draftTeam(row.real, teams)
   const school = player ? model.team(player.team_id) : null
   const note = row.status === 'moved' && row.delta !== null
     ? row.delta < 0 ? `Went ${-row.delta} later in reality` : `Went ${row.delta} earlier in reality`
@@ -32,7 +35,7 @@ function Row({ row, color, player }: { row: CompareRow; color: string; player: R
       </span>
       <span className={`cp-badge cond ${row.status}`}>{LABEL[row.status]}</span>
       <span className="cp-real">
-        <NflPlate abbr={row.real.nfl_abbr ?? row.real.nfl_team.slice(0, 3).toUpperCase()} color={color} size={26} />
+        <NflPlate abbr={nfl.abbr} color={nfl.color} size={26} />
         <span className="cp-name truncate">{row.real.name}</span>
       </span>
     </div>
@@ -44,14 +47,18 @@ export function MockCompare({ mock, playerOf, ready }: { mock: MockDraftRow; pla
   const { mobile } = useApp()
   const real = useQuery({ queryKey: ['nfl-draft', mock.draft_year], queryFn: () => fetchDraftPicks(mock.draft_year), staleTime: 10 * 60_000 })
   const teams = useQuery({ queryKey: ['nfl-teams'], queryFn: fetchNflTeams, staleTime: 10 * 60_000 })
-  const result = useMemo(
-    () => (real.data?.length && ready ? compareToReal(mock.slots, mock.picks, (id) => playerOf(id).full_name, real.data) : null),
-    [real.data, ready, mock.slots, mock.picks, playerOf],
-  )
+  const result = useMemo(() => {
+    if (!real.data?.length || !ready || !teams.data) return null
+    // Older imports only know the city, so the team is resolved against the 32 teams first.
+    const resolved = real.data.map((pick) => {
+      const team = draftTeam(pick, teams.data)
+      return team.abbr === 'NFL' ? pick : { ...pick, nfl_abbr: team.abbr }
+    })
+    return compareToReal(mock.slots, mock.picks, (id) => playerOf(id).full_name, resolved)
+  }, [real.data, teams.data, ready, mock.slots, mock.picks, playerOf])
   if (real.error) return <ErrorBox message={(real.error as Error).message} onRetry={() => void real.refetch()} />
-  if (real.isPending || !ready) return <Loading label="Loading the real draft…" />
+  if (real.isPending || teams.isPending || !ready) return <Loading label="Loading the real draft…" />
   if (!result) return <Empty>The real draft {mock.draft_year} is not in the data yet.</Empty>
-  const colors = new Map((teams.data ?? []).map((team) => [team.abbr, team.color]))
   const { summary } = result
   const chips: [string, string][] = [
     ['EXACT PICKS', `${summary.exact} / ${summary.total}`],
@@ -79,7 +86,7 @@ export function MockCompare({ mock, playerOf, ready }: { mock: MockDraftRow; pla
       <section className="tile cp-list">
         <div className="cp-head cond muted"><span>PICK</span><span>YOUR MOCK</span><span /><span>REAL DRAFT</span></div>
         {result.rows.map((row) => (
-          <Row key={row.pick} row={row} color={(row.real.nfl_abbr && colors.get(row.real.nfl_abbr)) || '3A3F46'} player={row.mock ? playerOf(row.mock.playerId) : null} />
+          <Row key={row.pick} row={row} teams={teams.data ?? NO_TEAMS} player={row.mock ? playerOf(row.mock.playerId) : null} />
         ))}
       </section>
     </div>
