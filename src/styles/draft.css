@@ -86,3 +86,58 @@
 }
 .po-check input { width: 18px; height: 18px; flex: none; margin: 0; }
 .po-check span { flex: 1; min-width: 0; }
+
+/* DRAFT tab: mock draft and my mocks */
+.mk-root { display: flex; flex-direction: column; flex: 1; min-height: 0; gap: 12px; }
+.mk-head { display: flex; flex-direction: row; align-items: center; gap: 16px; flex-wrap: wrap; }
+.mk-head-copy { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 200px; }
+.mk-head-copy h2 { display: flex; align-items: center; gap: 10px; font-size: 24px; }
+.mk-kicker { font-size: 13px; font-weight: 700; letter-spacing: 0.1em; color: var(--text-2); }
+.mk-name { width: 220px; flex: none; }
+.mk-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.mk-actions .po-button { flex: none; }
+.mk-layout { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr); gap: 16px; }
+.mk-col { display: flex; flex-direction: column; gap: 2px; }
+.mk-row { display: flex; align-items: center; gap: 12px; min-height: 52px; padding: 4px 8px; border-bottom: 1px solid var(--row-line); border-radius: 6px; }
+.mk-row.current { background: #1C1F23; outline: 1px solid var(--text); }
+.mk-row.forfeited { opacity: 0.55; }
+.mk-number { width: 30px; flex: none; font-size: 18px; font-weight: 700; }
+.mk-team { width: 58px; flex: none; display: flex; flex-direction: column; align-items: flex-start; gap: 2px; font-size: 14px; font-weight: 700; }
+.mk-choice { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.mk-clock { font-size: 14px; font-weight: 700; letter-spacing: 0.1em; color: var(--text); }
+.mk-pick { height: 32px; padding: 0 14px; flex: none; border: 0; border-radius: 6px; background: var(--text); color: #0B0C0E; font-size: 14px; font-weight: 700; letter-spacing: 0.08em; cursor: pointer; }
+.mk-pick:disabled { opacity: 0.4; cursor: default; }
+.mk-start { max-width: 640px; display: flex; flex-direction: column; gap: 12px; }
+.mk-start p { margin: 0; line-height: 1.5; }
+.mk-start-button { height: 38px; font-size: 15px; }
+.mk-final { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 300px; gap: 16px; }
+.mk-side { display: flex; flex-direction: column; gap: 16px; align-self: start; }
+.mk-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.mk-chip { display: inline-flex; align-items: center; gap: 8px; height: 30px; padding: 0 10px; border: 1px solid var(--border-2); border-radius: 6px; font-size: 14px; }
+.mk-chip strong { font-size: 16px; }
+
+.mm-root { display: flex; flex-direction: column; gap: 12px; }
+.mm-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.mm-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px; }
+.mm-card { display: flex; flex-direction: column; gap: 10px; }
+.mm-card-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.mm-card-head h2 { font-size: 18px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.mm-badge { flex: none; padding: 2px 8px; border: 1px solid var(--border-2); border-radius: 4px; color: var(--muted); font-size: 12px; font-weight: 700; letter-spacing: 0.08em; }
+.mm-badge.done { color: #7BD389; border-color: #2B5A33; }
+.mm-preview { display: flex; flex-direction: column; gap: 4px; padding: 8px 0; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); font-size: 14px; }
+.mm-line { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.mm-line .cond:first-child { width: 22px; flex: none; }
+.mm-line .cond:nth-child(2) { width: 36px; flex: none; color: var(--text-2); }
+
+@media (max-width: 1023px) {
+  .mk-name { width: 100%; }
+  .mk-head-copy h2 { font-size: 20px; }
+  .mk-row { min-height: 54px; gap: 8px; }
+  .mk-team { width: 48px; }
+  .mk-final { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 1023px) {
+  .draft .tabs { overflow-x: auto; scrollbar-width: none; max-width: 100%; }
+  .draft .tab { flex: none; white-space: nowrap; padding: 0 10px; }
+}

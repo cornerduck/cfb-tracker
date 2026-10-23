@@ -333,3 +333,31 @@ export async function savePickOrder(year: number, teamOrder: string[] | null, ex
   const { error } = await client().rpc('save_pick_order', { p_year: year, p_team_order: teamOrder, p_exceptions: exceptions })
   if (error) throw new Error(error.message)
 }
+
+export type MockSlotRow = { pick: number; round: 1 | 2; team: string; owner: string; forfeited: boolean }
+export type MockPickRow = { pick: number; player_id: string }
+export type MockDraftRow = {
+  id: string
+  draft_year: number
+  name: string
+  slots: MockSlotRow[]
+  picks: MockPickRow[]
+  created_at: string
+  updated_at: string
+}
+
+export async function fetchMockDrafts() {
+  const rows = await single(client().from('mock_drafts').select('*').order('updated_at', { ascending: false }), 'mock drafts')
+  return (rows ?? []) as MockDraftRow[]
+}
+
+// Creates or updates one of your mocks (the caller chooses the id).
+export async function saveMockDraft(mock: Pick<MockDraftRow, 'id' | 'draft_year' | 'name' | 'slots' | 'picks'>) {
+  const { error } = await client().rpc('save_mock_draft', { p_id: mock.id, p_year: mock.draft_year, p_name: mock.name, p_slots: mock.slots, p_picks: mock.picks })
+  if (error) throw new Error(error.message)
+}
+
+export async function deleteMockDraft(id: string) {
+  const { error } = await client().rpc('delete_mock_draft', { p_id: id })
+  if (error) throw new Error(error.message)
+}

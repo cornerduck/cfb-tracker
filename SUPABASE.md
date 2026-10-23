@@ -354,6 +354,17 @@ with the same stages.
 - If ESPN changes its format, the function answers with an error that says how many teams had no record; the
   tab then shows the last stored records, or an error message when nothing is stored yet.
 
+## Draft mock drafts (October 2026)
+
+- Migration `20261023160000_mock_drafts.sql` adds `mock_drafts` (id, user, draft year, name, `slots` and `picks`
+  as JSON). `slots` is the pick order at the start of the mock (64 entries with team, owner and forfeited), so a
+  mock stays complete when the pick order is changed later. `picks` are the players chosen so far.
+- Read directly (row level security: only your own rows), written through `save_mock_draft(...)` and
+  `delete_mock_draft(id)`. The save function creates or updates by id (the app chooses the id), checks the 64
+  slots, known teams, no player or pick twice, no pick for a forfeited slot, a name of 1 to 60 characters and a
+  limit of 100 mocks per account. Other accounts' mocks cannot be changed or deleted.
+- The migration is applied by the Supabase workflow after the merge. No Edge Function changes.
+
 ## GameDay (October 2026)
 
 - Migration `20261020140000_gameday_history.sql` adds `gameday_stops`: every College GameDay show since 1993.
