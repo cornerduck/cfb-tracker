@@ -6,9 +6,11 @@ import { fetchBigBoards, fetchPlayerSeason, fetchRosterByIds, saveBigBoard, sear
 import type { RosterPlayer } from '../../data/types'
 import { ConfPlate, Empty, ErrorBox, Loading, PlayerAvatar, Plate, Tabs } from '../../shared/ui'
 import { playerStatLine } from '../stats/Stats'
+import { PickOrder } from './PickOrder'
 import { BOARD_SIZE, MOCK_PICKS, POSITION_GROUPS, boardYears, move, sizeText, statsSeasonFor } from './logic'
 
-const VIEWS = ['BIG BOARD'] as const
+const VIEWS = ['BIG BOARD', 'PICK ORDER'] as const
+type View = typeof VIEWS[number]
 
 // The board of every year lives in one query; saves are queued so two quick
 // changes can never arrive out of order.
@@ -267,17 +269,24 @@ export function Draft() {
   const years = boardYears(boards.years, fallback)
   const requested = Number(params.get('year'))
   const year = years.includes(requested) ? requested : years.includes(fallback) ? fallback : years[years.length - 1]
-  const selectYear = (value: number) => setParams(value === fallback ? {} : { year: String(value) }, { replace: true })
+  const view: View = params.get('view') === 'picks' ? 'PICK ORDER' : 'BIG BOARD'
+  const go = (value: number, target: View) => {
+    const next: Record<string, string> = {}
+    if (value !== fallback) next.year = String(value)
+    if (target === 'PICK ORDER') next.view = 'picks'
+    setParams(next, { replace: true })
+  }
+  const selectYear = (value: number) => go(value, view)
   const next = years[years.length - 1] + 1
   const [extra, setExtra] = useState<number[]>([])
   const shown = [...new Set([...years, ...extra])].sort((a, b) => a - b)
 
-  if (!account.session) return <Empty>Sign in to build your Big Board.</Empty>
+  if (!account.session) return <Empty>Sign in to build your Big Board and pick order.</Empty>
   return (
     <div className="draft">
       <div className="page-head page-head--tabs">
         <h1 className="cond">DRAFT</h1>
-        <Tabs items={VIEWS} value="BIG BOARD" onChange={() => undefined} />
+        <Tabs items={VIEWS} value={view} onChange={(target) => go(year, target)} />
         <span className="grow" />
         <div className="pills draft-years">
           {shown.map((item) => <button key={item} type="button" className={`pill cond${item === year ? ' active' : ''}`} aria-pressed={item === year} onClick={() => selectYear(item)}>{mobile ? item : `DRAFT ${item}`}</button>)}
@@ -286,7 +295,8 @@ export function Draft() {
       </div>
       {boards.query.error ? <ErrorBox message={(boards.query.error as Error).message} onRetry={() => void boards.query.refetch()} />
         : boards.query.isPending ? <Loading label="Loading your board…" />
-          : <BigBoard year={shown.includes(year) ? year : fallback} />}
+          : view === 'PICK ORDER' ? <PickOrder year={shown.includes(year) ? year : fallback} />
+            : <BigBoard year={shown.includes(year) ? year : fallback} />}
     </div>
   )
 }

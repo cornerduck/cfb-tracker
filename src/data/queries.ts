@@ -293,3 +293,43 @@ export async function searchRoster(season: number, query: string, positions: str
   const rows = await single(request.order('full_name').limit(60), 'players')
   return (rows ?? []) as RosterPlayer[]
 }
+
+export type NflTeamRow = {
+  abbr: string
+  espn_id: number
+  name: string
+  color: string
+  wins: number
+  losses: number
+  ties: number
+  record_season: number
+  updated_at: string
+}
+
+export type PickExceptionRow = { round: 1 | 2; team: string; owner: string | null; forfeited: boolean }
+export type PickOrderRow = { draft_year: number; team_order: string[] | null; exceptions: PickExceptionRow[] }
+
+export async function fetchNflTeams() {
+  const rows = await single(client().from('nfl_teams').select('*').order('name'), 'NFL teams')
+  return (rows ?? []) as NflTeamRow[]
+}
+
+// Asks the nfl-standings function to refresh the records. It only calls ESPN
+// when the stored records are older than three hours.
+export async function refreshNflTeams() {
+  const { data, error } = await client().functions.invoke('nfl-standings', { body: {} })
+  if (error) throw new Error(await readError(error as { message: string; context?: unknown }))
+  return data as { status: 'fresh' | 'updated'; updated_at: string }
+}
+
+export async function fetchPickOrders() {
+  const rows = await single(client().from('pick_orders').select('draft_year,team_order,exceptions').order('draft_year'), 'pick orders')
+  return (rows ?? []) as PickOrderRow[]
+}
+
+// Saves the pick order of one draft year. No order and no exceptions removes
+// it, which brings back the order by records.
+export async function savePickOrder(year: number, teamOrder: string[] | null, exceptions: PickExceptionRow[]) {
+  const { error } = await client().rpc('save_pick_order', { p_year: year, p_team_order: teamOrder, p_exceptions: exceptions })
+  if (error) throw new Error(error.message)
+}

@@ -335,6 +335,23 @@ with the same stages.
 - The player id is the CFBD athlete id, the same id `roster` and `player_season_stats` use.
 - The Supabase workflow applies the migration when the change reaches `main`; nothing has to be run by hand.
 
+## Draft pick order (October 2026)
+
+- Migration `20261023140000_pick_order.sql` adds `nfl_teams` (32 teams, color, wins, losses, ties, season of the
+  record; readable for signed-in users, written only by the Edge Function) and `pick_orders` (per user and draft
+  year: own team order and a list of changed picks). Like the Big Board, `pick_orders` is read directly and written
+  through one function, `save_pick_order(year, team_order, exceptions)`, which checks that the order lists all
+  32 known teams once, that only rounds 1 and 2 are used and that owners are known teams. Sending no order and
+  no exceptions removes the row.
+- Edge Function `nfl-standings` (no API key, unofficial ESPN endpoints) fills `nfl_teams`: teams and colors from
+  the ESPN teams list, records from the ESPN standings (with the conference standings of the core API as
+  fallback). It answers only signed-in users and calls ESPN at most every three hours, however many people open
+  the tab. The Draft tab calls it when the stored records are older than two hours or missing.
+- No scheduled job is needed. The migration and the function are deployed by the Supabase workflow when the change
+  reaches `main`. The first signed-in visit of the Pick Order tab fills the table.
+- If ESPN changes its format, the function answers with an error that says how many teams had no record; the
+  tab then shows the last stored records, or an error message when nothing is stored yet.
+
 ## GameDay (October 2026)
 
 - Migration `20261020140000_gameday_history.sql` adds `gameday_stops`: every College GameDay show since 1993.

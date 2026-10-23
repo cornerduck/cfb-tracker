@@ -82,6 +82,8 @@ so app usage never costs API calls. A completed season is never rewritten unless
 | head_to_head | all-time series between two teams (computed on demand, cached) |
 | pickem_picks | per user and game: pick, mode (straight up / against the spread), locked, correct |
 | big_boards | per user and draft year: up to 100 player ids in rank order (Mock Draft Simulator) |
+| nfl_teams | the 32 NFL teams with color and record of the current season (from ESPN, cached, refreshed by the nfl-standings function) |
+| pick_orders | per user and draft year: own team order and the changed picks (owner, forfeited); no row means order by records |
 | profiles | per user: display name, favorite team ids, time zone, recent searches |
 | update_log | every run: time, job, trigger (schedule / manual), status, API calls used, error |
 
@@ -242,12 +244,17 @@ Overview (next game card), Schedule, Stats (incl. points by game), Roster (group
 **Pick'em** – This Week (slate, picks, progress, mode switch, My Season, Week by Week) and My Results
 (summary, week bars, picks of any week with week arrows).
 
-**Draft** – Big Board (phase 1 of the Mock Draft Simulator, see `design/` for the planned screens): your own
-board of up to 100 players per draft year. Search the roster of the season before the draft by name, position
-and school, add players, reorder them (drag on desktop, arrows everywhere) and remove them. Every row shows
-photo, position, school, conference, height and weight and the stat line of that season. A mock needs 64
-players, the rest is reserve. Pick order, the mock itself, saved mocks and the real drafts in the archive follow
-in later phases.
+**Draft** – Big Board and Pick Order (phases 1 and 2 of the Mock Draft Simulator, see `design/` for the planned
+screens). Big Board: your own board of up to 100 players per draft year. Search the roster of the season before
+the draft by name, position and school, add players, reorder them (drag on desktop, arrows everywhere) and remove
+them. Every row shows photo, position, school, conference, height and weight and the stat line of that season. A
+mock needs 64 players, the rest is reserve. Pick Order: the 64 picks of rounds 1 and 2, worst record first (win
+share, ties alphabetical, round 2 in the same order). The records come from ESPN and are cached in `nfl_teams`;
+opening the tab refreshes them when they are older than two hours. Select a pick to give it to another team
+("FROM" label), mark it as forfeited or move it up and down (drag on desktop); the order applies to both rounds
+and to all your mocks of that draft year. Changes are saved at once, RESET ALL goes back to the records. NFL
+logos are own files in `public/images/nfl/<abbreviation>.png`, see `IMAGES.md`. The mock itself, saved mocks and
+the real drafts in the archive follow in later phases.
 
 **Archive** – Seasons (season switcher with every archived season; champion banner, Heisman with winner highlighted,
 final Top 10, playoff, conference champions, upsets, facts, "Every game and box score" → Scores of that season),
