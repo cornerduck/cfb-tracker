@@ -5,7 +5,7 @@
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.117.2";
 import { asObject, type CallCounter, fetchCfbd, integerValue, type JsonObject } from "../_shared/cfbd.ts";
-import { mapDraftPicks } from "../_shared/draft.ts";
+import { type DraftTeam, mapDraftPicks, parseDraftTeams } from "../_shared/draft.ts";
 import { upsertRows } from "../_shared/store.ts";
 import { validateWorkflowToken } from "../_shared/github.ts";
 
@@ -68,11 +68,21 @@ Deno.serve(async (request) => {
     }
     if (!seasons.length) throw new Error("There is no archived season to import a draft for");
 
+    // The team list tells which NFL team a city name or team id means. Without
+    // it the picks are still imported, only the ambiguous cities stay without logo.
+    let draftTeams: DraftTeam[] = [];
+    try {
+      const listed = await fetchCfbd("/draft/teams", apiKey, calls);
+      if (Array.isArray(listed)) draftTeams = parseDraftTeams(listed);
+    } catch (error) {
+      console.error("CFBD draft teams could not be loaded:", error instanceof Error ? error.message : error);
+    }
+
     const imported: Record<string, number> = {};
     for (const season of seasons) {
       const draftYear = season + 1;
       const data = await fetchCfbd("/draft/picks", apiKey, calls, {}, { year: draftYear });
-      const rows = mapDraftPicks(data, draftYear);
+      const rows = mapDraftPicks(data, draftYear, [1], draftTeams);
       if (!rows.length) throw new Error(`CFBD returned no first round picks for the ${draftYear} draft`);
       imported[String(draftYear)] = await upsertRows(supabase, "nfl_draft_picks", rows, "draft_year,overall");
     }
