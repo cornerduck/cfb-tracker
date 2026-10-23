@@ -365,6 +365,19 @@ with the same stages.
   limit of 100 mocks per account. Other accounts' mocks cannot be changed or deleted.
 - The migration is applied by the Supabase workflow after the merge. No Edge Function changes.
 
+## Real NFL drafts in the archive (October 2026)
+
+- Migration `20261023170000_nfl_draft_picks.sql` adds `nfl_draft_picks` (draft year, overall pick, NFL team and
+  its ESPN abbreviation, player, position, college team and id, CFBD athlete id). Signed-in users can read it.
+- Edge Function `import-draft` reads `/draft/picks` from CFBD (one call per draft year) and keeps the first
+  round. The draft after a season is held in the following spring, so season 2025 gives the 2026 draft. Without a
+  season it imports every archived season. Existing rows are updated, nothing is deleted.
+- To fill it: after the merge and a successful deploy, open **Actions → Supabase → Run workflow**, select branch
+  **main**, check **Import the first round of the real NFL drafts**, leave the other options as they are and run
+  it. The last step prints the number of picks per draft year. Run it again after a new season is archived.
+- The NFL abbreviation comes from the team nickname (for example "Las Vegas Raiders" and "Oakland Raiders" both
+  give LV), so logos work for older drafts too.
+
 ## GameDay (October 2026)
 
 - Migration `20261020140000_gameday_history.sql` adds `gameday_stops`: every College GameDay show since 1993.

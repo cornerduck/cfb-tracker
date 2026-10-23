@@ -47,6 +47,11 @@ on:
         required: false
         default: '0'
         type: string
+      import_draft:
+        description: Import the first round of the real NFL drafts after every archived season (one CFBD call per draft year)
+        required: true
+        default: false
+        type: boolean
 
 permissions:
   contents: read
@@ -81,7 +86,7 @@ jobs:
 
   manual-import:
     name: Run selected manual import
-    if: github.event_name == 'workflow_dispatch' && (inputs.run_test_import || inputs.import_2025_stage != 'skip' || inputs.import_roster != 'skip')
+    if: github.event_name == 'workflow_dispatch' && (inputs.run_test_import || inputs.import_2025_stage != 'skip' || inputs.import_roster != 'skip' || inputs.import_draft)
     needs: deploy
     runs-on: ubuntu-latest
     permissions:
@@ -153,3 +158,19 @@ jobs:
             --header "x-github-oidc-token: $GITHUB_OIDC_TOKEN" \
             --header 'Content-Type: application/json' \
             --data "$(jq -cn --arg mode "$IMPORT_ROSTER" --arg season "${IMPORT_SEASON:-2025}" --arg offset "${ROSTER_OFFSET:-0}" '{mode: $mode, season: ($season | tonumber), offset: ($offset | tonumber)}')"
+
+      - name: Import real NFL drafts
+        if: inputs.import_draft
+        env:
+          GITHUB_OIDC_TOKEN: ${{ steps.oidc.outputs.token }}
+        run: |
+          supabase_project_url="${SUPABASE_URL%/}"
+          supabase_project_url="${supabase_project_url%/rest/v1}"
+          curl --fail-with-body --silent --show-error \
+            --request POST \
+            --url "${supabase_project_url}/functions/v1/import-draft" \
+            --header "Authorization: Bearer $SUPABASE_ANON_KEY" \
+            --header "apikey: $SUPABASE_ANON_KEY" \
+            --header "x-github-oidc-token: $GITHUB_OIDC_TOKEN" \
+            --header 'Content-Type: application/json' \
+            --data '{}'
