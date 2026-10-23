@@ -1,105 +1,21 @@
-import { useCallback, useMemo, useRef, useState, type ReactNode } from 'react'
-import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useMemo, useState } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import { useSearchParams } from 'react-router-dom'
 import { useApp } from '../../app/context'
-import { fetchBigBoards, fetchPlayerSeason, fetchRosterByIds, saveBigBoard, searchRoster, type BigBoardRow } from '../../data/queries'
+import { fetchPlayerSeason, searchRoster } from '../../data/queries'
 import type { RosterPlayer } from '../../data/types'
-import { ConfPlate, Empty, ErrorBox, Loading, PlayerAvatar, Plate, Tabs } from '../../shared/ui'
+import { Empty, ErrorBox, Loading, Tabs } from '../../shared/ui'
 import { playerStatLine } from '../stats/Stats'
+import { MockDraft } from './Mock'
+import { MyMocks } from './MyMocks'
 import { PickOrder } from './PickOrder'
-import { BOARD_SIZE, MOCK_PICKS, POSITION_GROUPS, boardYears, move, sizeText, statsSeasonFor } from './logic'
+import { useBigBoards, useBoardPlayers } from './boardHooks'
+import { PlayerLine } from './shared'
+import { BOARD_SIZE, MOCK_PICKS, POSITION_GROUPS, boardYears, move, statsSeasonFor } from './logic'
 
-const VIEWS = ['BIG BOARD', 'PICK ORDER'] as const
+const VIEWS = ['BIG BOARD', 'PICK ORDER', 'MOCK DRAFT', 'MY MOCKS'] as const
+const VIEW_PARAM: Record<string, string> = { 'PICK ORDER': 'picks', 'MOCK DRAFT': 'mock', 'MY MOCKS': 'mocks' }
 type View = typeof VIEWS[number]
-
-// The board of every year lives in one query; saves are queued so two quick
-// changes can never arrive out of order.
-function useBigBoards() {
-  const queryClient = useQueryClient()
-  const query = useQuery({ queryKey: ['big-board'], queryFn: fetchBigBoards, staleTime: 60_000 })
-  const [error, setError] = useState<string | null>(null)
-  const pending = useRef(new Map<number, string[]>())
-  const running = useRef(false)
-
-  const flush = useCallback(async () => {
-    if (running.current) return
-    running.current = true
-    try {
-      while (pending.current.size) {
-        const [year, ids] = pending.current.entries().next().value as [number, string[]]
-        pending.current.delete(year)
-        await saveBigBoard(year, ids)
-      }
-      setError(null)
-    } catch (failure) {
-      pending.current.clear()
-      setError(failure instanceof Error ? failure.message : 'The board could not be saved.')
-      void queryClient.invalidateQueries({ queryKey: ['big-board'] })
-    } finally {
-      running.current = false
-    }
-  }, [queryClient])
-
-  const rows = query.data
-  const idsFor = useCallback((year: number) => (rows ?? []).filter((row) => row.draft_year === year).sort((a, b) => a.rank - b.rank).map((row) => row.player_id), [rows])
-  const setBoard = useCallback((year: number, ids: string[]) => {
-    queryClient.setQueryData<BigBoardRow[]>(['big-board'], (old) => [
-      ...(old ?? []).filter((row) => row.draft_year !== year),
-      ...ids.map((id, index) => ({ draft_year: year, player_id: id, rank: index + 1 })),
-    ])
-    pending.current.set(year, ids)
-    void flush()
-  }, [queryClient, flush])
-  return { query, years: useMemo(() => [...new Set((rows ?? []).map((row) => row.draft_year))], [rows]), idsFor, setBoard, error, clearError: () => setError(null) }
-}
-
-// Roster rows (newest season first, so the first row per player wins) and the
-// stat rows of the season that belongs to the draft.
-function useBoardPlayers(year: number, ids: string[]) {
-  const season = statsSeasonFor(year)
-  const key = useMemo(() => [...ids].sort().join(','), [ids])
-  const query = useQuery({
-    queryKey: ['board-players', season, key],
-    queryFn: async () => {
-      const [roster, stats] = await Promise.all([fetchRosterByIds(ids), fetchPlayerSeason(season, ids)])
-      const byPlayer = new Map<string, RosterPlayer>()
-      for (const row of roster) if (!byPlayer.has(row.player_id)) byPlayer.set(row.player_id, row)
-      return { byPlayer, stats }
-    },
-    enabled: ids.length > 0,
-    staleTime: 5 * 60_000,
-  })
-  return query
-}
-
-function PlayerLine({ player, statsText, trailing, leading }: {
-  player: RosterPlayer
-  statsText: string
-  trailing: ReactNode
-  leading: ReactNode
-}) {
-  const { model, openWindow } = useApp()
-  const team = model.team(player.team_id)
-  const size = sizeText(player.height, player.weight)
-  return (
-    <div className="draft-row">
-      {leading}
-      <PlayerAvatar playerId={player.player_id} team={team} size={34} />
-      <div className="draft-copy">
-        <button type="button" className="draft-name" onClick={() => openWindow({ type: 'player', playerId: player.player_id, name: player.full_name, teamId: player.team_id })}>{player.full_name}</button>
-        <span className="draft-meta muted">
-          {player.position && <span className="draft-pos cond">{player.position}</span>}
-          <Plate team={team} size={18} />
-          <span className="truncate">{team?.school}</span>
-          <ConfPlate conference={model.conferenceOf(player.team_id)} small />
-          {size && <span className="num">{size}</span>}
-        </span>
-        <span className="draft-stats cond num">{statsText || 'No stats this season'}</span>
-      </div>
-      {trailing}
-    </div>
-  )
-}
 
 function BoardRow({ index, count, player, statsText, dragging, over, onMove, onRemove, onDragStart, onDragOver, onDrop, onDragEnd }: {
   index: number
@@ -269,11 +185,14 @@ export function Draft() {
   const years = boardYears(boards.years, fallback)
   const requested = Number(params.get('year'))
   const year = years.includes(requested) ? requested : years.includes(fallback) ? fallback : years[years.length - 1]
-  const view: View = params.get('view') === 'picks' ? 'PICK ORDER' : 'BIG BOARD'
-  const go = (value: number, target: View) => {
+  const view: View = VIEWS.find((item) => VIEW_PARAM[item] === params.get('view')) ?? 'BIG BOARD'
+  const mockParam = params.get('mock')
+  // The selected mock belongs to one year, so it is only kept for that year.
+  const go = (value: number, target: View, mock: string | null = null) => {
     const next: Record<string, string> = {}
     if (value !== fallback) next.year = String(value)
-    if (target === 'PICK ORDER') next.view = 'picks'
+    if (VIEW_PARAM[target]) next.view = VIEW_PARAM[target]
+    if (mock && (target === 'MOCK DRAFT')) next.mock = mock
     setParams(next, { replace: true })
   }
   const selectYear = (value: number) => go(value, view)
@@ -296,7 +215,9 @@ export function Draft() {
       {boards.query.error ? <ErrorBox message={(boards.query.error as Error).message} onRetry={() => void boards.query.refetch()} />
         : boards.query.isPending ? <Loading label="Loading your board…" />
           : view === 'PICK ORDER' ? <PickOrder year={shown.includes(year) ? year : fallback} />
-            : <BigBoard year={shown.includes(year) ? year : fallback} />}
+            : view === 'MOCK DRAFT' ? <MockDraft year={shown.includes(year) ? year : fallback} mockParam={mockParam} onOpen={(id) => go(year, 'MOCK DRAFT', id)} onList={() => go(year, 'MY MOCKS')} />
+              : view === 'MY MOCKS' ? <MyMocks year={shown.includes(year) ? year : fallback} onOpen={(id) => go(year, 'MOCK DRAFT', id)} onNew={() => go(year, 'MOCK DRAFT', 'new')} />
+                : <BigBoard year={shown.includes(year) ? year : fallback} />}
     </div>
   )
 }
