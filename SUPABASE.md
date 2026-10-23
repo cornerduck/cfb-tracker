@@ -347,6 +347,8 @@ with the same stages.
   the ESPN teams list, records from the ESPN standings (with the conference standings of the core API as
   fallback). It answers only signed-in users and calls ESPN at most every three hours, however many people open
   the tab. The Draft tab calls it when the stored records are older than two hours or missing.
+- ESPN answers requests without browser-like headers with 403, so the function sends them. If the teams list is
+  still refused, the team names and abbreviations are taken from the standings and the stored colors are kept.
 - No scheduled job is needed. The migration and the function are deployed by the Supabase workflow when the change
   reaches `main`. The first signed-in visit of the Pick Order tab fills the table.
 - If ESPN changes its format, the function answers with an error that says how many teams had no record; the

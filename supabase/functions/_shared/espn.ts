@@ -37,6 +37,30 @@ export function parseTeams(json: unknown): NflTeamInfo[] {
   return teams;
 }
 
+// Teams named inside the standings (id, abbreviation, name; no color), used
+// when the teams endpoint cannot be reached.
+export function parseStandingsTeams(json: unknown): NflTeamInfo[] {
+  const found = new Map<number, NflTeamInfo>();
+  const walk = (node: unknown, depth: number) => {
+    if (depth > 12 || typeof node !== "object" || node === null) return;
+    if (Array.isArray(node)) {
+      for (const item of node) walk(item, depth + 1);
+      return;
+    }
+    const entry = node as Json;
+    if (isObject(entry.team) && (Array.isArray(entry.stats) || Array.isArray(entry.records))) {
+      const team = entry.team;
+      const espnId = numberOf(team.id);
+      const abbr = typeof team.abbreviation === "string" ? team.abbreviation.trim().toUpperCase() : "";
+      const name = typeof team.displayName === "string" ? team.displayName.trim() : "";
+      if (espnId !== null && abbr && name) found.set(espnId, { espnId, abbr, name, color: hexColor(team.color) ?? "3A3F46" });
+    }
+    for (const value of Object.values(entry)) walk(value, depth + 1);
+  };
+  walk(json, 0);
+  return [...found.values()];
+}
+
 const teamIdOf = (team: unknown) => {
   if (!isObject(team)) return null;
   const direct = numberOf(team.id);
