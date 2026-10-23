@@ -3,7 +3,7 @@
 // fetched from ESPN when it is older than three hours, so many visitors cause
 // at most a few requests a day. Needs no API key (unofficial ESPN endpoints).
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.117.2";
-import { nflSeasonFor, parseRecords, parseTeams, type NflRecord } from "../_shared/espn.ts";
+import { nflSeasonFor, parseRecords, parseStandingsTeams, parseTeams, type NflRecord, type NflTeamInfo } from "../_shared/espn.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -21,7 +21,16 @@ const response = (body: Record<string, unknown>, status = 200) =>
   new Response(JSON.stringify(body), { status, headers: corsHeaders });
 
 const getJson = async (url: string) => {
-  const result = await fetch(url, { signal: AbortSignal.timeout(10_000), headers: { Accept: "application/json" } });
+  // ESPN refuses requests without browser-like headers (403).
+  const result = await fetch(url, {
+    signal: AbortSignal.timeout(10_000),
+    headers: {
+      Accept: "application/json, text/plain, */*",
+      "Accept-Language": "en-US,en;q=0.9",
+      Referer: "https://www.espn.com/",
+      "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36",
+    },
+  });
   if (!result.ok) throw new Error(`ESPN answered ${result.status} for ${new URL(url).pathname}`);
   return await result.json();
 };
@@ -40,7 +49,7 @@ Deno.serve(async (request) => {
   if (userError || !user.user) return response({ error: "The signed-in user could not be verified" }, 401);
 
   const season = nflSeasonFor(new Date());
-  const { data: stored, error: storedError } = await supabase.from("nfl_teams").select("updated_at,record_season");
+  const { data: stored, error: storedError } = await supabase.from("nfl_teams").select("abbr,color,updated_at,record_season");
   if (storedError) return response({ error: `Could not read nfl_teams: ${storedError.message}` }, 500);
   const newest = Math.min(...(stored ?? []).map((row: { updated_at: string }) => Date.parse(row.updated_at)));
   const fresh = (stored?.length ?? 0) === 32 && Date.now() - newest < FRESH_MS &&
@@ -48,18 +57,30 @@ Deno.serve(async (request) => {
   if (fresh) return response({ status: "fresh", updated_at: new Date(newest).toISOString() });
 
   try {
-    const teams = parseTeams(await getJson(TEAMS_URL));
-    if (teams.length !== 32) throw new Error(`ESPN listed ${teams.length} teams instead of 32`);
+    const sources: string[] = [];
+    let teams: NflTeamInfo[] = [];
+    try {
+      teams = parseTeams(await getJson(TEAMS_URL));
+      sources.push("teams");
+    } catch (error) {
+      sources.push(`teams failed: ${error instanceof Error ? error.message : "unknown"}`);
+    }
 
     let records = new Map<number, NflRecord>();
-    const sources: string[] = [];
     try {
-      records = parseRecords(await getJson(standingsUrl(season)));
+      const standings = await getJson(standingsUrl(season));
+      records = parseRecords(standings);
       sources.push("standings");
+      // Without the teams list the standings still name every team; colors
+      // stay as stored.
+      if (teams.length !== 32) {
+        const known = new Map((stored ?? []).map((row: { abbr: string; color: string }) => [row.abbr, row.color]));
+        teams = parseStandingsTeams(standings).map((team) => ({ ...team, color: known.get(team.abbr) ?? team.color }));
+      }
     } catch (error) {
       sources.push(`standings failed: ${error instanceof Error ? error.message : "unknown"}`);
     }
-    if (!teams.every((team) => records.has(team.espnId))) {
+    if (teams.length !== 32 || !teams.every((team) => records.has(team.espnId))) {
       for (const group of [8, 7]) {
         try {
           for (const [id, record] of parseRecords(await getJson(groupUrl(season, group)))) records.set(id, record);
@@ -69,6 +90,7 @@ Deno.serve(async (request) => {
         }
       }
     }
+    if (teams.length !== 32) throw new Error(`Only ${teams.length} of 32 NFL teams were found; ${sources.join("; ")}`);
     const missing = teams.filter((team) => !records.has(team.espnId));
     if (missing.length) {
       throw new Error(`ESPN gave no record for ${missing.length} of 32 teams (${missing.slice(0, 4).map((team) => team.abbr).join(", ")}); ${sources.join("; ")}`);
