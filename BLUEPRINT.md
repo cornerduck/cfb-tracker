@@ -246,7 +246,7 @@ Overview (next game card), Schedule, Stats (incl. points by game), Roster (group
 **Pick'em** – This Week (slate, picks, progress, mode switch, My Season, Week by Week) and My Results
 (summary, week bars, picks of any week with week arrows).
 
-**Draft** – Big Board, Pick Order, Mock Draft and My Mocks (phases 1 to 3 of the Mock Draft Simulator, see `design/` for the planned
+**Draft** – Big Board, Pick Order, Mock Draft and My Mocks (phases 1 to 5 of the Mock Draft Simulator, see `design/` for the planned
 screens). Big Board: your own board of up to 100 players per draft year. Search the roster of the season before
 the draft by name, position and school, add players, reorder them (drag on desktop, arrows everywhere) and remove
 them. Every row shows photo, position, school, conference, height and weight and the stat line of that season. A
@@ -260,9 +260,13 @@ current board and pick order (a mock needs as many board players as there are op
 copy of the pick order. The team on the clock is shown with the players of your board that are still available
 (position filter, name opens the profile); PICK chooses the player for that team, there are no automatic picks
 and no trades. Forfeited picks are skipped, UNDO LAST PICK takes back the last pick. After the last pick the
-final view shows both rounds and the picks by position and conference. Every pick is saved at once. My Mocks:
+final view shows both rounds and the picks by position and conference. When the real first round of that draft
+year is in `nfl_draft_picks` (see the archive), a second view VS REAL DRAFT compares it with the mock: exact picks
+(same player, same pick), real first rounders you picked anywhere, picks within 3 places, team on the clock and the
+average miss, plus a row per pick. Players are matched by CFBD athlete id, and by name only when the real pick has
+no id. Every pick is saved at once. My Mocks:
 all mocks of the draft year with status, first picks, CONTINUE or OPEN, COPY and DELETE; the name can be changed
-in the mock. The real drafts in the archive follow in a later phase.
+in the mock. The real drafts are shown in the archive.
 
 **Archive** – Seasons (season switcher with every archived season; champion banner, Heisman with winner highlighted,
 final Top 10, playoff, conference champions, upsets, facts, "Every game and box score" → Scores of that season,
