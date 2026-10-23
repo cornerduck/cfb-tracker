@@ -259,3 +259,37 @@ export async function fetchGamedayStops() {
     'GameDay history',
   )
 }
+
+// ---------------------------------------------------------------- Draft
+
+export type BigBoardRow = { draft_year: number; player_id: string; rank: number }
+
+// Every board of the signed-in account (the policy limits the rows to it).
+export async function fetchBigBoards() {
+  const rows = await single(client().from('big_boards').select('draft_year,player_id,rank').order('draft_year').order('rank'), 'big board')
+  return (rows ?? []) as BigBoardRow[]
+}
+
+// Replaces the whole board of one draft year, in the given order.
+export async function saveBigBoard(year: number, playerIds: string[]) {
+  const { error } = await client().rpc('save_big_board', { p_year: year, p_player_ids: playerIds })
+  if (error) throw new Error(error.message)
+}
+
+// Roster rows of the given players, newest season first, so the caller can
+// take the first row per player.
+export async function fetchRosterByIds(playerIds: string[]) {
+  if (!playerIds.length) return [] as RosterPlayer[]
+  const rows = await single(client().from('roster').select('*').in('player_id', playerIds).order('season', { ascending: false }), 'board players')
+  return (rows ?? []) as RosterPlayer[]
+}
+
+export async function searchRoster(season: number, query: string, positions: string[] | null, teamId: number | null) {
+  let request = client().from('roster').select('*').eq('season', season)
+  const text = query.replace(/[%_,()]/g, '').trim()
+  if (text) request = request.ilike('full_name', `%${text}%`)
+  if (positions) request = request.in('position', positions)
+  if (teamId !== null) request = request.eq('team_id', teamId)
+  const rows = await single(request.order('full_name').limit(60), 'players')
+  return (rows ?? []) as RosterPlayer[]
+}

@@ -325,6 +325,16 @@ with the same stages.
   `head_to_head` and only asks CFBD again after the two teams have played a new game (one call per refresh,
   at most 20 per day). Every call is logged in `update_log` and counts toward the monthly budget.
 
+## Draft Big Board (October 2026)
+
+- Migration `20261023120000_big_board.sql` adds `big_boards` (user, draft year, player id as text, rank).
+  Like the Pick'em picks it is read directly (row level security: only your own rows) and written through one
+  function, `save_big_board(year, player_ids)`. The function replaces the whole board of that year in the given
+  order, so ranks never duplicate or leave gaps. It rejects empty or duplicate ids, more than 100 players and
+  anonymous callers.
+- The player id is the CFBD athlete id, the same id `roster` and `player_season_stats` use.
+- The Supabase workflow applies the migration when the change reaches `main`; nothing has to be run by hand.
+
 ## GameDay (October 2026)
 
 - Migration `20261020140000_gameday_history.sql` adds `gameday_stops`: every College GameDay show since 1993.
