@@ -13,6 +13,9 @@ never causes an error: it simply shows the fallback. Add, replace or remove imag
 | `champions/` | `<season>.jpg` (`jpeg`, `webp`, `png`), e.g. `2025.jpg` | Champion banner in the archive | Champion team color |
 | `stadiums/` | `<team-slug>.jpg` (`jpeg`, `webp`, `png`) | Team page header | Team color gradient |
 
+NFL logos: the **NFL logos** workflow (Actions → NFL logos → Run workflow) downloads all 32 from ESPN and pushes
+them to the branch `chore/nfl-logos`; open a pull request from it and merge. Run it again to refresh them.
+
 Rules
 
 - File names are lower case and must match exactly (the server is case sensitive).

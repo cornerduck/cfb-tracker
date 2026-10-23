@@ -1,0 +1,47 @@
+name: NFL logos
+
+# Downloads the 32 NFL logos from ESPN into public/images/nfl/<abbreviation>.png
+# (200 x 200 px) and pushes them to the branch chore/nfl-logos. Open a pull
+# request from that branch and merge it. Run it again to refresh the logos.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  logos:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download logos
+        run: |
+          mkdir -p public/images/nfl
+          failed=""
+          for abbr in ari atl bal buf car chi cin cle dal den det gb hou ind jax kc lv lac lar mia min ne no nyg nyj phi pit sf sea tb ten wsh; do
+            file="public/images/nfl/${abbr}.png"
+            curl --fail --silent --location --max-time 30 \
+              "https://a.espncdn.com/combiner/i?img=/i/teamlogos/nfl/500/${abbr}.png&w=200&h=200" -o "$file" \
+              || curl --fail --silent --location --max-time 30 \
+              "https://a.espncdn.com/i/teamlogos/nfl/500/${abbr}.png" -o "$file" \
+              || { failed="$failed $abbr"; rm -f "$file"; continue; }
+            if ! file "$file" | grep -q 'PNG image data'; then
+              failed="$failed $abbr"
+              rm -f "$file"
+            fi
+          done
+          echo "Downloaded: $(ls public/images/nfl | wc -l) of 32"
+          if [ -n "$failed" ]; then
+            echo "Failed:$failed"
+            exit 1
+          fi
+
+      - name: Push branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -B chore/nfl-logos
+          git add public/images/nfl
+          git commit -m "Add NFL logos from ESPN"
+          git push --force origin chore/nfl-logos
