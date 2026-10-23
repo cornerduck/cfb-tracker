@@ -95,7 +95,8 @@ Template syntax: `{{ value }}` = data, `<sc-for>` = repeated item, `<sc-if>` = s
 ## Draft
 
 Static mockups with sample data. The screens are built in the DRAFT tab (Big Board, Pick Order, Mock Draft, My Mocks)
-and in the Archive (real first round); the app text is English.
+and in the Archive (real first round); the app text is English. The comparison of a finished mock with the real
+draft (VS REAL DRAFT) has no mockup of its own.
 
 - `DraftBigBoard.dc.html` – Draft · Big Board · Desktop
 - `MDraftBigBoard.dc.html` – Draft · Big Board · Mobile

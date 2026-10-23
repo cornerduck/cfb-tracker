@@ -4,6 +4,7 @@ import type { MockDraftRow, MockPickRow, MockSlotRow, NflTeamRow } from '../../d
 import type { RosterPlayer } from '../../data/types'
 import { Empty, ErrorBox, Loading, Plate } from '../../shared/ui'
 import { playerStatLine } from '../stats/Stats'
+import { MockCompare } from './MockCompare'
 import { NflPlate } from './NflPlate'
 import { useBigBoards, useBoardPlayers } from './boardHooks'
 import { PlayerLine } from './shared'
@@ -79,6 +80,7 @@ function ActiveMock({ mock, year, boardIds, teams, mocks, onNew }: { mock: MockD
   const [group, setGroup] = useState<keyof typeof POSITION_GROUPS>('ALL')
   const [round, setRound] = useState<Round | null>(null)
   const [pane, setPane] = useState<'players' | 'picks'>('players')
+  const [finalView, setFinalView] = useState<'picks' | 'real'>('picks')
   const shownRound: Round = round ?? slot?.round ?? 1
   const pickedIds = useMemo(() => new Set(mock.picks.map((pick) => pick.player_id)), [mock.picks])
   const ids = useMemo(() => [...new Set([...boardIds, ...mock.picks.map((pick) => pick.player_id)])], [boardIds, mock.picks])
@@ -122,7 +124,11 @@ function ActiveMock({ mock, year, boardIds, teams, mocks, onNew }: { mock: MockD
           <NameField key={mock.id} mock={mock} mocks={mocks} />
           {toolbar}
         </section>
-        <div className="mk-final">
+        <div className="pills">
+          <button type="button" className={`pill cond${finalView === 'picks' ? ' active' : ''}`} aria-pressed={finalView === 'picks'} onClick={() => setFinalView('picks')}>MY PICKS</button>
+          <button type="button" className={`pill cond${finalView === 'real' ? ' active' : ''}`} aria-pressed={finalView === 'real'} onClick={() => setFinalView('real')}>VS REAL DRAFT</button>
+        </div>
+        {finalView === 'real' ? <MockCompare mock={mock} playerOf={playerOf} ready={!players.isPending} /> : <div className="mk-final">
           {[1, 2].map((item) => (
             <section key={item} className={`tile mk-col${mobile ? '' : ' scroll-y'}`}>
               <header className="tile-head"><h2 className="cond">ROUND {item}</h2></header>
@@ -133,7 +139,7 @@ function ActiveMock({ mock, year, boardIds, teams, mocks, onNew }: { mock: MockD
             <Summary title="PICKS BY POSITION" rows={positions} />
             <Summary title="PICKS BY CONFERENCE" rows={conferences} />
           </div>
-        </div>
+        </div>}
       </div>
     )
   }
