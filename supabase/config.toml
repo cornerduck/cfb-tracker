@@ -15,3 +15,6 @@ verify_jwt = false
 
 [functions.import-roster]
 verify_jwt = false
+
+[functions.nfl-standings]
+verify_jwt = false

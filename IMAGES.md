@@ -7,6 +7,7 @@ never causes an error: it simply shows the fallback. Add, replace or remove imag
 | Folder | File name | Used for | Fallback |
 |---|---|---|---|
 | `logos/` | `<team-slug>.png` (`webp`, `svg`) | Every logo plate | Team abbreviation in the team color |
+| `nfl/` | `<abbreviation>.png` (`webp`, `svg`), lower case as ESPN writes it, e.g. `ari.png`, `wsh.png`, `lv.png` | Pick order in the Draft tab | NFL abbreviation in the team color |
 | `players/` | `<player-id>.png` (`jpg`, `jpeg`, `webp`) | Player window | Team color with the abbreviation |
 | `gameday/` | `<team-slug>.jpg` (`jpeg`, `webp`, `png`) | GameDay tile and window when the show visits that campus | Host team color |
 | `champions/` | `<season>.jpg` (`jpeg`, `webp`, `png`), e.g. `2025.jpg` | Champion banner in the archive | Champion team color |
@@ -15,7 +16,7 @@ never causes an error: it simply shows the fallback. Add, replace or remove imag
 Rules
 
 - File names are lower case and must match exactly (the server is case sensitive).
-- Logos: square, transparent background, about 200 × 200 px.
+- Logos (college and NFL): square, transparent background, about 200 × 200 px.
 - Player photos: head and shoulders; landscape cut-outs (350 × 254, transparent) and square photos both work.
   The window crops from the top.
 - Campus, champion and stadium photos: landscape, at least 1200 px wide, under 400 KB.
