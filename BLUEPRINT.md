@@ -83,6 +83,7 @@ so app usage never costs API calls. A completed season is never rewritten unless
 | pickem_picks | per user and game: pick, mode (straight up / against the spread), locked, correct |
 | big_boards | per user and draft year: up to 100 player ids in rank order (Mock Draft Simulator) |
 | nfl_teams | the 32 NFL teams with color and record of the current season (from ESPN, cached, refreshed by the nfl-standings function) |
+| nfl_draft_picks | the first round of the real NFL drafts after every archived season (from CFBD, imported by hand) |
 | mock_drafts | per user: saved mock drafts (own copy of the 64 pick slots plus the picks made, name, draft year) |
 | pick_orders | per user and draft year: own team order and the changed picks (owner, forfeited); no row means order by records |
 | profiles | per user: display name, favorite team ids, time zone, recent searches |
@@ -264,7 +265,9 @@ all mocks of the draft year with status, first picks, CONTINUE or OPEN, COPY and
 in the mock. The real drafts in the archive follow in a later phase.
 
 **Archive** – Seasons (season switcher with every archived season; champion banner, Heisman with winner highlighted,
-final Top 10, playoff, conference champions, upsets, facts, "Every game and box score" → Scores of that season),
+final Top 10, playoff, conference champions, upsets, facts, "Every game and box score" → Scores of that season,
+"NFL Draft {year+1} · first round" → the real first round with NFL team, player, position and college; the
+button only appears once the draft has been imported),
 All Time, GameDay History (US map with every stop).
 
 **Login and Settings** – sign in; settings as in section 7.

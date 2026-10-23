@@ -361,3 +361,26 @@ export async function deleteMockDraft(id: string) {
   const { error } = await client().rpc('delete_mock_draft', { p_id: id })
   if (error) throw new Error(error.message)
 }
+
+export type DraftPickRow = {
+  draft_year: number
+  overall: number
+  round: number
+  pick: number | null
+  nfl_team: string
+  nfl_abbr: string | null
+  name: string
+  position: string | null
+  height: number | null
+  weight: number | null
+  college_team: string | null
+  college_id: number | null
+  college_athlete_id: string | null
+  college_conference: string | null
+}
+
+// The first round of one real NFL draft, from CFBD.
+export async function fetchDraftPicks(draftYear: number) {
+  const rows = await single(client().from('nfl_draft_picks').select('*').eq('draft_year', draftYear).eq('round', 1).order('overall').limit(100), 'draft picks')
+  return (rows ?? []) as DraftPickRow[]
+}

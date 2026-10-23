@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useApp } from '../../app/context'
 import { SeasonScope } from '../../app/SeasonScope'
-import { fetchAllTime } from '../../data/queries'
+import { fetchAllTime, fetchDraftPicks } from '../../data/queries'
 import { abbr, confAbbr, recordText, teamColor, type SeasonModel } from '../../data/model'
 import { conferenceLeader, conferenceStandings } from '../../data/standings'
 import type { Game, Season, Team } from '../../data/types'
@@ -13,6 +13,7 @@ import { Scores } from '../scores/Scores'
 import { Bracket } from '../rankings/Bracket'
 import { Stats } from '../stats/Stats'
 import { GameDayHistory } from '../gameday/GameDayHistory'
+import { DraftResults } from './DraftResults'
 import { isNeutral, useGamedayStops } from '../gameday/data'
 
 const VIEWS = ['SEASONS', 'ALL TIME', 'GAMEDAY HISTORY'] as const
@@ -48,7 +49,7 @@ function UpsetRow({ model, game, spread, index }: { model: SeasonModel; game: Ga
   )
 }
 
-type Sub = 'games' | 'bracket' | 'stats'
+type Sub = 'games' | 'bracket' | 'stats' | 'draft'
 
 function SeasonView({ onSub }: { onSub: (sub: Sub) => void }) {
   const { model, openWindow, mobile } = useApp()
@@ -57,6 +58,8 @@ function SeasonView({ onSub }: { onSub: (sub: Sub) => void }) {
   const season = model.bundle.season
   const live = season?.status !== 'archived'
   const year = model.year
+  // The button only appears when the draft after this season has been imported.
+  const draftPicks = useQuery({ queryKey: ['nfl-draft', year + 1], queryFn: () => fetchDraftPicks(year + 1), enabled: !live, staleTime: 10 * 60_000 })
   const finalAp = model.pollReleases('AP').at(-1) ?? null
   const champion = model.team(season?.champion_team_id)
   const titleGame = season?.title_game_id ? model.gameById.get(season.title_game_id) ?? null : null
@@ -85,6 +88,7 @@ function SeasonView({ onSub }: { onSub: (sub: Sub) => void }) {
         {titleGame && titleGame.status === 'final' && <span className="champion-score cond"><small>TITLE GAME</small> {scoreLine(model, titleGame)}</span>}
         <button type="button" className="outline-button cond champion-link" onClick={() => (live ? navigate('/scores') : onSub('games'))}>EVERY {year} GAME AND BOX SCORE →</button>
         {!live && <button type="button" className="outline-button cond champion-link" onClick={() => onSub('stats')}>{year} PLAYER AND TEAM STATS →</button>}
+        {!live && draftPicks.data?.length ? <button type="button" className="outline-button cond champion-link" onClick={() => onSub('draft')}>NFL DRAFT {year + 1} · FIRST ROUND →</button> : null}
       </div>
       {photo && !mobile && <img className="champion-photo" src={photo} alt="" />}
     </section>
@@ -197,7 +201,7 @@ function SeasonSub({ sub, onBack }: { sub: Sub; onBack: () => void }) {
   return (
     <div className="archive-sub">
       <button type="button" className="back-link cond" onClick={onBack}>← {model.year} SEASON</button>
-      {sub === 'games' ? <Scores /> : sub === 'stats' ? <Stats embedded /> : <Bracket />}
+      {sub === 'games' ? <Scores /> : sub === 'stats' ? <Stats embedded /> : sub === 'draft' ? <DraftResults draftYear={model.year + 1} /> : <Bracket />}
     </div>
   )
 }
@@ -339,7 +343,7 @@ export function Archive() {
   const years = [...seasons].sort((a, b) => a.year - b.year)
   const archived = years.filter((season) => season.status === 'archived')
   const year = Number(params.get('season')) || archived.at(-1)?.year || liveYear
-  const sub = params.get('sub') === 'games' || params.get('sub') === 'bracket' || params.get('sub') === 'stats' ? params.get('sub') as Sub : null
+  const sub = params.get('sub') === 'games' || params.get('sub') === 'bracket' || params.get('sub') === 'stats' || params.get('sub') === 'draft' ? params.get('sub') as Sub : null
   const update = (next: Record<string, string | null>) => {
     const merged = new URLSearchParams(params)
     for (const [key, value] of Object.entries(next)) {

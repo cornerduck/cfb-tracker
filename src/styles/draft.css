@@ -141,3 +141,15 @@
   .draft .tabs { overflow-x: auto; scrollbar-width: none; max-width: 100%; }
   .draft .tab { flex: none; white-space: nowrap; padding: 0 10px; }
 }
+
+/* ARCHIVE: real NFL draft */
+.dr-tile { display: flex; flex-direction: column; gap: 2px; }
+.dr-row { display: flex; align-items: center; gap: 12px; min-height: 54px; padding: 4px 8px; border-bottom: 1px solid var(--row-line); }
+.dr-number { width: 30px; flex: none; font-size: 18px; font-weight: 700; }
+.dr-nfl { width: 170px; flex: none; font-size: 15px; font-weight: 600; }
+.dr-player { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.dr-plain { font-size: 15px; font-weight: 600; }
+@media (max-width: 1023px) {
+  .dr-nfl { display: none; }
+  .dr-row { gap: 10px; }
+}
