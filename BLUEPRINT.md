@@ -86,6 +86,9 @@ so app usage never costs API calls. A completed season is never rewritten unless
 | nfl_draft_picks | the first round of the real NFL drafts after every archived season (from CFBD, imported by hand) |
 | mock_drafts | per user: saved mock drafts (own copy of the 64 pick slots plus the picks made, name, draft year) |
 | pick_orders | per user and draft year: own team order and the changed picks (owner, forfeited); no row means order by records |
+| recruiting_teams | per class year and team: national class rank, points, commit count, average rating, 5-star / 4-star / 3-star counts (from CFBD) |
+| recruits | per class year and recruit: CFBD recruit id, name, position, stars, rating, national / position / state rank, hometown (city, state), height, weight, committed-to team id (null = uncommitted) |
+| portal_entries | per portal season and entry: name, position, origin team id, destination team id (null = uncommitted), transfer date, stars, rating, eligibility (Immediate / SittingOne / PendingAppeal / TBD / Withdrawn) |
 | profiles | per user: display name, favorite team ids, time zone, recent searches |
 | update_log | every run: time, job, trigger (schedule / manual), status, API calls used, error |
 
@@ -101,6 +104,7 @@ Scheduled Supabase jobs. All times **Europe/Berlin**.
 | 08:00 the morning after Thursday and Friday games | Results of those games |
 | Sunday 10:00 | Final scores, box scores, player stats, closing lines, upsets, Undefeated Watch, weekly awards, GameDay result |
 | Monday 06:00 | AP and Coaches Poll, season stats, standings and race status, Heisman tracker, next week's games and lines, GameDay location, Pick'em slate |
+| Monday 06:00 (extra) | Recruiting: team class rankings and recruits of the current class year, transfer portal of the current portal season |
 | Wednesday 06:00 (November and December) | CFP ranking |
 | Daily 08:00 (1 December to the national title game) | Results, bracket, polls |
 
@@ -142,6 +146,16 @@ Scheduled Supabase jobs. All times **Europe/Berlin**.
   elsewhere); totals have no minimum.
 - **Pick'em slate** (Monday): every game with an AP Top 25 team, the GameDay game, and every game of a favorite team.
   Picks lock at kickoff. Straight up only; the closing spread is shown as game information.
+- **Recruiting class year** = the year the class enrolls. The current class year is the default (labelled "Commits so far" until the class is complete).
+  Only FBS teams are listed. The class rank, points and commit count come from CFBD; star counts and the average rating are computed from `recruits`.
+  "VS last year" is the change of the class rank against the same team's previous class. Position groups: QB, RB, WR, TE, OL, DL, LB, DB, ST / ATH.
+  "Best class by position" = the team with the highest average rating in that group (minimum 2 commits).
+  "Top 300 by state / by conference" count the 300 best-ranked recruits of the class by hometown state and by the conference of the committed team (uncommitted shown separately).
+  Recruits have no profile and are not clickable.
+- **Transfer portal:** "Coming in" = destination team is the selected team, "Leaving" = origin team. Net = in minus out.
+  "Still in portal" = no destination and eligibility not Withdrawn. A withdrawn entry is shown dimmed with the name struck through.
+  The portal season follows the CFBD convention; verify the convention with the test import before building the screens.
+  Best portal classes and biggest losses are ranked by net.
 - **Search** finds FBS teams and players only (no FCS team pages). Recent searches show only before typing.
 
 ---
@@ -201,10 +215,10 @@ Tabular figures for all numbers.
 
 ## 9. Navigation
 
-- **Desktop top bar:** STRDYS mark · tabs **Home, Scores, Rankings, Standings, Stats, Teams, Pick'em, Draft, Archive**
+- **Desktop top bar:** STRDYS mark · tabs **Home, Scores, Rankings, Standings, Stats, Teams, Pick'em, Draft, Recruiting, Archive**
   · search · week selector (weeks of the current season only) · favorites star (menu) · update dot · account menu.
 - **Mobile bottom bar:** Home, Scores, Rankings, Standings, More. **More** opens a sheet with
-  Stats, Teams, Pick'em, Draft, Archive, Settings and sign out. Search and account at the top.
+  Stats, Teams, Pick'em, Draft, Recruiting, Archive, Settings and sign out. Search and account at the top.
 - Everything is clickable: team → team page; player → player window; game → game window;
   tile headings and "→" links → the full tab.
 
@@ -268,6 +282,17 @@ no id. Every pick is saved at once. My Mocks:
 all mocks of the draft year with status, first picks, CONTINUE or OPEN, COPY and DELETE; the name can be changed
 in the mock. The real drafts are shown in the archive.
 
+**Recruiting** – own tab between Draft and Archive. Sub-tabs **Class Rankings**, **Top Recruits** and **Portal**; the year chips
+(class years 2027 down to 2023, portal seasons 2026 down to 2021) and a team picker apply to every sub-tab. With a team picked, a team banner
+(logo plate, name, rank) with "Open team page" and a clear button appears and each sub-tab shows only that team.
+Class Rankings: all FBS teams with rank, points, commits, average rating, 5 / 4 / 3-star counts and the change against last year, My Teams
+filter, conference filter, tiles Points by conference and Best class by position; for one team: rank, points, commits, average rating, the commits
+table (national rank, position, stars, rating, position rank, hometown, height / weight), class by stars, by position group and class rank by year.
+Top Recruits: the best players of the class with position filter, state and team filters, committed-to team, tiles Top 300 by state and by conference.
+Portal: summary (entries, committed, still in portal, average rating), all transfers with from / to, stars, rating and eligibility chip, tiles Best portal
+classes and Biggest losses; for one team: Coming in and Leaving side by side with net and average ratings. Mobile: lists with "Show all", one list at a
+time (Coming in / Leaving toggle) for a single team. Screens: `design/Recruiting*.dc.html`.
+
 **Archive** – Seasons (season switcher with every archived season; champion banner, Heisman with winner highlighted,
 final Top 10, playoff, conference champions, upsets, facts, "Every game and box score" → Scores of that season,
 "NFL Draft {year+1} · first round" → the real first round with NFL team, player, position and college; the
@@ -280,7 +305,7 @@ All Time, GameDay History (US map with every stop).
 
 ## 11. Not included (can be added later)
 
-Win probability and game flow, bowl tracker, coaching carousel, transfer portal, recruiting, NFL Draft,
+Win probability and game flow, bowl tracker, coaching carousel, NFL Draft,
 rivalry trophies, other awards, advanced ratings, push notifications, chaos meter, shareable cards, multiple users.
 The data model must allow adding these later without rebuilding.
 
@@ -322,6 +347,7 @@ public/images/app/                       (app icon, PWA icons)
 ## 15. API budget
 
 About 25–35 calls per week in season plus manual updates. One-time imports are spread over phases.
+Recruiting and portal: about 4 calls per week for the current class and portal season (team rankings, recruits, portal) and about 2 calls per older class year or portal season for the one-time import (class years 2023 to 2026, portal seasons 2021 to 2026).
 
 ## 16. Development data
 
@@ -344,3 +370,6 @@ Each phase ends with a short summary and exactly what the owner has to do next.
 7. **Pick'em and Compare.**
 8. **GameDay:** weekly automation, full history import, maps; offseason Home.
 9. **Polish:** compare every screen with `design/`, images and logo plates, mobile testing, performance.
+10. **Recruiting:** migrations for `recruiting_teams`, `recruits` and `portal_entries` with RLS, import Edge Function for older class years and portal seasons
+    (run by hand like the draft import), the Monday job for the current year, then the Recruiting tab (Class Rankings, Top Recruits, Portal, team picker) and the
+    navigation entry on desktop and mobile, compared with `design/Recruiting*.dc.html`.
