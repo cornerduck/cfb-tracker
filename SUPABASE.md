@@ -381,6 +381,39 @@ with the same stages.
   without abbreviation. The app resolves a missing abbreviation against `nfl_teams` as well, so a repeated import
   only improves the stored data.
 
+## Recruiting and transfer portal (October 2026)
+
+- Migration `20261026130000_recruiting.sql` adds `recruiting_teams` (class rank and points per team and class year,
+  plus commits, average rating and five, four and three star counts), `recruits` (high school recruits of a class
+  with national, position and state rank) and `portal_entries` (transfer portal moves per season). Signed-in users
+  can read all three.
+- CFBD only delivers the national rank of a recruit and the rank and points of a team class. Position rank, state
+  rank, commits, average rating and star counts are computed by the import from the recruits of the class.
+  Only high school recruits are imported (junior college and prep school recruits are left out).
+- Edge Function `import-recruiting` takes a mode and a year. **class** reads `/recruiting/players` and
+  `/recruiting/teams` (2 CFBD calls), **portal** reads `/player/portal` (1 call, data exists from 2021 on),
+  **both** does all three. Existing rows are updated, nothing is deleted.
+- How to run it, step by step:
+  1. Merge the pull request and wait until the Supabase workflow of the merge on `main` has finished (it applies
+     the migration and deploys the function).
+  2. Open the repository on GitHub, then **Actions**, then **Supabase** in the list on the left.
+  3. Click **Run workflow** (right side). Select branch **main**.
+  4. Leave every old option as it is (test import unchecked, stage `skip`, roster `skip`, draft unchecked).
+  5. Set **import_recruiting** to the mode and **recruiting_year** to the year, then click the green
+     **Run workflow** button.
+  6. Open the new run, then the job **Run selected manual import**, then the step
+     **Import recruiting and transfer portal**. It prints a JSON result.
+- Suggested order for the first import:
+  1. `portal` with year `2026`. Check `portal_first_transfer_date` and `portal_last_transfer_date`. If they lie
+     around December 2025 to spring 2026, CFBD names the portal season after the season that just ended, and the
+     app shows "Portal 2026" for that window. Then run `portal` for `2025`, `2024`, `2023`, `2022` and `2021` if
+     the history is wanted.
+  2. `class` with year `2027` (the class that is recruited now), then `2026`, `2025`, `2024` and so on.
+  3. A result with `unmatched_commit_schools` or `unmatched_portal_schools` lists school names that are not in
+     the `teams` table (mostly FCS schools). A name of an FBS team in this list is a naming problem to report.
+- The result shows `api_calls_used`, the number of rows and, for the portal, how many entries have a destination.
+  The same run is written to `update_log` with the job name `import-recruiting`.
+
 ## GameDay (October 2026)
 
 - Migration `20261020140000_gameday_history.sql` adds `gameday_stops`: every College GameDay show since 1993.
