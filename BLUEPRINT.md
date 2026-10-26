@@ -154,7 +154,8 @@ Scheduled Supabase jobs. All times **Europe/Berlin**.
   Recruits have no profile and are not clickable.
 - **Transfer portal:** "Coming in" = destination team is the selected team, "Leaving" = origin team. Net = in minus out.
   "Still in portal" = no destination and eligibility not Withdrawn. A withdrawn entry is shown dimmed with the name struck through.
-  The portal season follows the CFBD convention; verify the convention with the test import before building the screens.
+  Portal season Y = the transfers of the offseason that ends before season Y: the main window is December of Y-1 to January of Y, a second one in April of Y
+  (checked with the imports of 2023 to 2026). A few stragglers have dates well outside the window and still belong to season Y.
   Best portal classes and biggest losses are ranked by net.
 - **Search** finds FBS teams and players only (no FCS team pages). Recent searches show only before typing.
 
