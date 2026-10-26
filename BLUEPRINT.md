@@ -104,7 +104,7 @@ Scheduled Supabase jobs. All times **Europe/Berlin**.
 | 08:00 the morning after Thursday and Friday games | Results of those games |
 | Sunday 10:00 | Final scores, box scores, player stats, closing lines, upsets, Undefeated Watch, weekly awards, GameDay result |
 | Monday 06:00 | AP and Coaches Poll, season stats, standings and race status, Heisman tracker, next week's games and lines, GameDay location, Pick'em slate |
-| Monday 06:00 (extra) | Recruiting: team class rankings and high school recruits of the current class year, transfer portal of the current portal season |
+| Monday 06:00 (extra) | Recruiting: team class rankings and high school recruits of the current class year, transfer portal of the current portal season (also in the offseason; from November the next portal season as well) |
 | Wednesday 06:00 (November and December) | CFP ranking |
 | Daily 08:00 (1 December to the national title game) | Results, bracket, polls |
 

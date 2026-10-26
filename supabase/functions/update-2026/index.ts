@@ -28,6 +28,7 @@ import {
 } from "../_shared/store.ts";
 import { updateSeasonSummary } from "../_shared/season.ts";
 import { syncGameday } from "../_shared/gameday.ts";
+import { syncRecruitingWeekly } from "../_shared/recruiting_sync.ts";
 
 const SEASON = 2026;
 const JOBS = [
@@ -356,6 +357,18 @@ const executeJob = async (job: Job, supabase: Db, apiKey: string, calls: CallCou
   const lookups = await loadTeamLookups(supabase);
   if (!lookups.fbsIds.size) throw new Error("No FBS teams are stored; run the 2026 setup import first");
   const details: JsonObject = { week: period.week, season_type: period.seasonType };
+  // The class that is recruited now and the current transfer portal come from CFBD every Monday.
+  // A failure is reported in the details and never fails the job.
+  const withRecruiting = async (target: JsonObject) => {
+    if (job !== "monday" && job !== "manual") return target;
+    try {
+      Object.assign(target, await syncRecruitingWeekly(supabase, apiKey, calls));
+    } catch (error) {
+      target.recruiting_error = error instanceof Error ? error.message : "Recruiting update failed";
+      console.error("Recruiting update failed:", target.recruiting_error);
+    }
+    return target;
+  };
 
   if (job === "bootstrap") {
     const periods = (await loadPeriods(supabase)).filter((item) =>
@@ -389,11 +402,13 @@ const executeJob = async (job: Job, supabase: Db, apiKey: string, calls: CallCou
 
   if (job !== "manual") {
     const now = Date.now();
+    // Recruiting runs all year, so the Monday job still updates it outside the season.
+    const skipped = (reason: string) => withRecruiting({ ...details, skipped: reason });
     if (period.startDate && Date.parse(period.startDate) - now > 7 * 24 * 60 * 60 * 1000) {
-      return { ...details, skipped: "outside the active 2026 season window" };
+      return await skipped("outside the active 2026 season window");
     }
     if (period.endDate && now - Date.parse(period.endDate) > 48 * 60 * 60 * 1000) {
-      return { ...details, skipped: "the 2026 season calendar has ended" };
+      return await skipped("the 2026 season calendar has ended");
     }
   }
 
@@ -464,6 +479,7 @@ const executeJob = async (job: Job, supabase: Db, apiKey: string, calls: CallCou
       console.error("GameDay update failed:", details.gameday_error);
     }
   }
+  await withRecruiting(details);
   Object.assign(details, await updateSeasonSummary(supabase, SEASON));
   return details;
 };

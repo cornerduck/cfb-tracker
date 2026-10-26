@@ -1,4 +1,5 @@
 // Run with: deno test supabase/functions/_shared/recruiting_test.ts
+import { portalSeasonsToRefresh } from "./recruiting_sync.ts";
 import { countByMonth, currentClassYear, mapPortal, mapRecruitingTeams, mapRecruits, unmatchedNames } from "./recruiting.ts";
 
 const assertEquals = (actual: unknown, expected: unknown, message = "") => {
@@ -58,4 +59,11 @@ Deno.test("portal entries keep a stable id and a null destination", () => {
 Deno.test("unmatched names are counted and month counts are sorted", () => {
   assertEquals(unmatchedNames(["Texas", "Idaho State", null, "Idaho State", "Adams"], ids), ["Idaho State (2)", "Adams (1)"]);
   assertEquals(countByMonth(["2025-12-10T05:00:00.000Z", "2025-12-11T05:00:00.000Z", null, "2025-09-25T16:36:00.000Z"]), { "2025-09": 1, "2025-12": 2 });
+});
+
+Deno.test("the weekly update refreshes the next portal season from November on", () => {
+  assertEquals(portalSeasonsToRefresh(new Date("2026-10-26T10:00:00Z")), [2026]);
+  assertEquals(portalSeasonsToRefresh(new Date("2026-11-02T10:00:00Z")), [2026, 2027]);
+  assertEquals(portalSeasonsToRefresh(new Date("2026-12-14T10:00:00Z")), [2026, 2027]);
+  assertEquals(portalSeasonsToRefresh(new Date("2027-01-11T10:00:00Z")), [2027]);
 });

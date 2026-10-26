@@ -415,6 +415,14 @@ with the same stages.
      how many entries each month of the transfer date has.
 - The result shows `api_calls_used`, the number of rows and, for the portal, how many entries have a destination.
   The same run is written to `update_log` with the job name `import-recruiting`.
+- **Weekly update:** the Monday job (06:00 Berlin time) and Update now in Settings refresh the class that is
+  recruited now (class year = the next year from August on) and the current portal season (2 + 1 CFBD calls). From
+  November on the next portal season is refreshed as well, because CFBD opens it with the offseason window (3 + 1
+  calls, so up to 4 calls a week). Recruiting runs all year, also when the Monday job skips the football part
+  outside the season. A failure never fails the job: the log details of `live-2026-monday` then show
+  `recruiting_error`, and `recruiting_class` and `recruiting_portal` show the rows that were stored.
+- Until CFBD publishes the team ranking of the current class, the weekly update stores the recruits and no class
+  rows, and the Class Rankings tab shows an empty state for that class.
 
 ## GameDay (October 2026)
 
