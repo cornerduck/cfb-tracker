@@ -111,6 +111,22 @@ draft (VS REAL DRAFT) has no mockup of its own.
 - `ArchiveDraft.dc.html` – Archive · NFL draft first round · Desktop
 - `MArchiveDraft.dc.html` – Archive · NFL draft first round · Mobile
 
+## Recruiting
+
+Own tab between Draft and Archive (mobile: in the More menu). Sub-tabs Class Rankings, Top Recruits, Portal; a team picker filters every sub-tab to one team.
+Static mockups with sample data. Recruits are not clickable (no profile before a player appears on a roster).
+
+- `RecruitingRankings.dc.html` – Recruiting · Class rankings · Desktop
+- `MRecruitingRankings.dc.html` – Recruiting · Class rankings · Mobile
+- `RecruitingTeam.dc.html` – Recruiting · Class of one team (team picker set) · Desktop
+- `MRecruitingTeam.dc.html` – Recruiting · Class of one team · Mobile
+- `RecruitingPlayers.dc.html` – Recruiting · Top recruits · Desktop
+- `MRecruitingPlayers.dc.html` – Recruiting · Top recruits · Mobile
+- `RecruitingPortal.dc.html` – Recruiting · Portal (all teams) · Desktop
+- `MRecruitingPortal.dc.html` – Recruiting · Portal (all teams) · Mobile
+- `RecruitingPortalTeam.dc.html` – Recruiting · Portal of one team (coming in / leaving) · Desktop
+- `MRecruitingPortalTeam.dc.html` – Recruiting · Portal of one team · Mobile
+
 ## Archive
 
 - `Archive.dc.html` – Archive · Season 2025
