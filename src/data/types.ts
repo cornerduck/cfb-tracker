@@ -235,3 +235,53 @@ export type GamedayStop = {
   visitor_team_id: number | null
   game_id: number | null
 }
+
+// Recruiting (from CFBD). Rank and points of a class come from CFBD, the other numbers are computed by the import.
+export type RecruitingTeamRow = {
+  class_year: number
+  team_id: number
+  rank: number | null
+  points: number | null
+  commits: number
+  average_rating: number | null
+  five_stars: number
+  four_stars: number
+  three_stars: number
+}
+
+export type RecruitRow = {
+  class_year: number
+  id: string
+  name: string
+  position: string | null
+  stars: number | null
+  rating: number | null
+  national_rank: number | null
+  position_rank: number | null
+  state_rank: number | null
+  high_school: string | null
+  city: string | null
+  state_province: string | null
+  country: string | null
+  height: number | null
+  weight: number | null
+  committed_team_id: number | null
+  committed_to: string | null
+}
+
+export type PortalEligibility = 'Immediate' | 'SittingOne' | 'PendingAppeal' | 'TBD' | 'Withdrawn'
+
+export type PortalRow = {
+  season: number
+  id: string
+  name: string
+  position: string | null
+  origin: string | null
+  origin_team_id: number | null
+  destination: string | null
+  destination_team_id: number | null
+  transfer_date: string | null
+  stars: number | null
+  rating: number | null
+  eligibility: PortalEligibility | null
+}

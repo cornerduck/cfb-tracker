@@ -15,6 +15,7 @@ import './styles/app.css'
 import './styles/account.css'
 import './styles/stats.css'
 import './styles/draft.css'
+import './styles/recruiting.css'
 import App from './App.tsx'
 
 const queryClient = new QueryClient({
