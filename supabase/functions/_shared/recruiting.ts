@@ -158,12 +158,24 @@ export function mapPortal(data: unknown[], season: number, idByName: Map<string,
   return rows;
 }
 
-// Names CFBD uses that are not in the teams table (mostly FCS schools). The import
-// result lists a few so a naming problem with an FBS team is easy to spot.
-export function unmatchedNames(names: (string | null)[], idByName: Map<string, number>) {
-  const missing = new Set<string>();
+// Names CFBD uses that are not in the teams table (mostly junior colleges and FCS schools), the most
+// frequent first. A misspelled FBS team shows up here with many entries.
+export function unmatchedNames(names: (string | null)[], idByName: Map<string, number>, limit = 40) {
+  const counts = new Map<string, number>();
   for (const name of names) {
-    if (name && !idByName.has(normalizeName(name))) missing.add(name);
+    if (name && !idByName.has(normalizeName(name))) counts.set(name, (counts.get(name) ?? 0) + 1);
   }
-  return [...missing].sort();
+  return [...counts.entries()]
+    .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+    .slice(0, limit)
+    .map(([name, count]) => `${name} (${count})`);
+}
+
+// Number of entries per month of the transfer date, to see which time window a CFBD season covers.
+export function countByMonth(dates: (string | null)[]) {
+  const counts: Record<string, number> = {};
+  for (const date of dates) {
+    if (date) counts[date.slice(0, 7)] = (counts[date.slice(0, 7)] ?? 0) + 1;
+  }
+  return Object.fromEntries(Object.entries(counts).sort(([a], [b]) => a.localeCompare(b)));
 }
