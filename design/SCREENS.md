@@ -82,10 +82,6 @@ Template syntax: `{{ value }}` = data, `<sc-for>` = repeated item, `<sc-if>` = s
 - `MTeamStats.dc.html` – Teams · Stats · Mobile
 - `TeamHistory.dc.html` – Teams · Team page History
 - `MTeamHistory.dc.html` – Teams · History · Mobile
-- `TeamRecruiting.dc.html` – Teams · Team page Recruiting (class of the selected year)
-- `MTeamRecruiting.dc.html` – Teams · Recruiting · Mobile
-- `TeamPortal.dc.html` – Teams · Team page Portal (coming in / leaving)
-- `MTeamPortal.dc.html` – Teams · Portal · Mobile
 - `Compare.dc.html` – Teams · Compare
 - `MCompare.dc.html` – Teams · Compare · Mobile
 
@@ -114,6 +110,22 @@ draft (VS REAL DRAFT) has no mockup of its own.
 - `MDraftMyMocks.dc.html` – Draft · My mocks · Mobile
 - `ArchiveDraft.dc.html` – Archive · NFL draft first round · Desktop
 - `MArchiveDraft.dc.html` – Archive · NFL draft first round · Mobile
+
+## Recruiting
+
+Own tab between Draft and Archive (mobile: in the More menu). Sub-tabs Class Rankings, Top Recruits, Portal; a team picker filters every sub-tab to one team.
+Static mockups with sample data. Recruits are not clickable (no profile before a player appears on a roster).
+
+- `RecruitingRankings.dc.html` – Recruiting · Class rankings · Desktop
+- `MRecruitingRankings.dc.html` – Recruiting · Class rankings · Mobile
+- `RecruitingTeam.dc.html` – Recruiting · Class of one team (team picker set) · Desktop
+- `MRecruitingTeam.dc.html` – Recruiting · Class of one team · Mobile
+- `RecruitingPlayers.dc.html` – Recruiting · Top recruits · Desktop
+- `MRecruitingPlayers.dc.html` – Recruiting · Top recruits · Mobile
+- `RecruitingPortal.dc.html` – Recruiting · Portal (all teams) · Desktop
+- `MRecruitingPortal.dc.html` – Recruiting · Portal (all teams) · Mobile
+- `RecruitingPortalTeam.dc.html` – Recruiting · Portal of one team (coming in / leaving) · Desktop
+- `MRecruitingPortalTeam.dc.html` – Recruiting · Portal of one team · Mobile
 
 ## Archive
 
