@@ -13,6 +13,9 @@ import type {
   PickRow,
   PlayerGameStat,
   PlayerSeasonStat,
+  PortalRow,
+  RecruitingTeamRow,
+  RecruitRow,
   RosterPlayer,
   PollRow,
   Season,
@@ -384,3 +387,27 @@ export async function fetchDraftPicks(draftYear: number) {
   const rows = await single(client().from('nfl_draft_picks').select('*').eq('draft_year', draftYear).eq('round', 1).order('overall').limit(100), 'draft picks')
   return (rows ?? []) as DraftPickRow[]
 }
+
+// ---------------------------------------------------------------- recruiting
+
+// The team class rankings of one class year.
+export const fetchRecruitingTeams = (classYear: number) =>
+  loadAll<RecruitingTeamRow>((from, to) => client().from('recruiting_teams').select('*').eq('class_year', classYear).order('team_id').range(from, to), 'class rankings')
+
+// The class rank of one team in every stored class year.
+export async function fetchRecruitingHistory(teamId: number) {
+  const rows = await single(client().from('recruiting_teams').select('class_year,rank,points').eq('team_id', teamId).order('class_year', { ascending: false }), 'class history')
+  return (rows ?? []) as Array<Pick<RecruitingTeamRow, 'class_year' | 'rank' | 'points'>>
+}
+
+// Every recruit of one class (about 4,000 rows, so four requests).
+export const fetchRecruits = (classYear: number) =>
+  loadAll<RecruitRow>((from, to) => client().from('recruits')
+    .select('class_year,id,name,position,stars,rating,national_rank,position_rank,state_rank,high_school,city,state_province,country,height,weight,committed_team_id,committed_to')
+    .eq('class_year', classYear).order('national_rank', { nullsFirst: false }).order('id').range(from, to), 'recruits')
+
+// Every transfer portal entry of one season (about 4,500 rows).
+export const fetchPortal = (season: number) =>
+  loadAll<PortalRow>((from, to) => client().from('portal_entries')
+    .select('season,id,name,position,origin,origin_team_id,destination,destination_team_id,transfer_date,stars,rating,eligibility')
+    .eq('season', season).order('rating', { ascending: false, nullsFirst: false }).order('id').range(from, to), 'transfer portal')

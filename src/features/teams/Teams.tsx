@@ -95,7 +95,10 @@ function TeamPage({ slug }: { slug: string }) {
 
   return (
     <div className="team-page">
-      <button type="button" className="back-link cond" onClick={() => navigate('/teams')}>← ALL TEAMS</button>
+      <div className="team-links">
+        <button type="button" className="back-link cond" onClick={() => navigate('/teams')}>← ALL TEAMS</button>
+        <button type="button" className="back-link cond" onClick={() => navigate(`/recruiting?team=${team.slug}`)}>RECRUITING →</button>
+      </div>
       <header className="team-hero" style={{ background: `linear-gradient(90deg, ${teamColor(team)}, ${teamColor(team)}66 55%, transparent), ${stadium ? `url(${stadium}) center/cover` : '#15171A'}` }}>
         <Plate team={team} size={64} />
         <div className="team-hero-copy">

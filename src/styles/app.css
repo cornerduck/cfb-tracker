@@ -538,6 +538,7 @@
 .dir-name { font-weight: 600; }
 
 .team-page { display: flex; flex-direction: column; gap: 14px; }
+.team-links { display: flex; justify-content: space-between; align-items: center; }
 .back-link { align-self: flex-start; border: 0; background: none; color: var(--muted); letter-spacing: 0.12em; font-weight: 600; padding: 0; }
 .team-hero { display: flex; align-items: center; gap: 18px; padding: 22px 24px; border-radius: 8px; border: 1px solid var(--border); background-size: cover; }
 .team-hero-copy { display: flex; flex-direction: column; gap: 4px; }
