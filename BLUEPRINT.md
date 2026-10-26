@@ -86,8 +86,8 @@ so app usage never costs API calls. A completed season is never rewritten unless
 | nfl_draft_picks | the first round of the real NFL drafts after every archived season (from CFBD, imported by hand) |
 | mock_drafts | per user: saved mock drafts (own copy of the 64 pick slots plus the picks made, name, draft year) |
 | pick_orders | per user and draft year: own team order and the changed picks (owner, forfeited); no row means order by records |
-| recruiting_teams | per class year and team: national class rank, points, commit count, average rating, 5-star / 4-star / 3-star counts (from CFBD) |
-| recruits | per class year and recruit: CFBD recruit id, name, position, stars, rating, national / position / state rank, hometown (city, state), height, weight, committed-to team id (null = uncommitted) |
+| recruiting_teams | per class year and team: national class rank and points (from CFBD), commit count, average rating, 5-star / 4-star / 3-star counts (computed from `recruits` by the import) |
+| recruits | per class year and recruit: CFBD recruit id, name, position, stars, rating, national rank (from CFBD), position / state rank (computed by the import from the national rank), hometown (city, state), high school, height, weight, committed-to team id (null = uncommitted) |
 | portal_entries | per portal season and entry: name, position, origin team id, destination team id (null = uncommitted), transfer date, stars, rating, eligibility (Immediate / SittingOne / PendingAppeal / TBD / Withdrawn) |
 | profiles | per user: display name, favorite team ids, time zone, recent searches |
 | update_log | every run: time, job, trigger (schedule / manual), status, API calls used, error |
@@ -104,7 +104,7 @@ Scheduled Supabase jobs. All times **Europe/Berlin**.
 | 08:00 the morning after Thursday and Friday games | Results of those games |
 | Sunday 10:00 | Final scores, box scores, player stats, closing lines, upsets, Undefeated Watch, weekly awards, GameDay result |
 | Monday 06:00 | AP and Coaches Poll, season stats, standings and race status, Heisman tracker, next week's games and lines, GameDay location, Pick'em slate |
-| Monday 06:00 (extra) | Recruiting: team class rankings and recruits of the current class year, transfer portal of the current portal season |
+| Monday 06:00 (extra) | Recruiting: team class rankings and high school recruits of the current class year, transfer portal of the current portal season |
 | Wednesday 06:00 (November and December) | CFP ranking |
 | Daily 08:00 (1 December to the national title game) | Results, bracket, polls |
 

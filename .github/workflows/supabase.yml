@@ -52,6 +52,21 @@ on:
         required: true
         default: false
         type: boolean
+      import_recruiting:
+        description: Import recruiting data for the year below (class = recruits and team class rankings, portal = transfer portal, both = all of it, 3 CFBD calls)
+        required: true
+        default: skip
+        type: choice
+        options:
+          - skip
+          - class
+          - portal
+          - both
+      recruiting_year:
+        description: Class year for the recruiting import, or portal year (portal data exists from 2021 on)
+        required: false
+        default: '2027'
+        type: string
 
 permissions:
   contents: read
@@ -86,7 +101,7 @@ jobs:
 
   manual-import:
     name: Run selected manual import
-    if: github.event_name == 'workflow_dispatch' && (inputs.run_test_import || inputs.import_2025_stage != 'skip' || inputs.import_roster != 'skip' || inputs.import_draft)
+    if: github.event_name == 'workflow_dispatch' && (inputs.run_test_import || inputs.import_2025_stage != 'skip' || inputs.import_roster != 'skip' || inputs.import_draft || inputs.import_recruiting != 'skip')
     needs: deploy
     runs-on: ubuntu-latest
     permissions:
@@ -99,6 +114,8 @@ jobs:
       IMPORT_SEASON: ${{ inputs.import_season }}
       IMPORT_ROSTER: ${{ inputs.import_roster }}
       ROSTER_OFFSET: ${{ inputs.roster_offset }}
+      IMPORT_RECRUITING: ${{ inputs.import_recruiting }}
+      RECRUITING_YEAR: ${{ inputs.recruiting_year }}
     steps:
       - name: Request GitHub Actions identity token
         id: oidc
@@ -174,3 +191,19 @@ jobs:
             --header "x-github-oidc-token: $GITHUB_OIDC_TOKEN" \
             --header 'Content-Type: application/json' \
             --data '{}'
+
+      - name: Import recruiting and transfer portal
+        if: inputs.import_recruiting != 'skip'
+        env:
+          GITHUB_OIDC_TOKEN: ${{ steps.oidc.outputs.token }}
+        run: |
+          supabase_project_url="${SUPABASE_URL%/}"
+          supabase_project_url="${supabase_project_url%/rest/v1}"
+          curl --fail-with-body --silent --show-error \
+            --request POST \
+            --url "${supabase_project_url}/functions/v1/import-recruiting" \
+            --header "Authorization: Bearer $SUPABASE_ANON_KEY" \
+            --header "apikey: $SUPABASE_ANON_KEY" \
+            --header "x-github-oidc-token: $GITHUB_OIDC_TOKEN" \
+            --header 'Content-Type: application/json' \
+            --data "$(jq -cn --arg mode "$IMPORT_RECRUITING" --arg year "${RECRUITING_YEAR:-2027}" '{mode: $mode, year: ($year | tonumber)}')"
