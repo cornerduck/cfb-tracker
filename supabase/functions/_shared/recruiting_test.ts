@@ -1,5 +1,5 @@
 // Run with: deno test supabase/functions/_shared/recruiting_test.ts
-import { currentClassYear, mapPortal, mapRecruitingTeams, mapRecruits, unmatchedNames } from "./recruiting.ts";
+import { countByMonth, currentClassYear, mapPortal, mapRecruitingTeams, mapRecruits, unmatchedNames } from "./recruiting.ts";
 
 const assertEquals = (actual: unknown, expected: unknown, message = "") => {
   const a = JSON.stringify(actual);
@@ -55,6 +55,7 @@ Deno.test("portal entries keep a stable id and a null destination", () => {
   assertEquals([rows[1].destination_team_id, rows[1].transfer_date, rows[1].eligibility, rows[2].eligibility], [null, null, null, "Withdrawn"]);
 });
 
-Deno.test("unmatched names are listed once", () => {
-  assertEquals(unmatchedNames(["Texas", "Idaho State", null, "Idaho State"], ids), ["Idaho State"]);
+Deno.test("unmatched names are counted and month counts are sorted", () => {
+  assertEquals(unmatchedNames(["Texas", "Idaho State", null, "Idaho State", "Adams"], ids), ["Idaho State (2)", "Adams (1)"]);
+  assertEquals(countByMonth(["2025-12-10T05:00:00.000Z", "2025-12-11T05:00:00.000Z", null, "2025-09-25T16:36:00.000Z"]), { "2025-09": 1, "2025-12": 2 });
 });

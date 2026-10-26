@@ -6,7 +6,7 @@
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.117.2";
 import { asObject, type CallCounter, fetchCfbd, integerValue, type JsonObject } from "../_shared/cfbd.ts";
-import { mapPortal, mapRecruitingTeams, mapRecruits, unmatchedNames } from "../_shared/recruiting.ts";
+import { countByMonth, mapPortal, mapRecruitingTeams, mapRecruits, unmatchedNames } from "../_shared/recruiting.ts";
 import { loadTeamLookups, upsertRows } from "../_shared/store.ts";
 import { validateWorkflowToken } from "../_shared/github.ts";
 
@@ -82,7 +82,7 @@ Deno.serve(async (request) => {
       result.unmatched_commit_schools = unmatchedNames(
         recruits.map((row) => (row.committed_team_id === null ? (row.committed_to as string | null) : null)),
         idByName,
-      ).slice(0, 20);
+      );
     }
 
     if (mode === "portal" || mode === "both") {
@@ -97,7 +97,8 @@ Deno.serve(async (request) => {
       result.unmatched_portal_schools = unmatchedNames(
         rows.flatMap((row) => [row.origin as string | null, row.destination as string | null]),
         idByName,
-      ).slice(0, 20);
+      );
+      result.portal_by_month = countByMonth(dates);
     }
 
     const { error } = await supabase.from("update_log").update({

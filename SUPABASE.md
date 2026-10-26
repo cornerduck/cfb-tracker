@@ -409,8 +409,10 @@ with the same stages.
      app shows "Portal 2026" for that window. Then run `portal` for `2025`, `2024`, `2023`, `2022` and `2021` if
      the history is wanted.
   2. `class` with year `2027` (the class that is recruited now), then `2026`, `2025`, `2024` and so on.
-  3. A result with `unmatched_commit_schools` or `unmatched_portal_schools` lists school names that are not in
-     the `teams` table (mostly FCS schools). A name of an FBS team in this list is a naming problem to report.
+  3. `unmatched_commit_schools` and `unmatched_portal_schools` list school names that are not in the `teams`
+     table with their number of entries, the most frequent first (mostly junior colleges and FCS schools). An FBS
+     team with many entries in this list is a naming problem to report. For the portal, `portal_by_month` shows
+     how many entries each month of the transfer date has.
 - The result shows `api_calls_used`, the number of rows and, for the portal, how many entries have a destination.
   The same run is written to `update_log` with the job name `import-recruiting`.
 
