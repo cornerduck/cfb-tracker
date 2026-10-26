@@ -82,6 +82,10 @@ Template syntax: `{{ value }}` = data, `<sc-for>` = repeated item, `<sc-if>` = s
 - `MTeamStats.dc.html` – Teams · Stats · Mobile
 - `TeamHistory.dc.html` – Teams · Team page History
 - `MTeamHistory.dc.html` – Teams · History · Mobile
+- `TeamRecruiting.dc.html` – Teams · Team page Recruiting (class of the selected year)
+- `MTeamRecruiting.dc.html` – Teams · Recruiting · Mobile
+- `TeamPortal.dc.html` – Teams · Team page Portal (coming in / leaving)
+- `MTeamPortal.dc.html` – Teams · Portal · Mobile
 - `Compare.dc.html` – Teams · Compare
 - `MCompare.dc.html` – Teams · Compare · Mobile
 
