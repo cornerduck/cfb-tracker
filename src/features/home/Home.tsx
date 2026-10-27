@@ -148,9 +148,9 @@ function SeasonHome() {
     return { position, line }
   }
 
-  const results = useMemo(() => {
-    if (!period) return []
-    const games = model.gamesIn(period.key)
+  // The games of the week ranked by interest: upsets, ranked teams and ranked against ranked.
+  const weekGames = useMemo(() => {
+    if (!period) return { finals: [] as Game[], upcoming: [] as Game[] }
     const weight = (game: Game) => {
       const upset = model.upset(game)
       const ranks = [game.home_team_id, game.away_team_id].map((id) => model.apRankAtKickoff(id, game))
@@ -158,10 +158,20 @@ function SeasonHome() {
         ranks.reduce<number>((sum, rank) => sum + (rank ? 26 - rank : 0), 0) +
         (ranks.every(Boolean) ? 20 : 0)
     }
-    const finals = games.filter((game) => game.status !== 'scheduled')
-    const pool = finals.length ? finals : games
-    return [...pool].sort((a, b) => weight(b) - weight(a)).slice(0, 4)
+    const sorted = [...model.gamesIn(period.key)].sort((a, b) => weight(b) - weight(a))
+    return { finals: sorted.filter((game) => game.status !== 'scheduled'), upcoming: sorted.filter((game) => game.status === 'scheduled') }
   }, [model, period])
+  // While the awards of the week are missing, the strip shows the four best games still to be played.
+  const preview = useMemo(() => (awards.length ? [] : weekGames.upcoming.slice(0, 4)), [awards, weekGames])
+  const showingPreview = preview.length > 0
+  const results = useMemo(() => {
+    if (weekGames.finals.length) return weekGames.finals.slice(0, 4)
+    return weekGames.upcoming.slice(showingPreview ? 4 : 0, showingPreview ? 8 : 4)
+  }, [weekGames, showingPreview])
+  const resultsTitle = weekGames.finals.length || !showingPreview ? 'BIGGEST RESULTS' : 'MORE GAMES TO WATCH'
+  const previewTile = (game: Game, index: number) => (
+    <GameTile key={game.id} model={model} game={game} timeZone={timeZone} onOpen={(gameId) => openWindow({ type: 'game', gameId })} header={index === 0 ? 'GAME OF THE WEEK' : 'MATCHUP TO WATCH'} />
+  )
 
   const mine = [...favorites].map((teamId) => model.team(teamId)).filter((team) => team && model.fbsIds.has(team.id))
   const unbeaten = model.unbeatenAfter(order)
@@ -217,7 +227,7 @@ function SeasonHome() {
   )
 
   const resultsTile = (
-    <Tile title="BIGGEST RESULTS" action={mobile ? 'All →' : 'All scores →'} onAction={() => navigate('/scores')} className="home-results">
+    <Tile title={resultsTitle} action={mobile ? 'All →' : 'All scores →'} onAction={() => navigate('/scores')} className="home-results">
       {results.length ? (
         <div className="results-grid">
           {results.map((game) => <GameTile key={game.id} model={model} game={game} timeZone={timeZone} onOpen={(gameId) => openWindow({ type: 'game', gameId })} compact />)}
@@ -257,9 +267,10 @@ function SeasonHome() {
     return (
       <div className="home-mobile">
         <section>
-          <h2 className="section-title cond">WEEKLY AWARDS</h2>
+          <h2 className="section-title cond">{showingPreview ? 'GAMES TO WATCH' : 'WEEKLY AWARDS'}</h2>
           {awards.length ? <div className="scroll-row">{awards.map((award) => <AwardCard key={award.award_type} award={award} model={model} />)}</div>
-            : <Empty>Weekly awards are calculated on Sunday.</Empty>}
+            : showingPreview ? <div className="scroll-row">{preview.map(previewTile)}</div>
+              : <Empty>Weekly awards are calculated on Sunday.</Empty>}
         </section>
         <GameDayTile />
         {top5Tile}
@@ -291,9 +302,11 @@ function SeasonHome() {
           <span className="muted">teams left</span>
         </button>
       </div>
-      <section className="award-grid" aria-label="Weekly awards">
+      {showingPreview && <p className="award-note"><span className="cond">GAMES TO WATCH</span><span className="muted small">The weekly awards follow after Sunday's games.</span></p>}
+      <section className="award-grid" aria-label={showingPreview ? 'Games to watch' : 'Weekly awards'}>
         {awards.length ? awards.map((award) => <AwardCard key={award.award_type} award={award} model={model} />)
-          : <div className="award-empty muted">Weekly awards are calculated on Sunday after the week's games.</div>}
+          : showingPreview ? preview.map(previewTile)
+            : <div className="award-empty muted">Weekly awards are calculated on Sunday after the week's games.</div>}
       </section>
       <div className="home-grid">
         {top5Tile}
