@@ -291,6 +291,8 @@
 .undefeated-pill .muted { font-size: 13px; }
 
 .award-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; flex: none; }
+.award-note { display: flex; align-items: baseline; gap: 12px; margin: -4px 0 -6px; flex: none; }
+.award-note .cond { color: var(--text-2); font-size: 13px; font-weight: 700; letter-spacing: 0.12em; }
 .award-empty { grid-column: 1 / -1; padding: 14px 16px; border: 1px dashed var(--border-2); border-radius: 8px; }
 .award-card {
   position: relative; overflow: hidden;

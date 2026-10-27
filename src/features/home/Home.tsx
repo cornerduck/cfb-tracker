@@ -112,12 +112,20 @@ function SeasonHome() {
   const navigate = useNavigate()
   const order = period?.order ?? 0
 
-  const awards = useMemo(() => {
-    if (!period) return []
+  // Awards are calculated on Sunday after a week's games. Until then the strip shows the awards of the
+  // latest week that has them, so it is never empty during the week.
+  const awardView = useMemo(() => {
+    if (!period) return { awards: [] as WeeklyAward[], week: 0, earlier: false }
     const week = model.awardWeekFor(period)
-    return AWARD_ORDER.map((type) => model.bundle.awards.find((award) => award.week === week && award.award_type === type))
+    const pick = (target: number) => AWARD_ORDER.map((type) => model.bundle.awards.find((award) => award.week === target && award.award_type === type))
       .filter((award): award is WeeklyAward => Boolean(award))
+    const current = pick(week)
+    if (current.length) return { awards: current, week, earlier: false }
+    const earlierWeek = Math.max(0, ...model.bundle.awards.filter((award) => award.week < week).map((award) => award.week))
+    return earlierWeek > 0 ? { awards: pick(earlierWeek), week: earlierWeek, earlier: true } : { awards: [] as WeeklyAward[], week, earlier: false }
   }, [model, period])
+  const awards = awardView.awards
+  const awardCaption = awardView.earlier ? `WEEK ${awardView.week} AWARDS` : null
 
   const poll = model.pollAfter('AP', order)
   const previous = poll ? model.previousRelease(poll) : null
@@ -257,7 +265,8 @@ function SeasonHome() {
     return (
       <div className="home-mobile">
         <section>
-          <h2 className="section-title cond">WEEKLY AWARDS</h2>
+          <h2 className="section-title cond">{awardCaption ?? 'WEEKLY AWARDS'}</h2>
+          {awardCaption && <p className="muted small award-note">The awards of this week follow on Sunday.</p>}
           {awards.length ? <div className="scroll-row">{awards.map((award) => <AwardCard key={award.award_type} award={award} model={model} />)}</div>
             : <Empty>Weekly awards are calculated on Sunday.</Empty>}
         </section>
@@ -291,6 +300,7 @@ function SeasonHome() {
           <span className="muted">teams left</span>
         </button>
       </div>
+      {awardCaption && <p className="award-note"><span className="cond">{awardCaption}</span><span className="muted small">The awards of this week follow after Sunday's games.</span></p>}
       <section className="award-grid" aria-label="Weekly awards">
         {awards.length ? awards.map((award) => <AwardCard key={award.award_type} award={award} model={model} />)
           : <div className="award-empty muted">Weekly awards are calculated on Sunday after the week's games.</div>}
