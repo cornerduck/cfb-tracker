@@ -147,6 +147,22 @@ const scheduledJobMatchesBerlinTime = (job: Job, date: Date) => {
   }
 };
 
+const SCHEDULED_JOBS: Job[] = ["near-live", "daily-results", "weekly", "monday", "cfp", "winter"];
+
+// True when a scheduled update slot has passed since the last successful
+// update (with 45 minutes of grace for the run itself). Between Monday and
+// Friday there are few slots, so a quiet midweek is not reported as overdue.
+const missedScheduledUpdate = (since: number, now: number) => {
+  const hour = 60 * 60 * 1000;
+  const first = Math.floor(since / hour) * hour + hour;
+  const last = now - 45 * 60 * 1000;
+  for (let slot = first; slot <= last && slot - first <= 21 * 24 * hour; slot += hour) {
+    const date = new Date(slot);
+    if (SCHEDULED_JOBS.some((job) => scheduledJobMatchesBerlinTime(job, date))) return true;
+  }
+  return false;
+};
+
 type Lookups = Awaited<ReturnType<typeof loadTeamLookups>>;
 
 const syncGames = async (
@@ -352,15 +368,71 @@ const completedWithoutBoxscore = async (supabase: Db, gameIds: number[]) => {
   return finals.filter((id: number) => !have.has(id));
 };
 
+// All stored games of one week.
+const periodGames = async (supabase: Db, period: SeasonPeriod) => {
+  const { data, error } = await supabase.from("games")
+    .select("id,status,start_time")
+    .eq("season", SEASON).eq("week", period.week).eq("season_type", period.seasonType);
+  if (error) throw new Error(`Could not read the week's games: ${error.message}`);
+  return (data ?? []) as Array<{ id: number; status: string; start_time: string | null }>;
+};
+
+// A game that started this long ago and is still not final counts as
+// cancelled or postponed and does not hold back the weekly awards.
+const STALLED_GAME_MS = 8 * 60 * 60 * 1000;
+
+// After games finish: box scores for the new finals (two calls, only when a
+// final game has none yet), the Heisman race, and the weekly awards as soon as
+// every game of the week is final.
+const refreshResults = async (
+  supabase: Db,
+  apiKey: string,
+  calls: CallCounter,
+  period: SeasonPeriod,
+  lookups: Lookups,
+) => {
+  const games = await periodGames(supabase, period);
+  const finals = games.filter((game) => game.status === "final").map((game) => Number(game.id));
+  const missing = await completedWithoutBoxscore(supabase, finals);
+  const result: JsonObject = { new_boxscores: missing.length };
+  if (!missing.length) return result;
+  // Only final games are stored, so a game in progress never gets a partial box score.
+  Object.assign(result, await syncBoxscores(supabase, apiKey, calls, period, new Set(finals), lookups));
+  Object.assign(result, await recomputeHeisman(supabase, SEASON));
+  const now = Date.now();
+  const pending = games.some((game) =>
+    game.status !== "final" &&
+    (!game.start_time || Date.parse(game.start_time) > now - STALLED_GAME_MS)
+  );
+  if (!pending) {
+    result.weekly_awards = await recomputeWeeklyAwards(supabase, SEASON, lookups.fbsIds, [
+      { week: period.week, seasonType: period.seasonType },
+    ]);
+  }
+  return result;
+};
+
+// Awards saved before the Top Performances list existed are rebuilt once.
+const awardsNeedTopList = async (supabase: Db) => {
+  const { data, error } = await supabase.from("weekly_awards")
+    .select("details").eq("season", SEASON).eq("award_type", "performance");
+  if (error) throw new Error(`Could not read weekly awards: ${error.message}`);
+  return (data ?? []).some((row: JsonObject) => !Array.isArray(asObjectOrEmpty(row.details).top));
+};
+
+const asObjectOrEmpty = (value: unknown): JsonObject =>
+  value && typeof value === "object" && !Array.isArray(value) ? value as JsonObject : {};
+
 const executeJob = async (job: Job, supabase: Db, apiKey: string, calls: CallCounter) => {
   const period = await getCurrentPeriod(supabase);
   const lookups = await loadTeamLookups(supabase);
   if (!lookups.fbsIds.size) throw new Error("No FBS teams are stored; run the 2026 setup import first");
   const details: JsonObject = { week: period.week, season_type: period.seasonType };
-  // The class that is recruited now and the current transfer portal come from CFBD every Monday.
+  // The class that is recruited now and the current transfer portal come from CFBD every Monday,
+  // and daily in December and January (early signing period and portal window).
   // A failure is reported in the details and never fails the job.
   const withRecruiting = async (target: JsonObject) => {
-    if (job !== "monday" && job !== "manual") return target;
+    if (job !== "monday" && job !== "winter") return target;
     try {
       Object.assign(target, await syncRecruitingWeekly(supabase, apiKey, calls));
     } catch (error) {
@@ -400,7 +472,34 @@ const executeJob = async (job: Job, supabase: Db, apiKey: string, calls: CallCou
     return details;
   }
 
-  if (job !== "manual") {
+  // Update now: the latest results only, so it finishes well inside the Edge
+  // Function time limit. Polls, season stats, coaches, GameDay and recruiting
+  // stay with the scheduled jobs.
+  if (job === "manual") {
+    const resultsPeriod = await getLatestStartedPeriod(supabase) ?? period;
+    details.week = resultsPeriod.week;
+    details.season_type = resultsPeriod.seasonType;
+    const now = Date.now();
+    const live = (await periodGames(supabase, resultsPeriod)).some((game) =>
+      game.status !== "final" && game.start_time !== null &&
+      Date.parse(game.start_time) <= now && now - Date.parse(game.start_time) < STALLED_GAME_MS
+    );
+    if (live) {
+      Object.assign(details, await syncScoreboard(supabase, apiKey, calls, resultsPeriod, lookups));
+    } else {
+      details.games = (await syncGames(supabase, apiKey, calls, resultsPeriod, lookups)).count;
+    }
+    Object.assign(details, await refreshResults(supabase, apiKey, calls, resultsPeriod, lookups));
+    details.team_records = await updateTeamRecords(supabase, SEASON, lookups.fbsIds);
+    details.pickem_graded = await gradePickem(supabase);
+    if (await awardsNeedTopList(supabase)) {
+      details.weekly_awards_rebuilt = await recomputeWeeklyAwards(supabase, SEASON, lookups.fbsIds);
+    }
+    Object.assign(details, await updateSeasonSummary(supabase, SEASON));
+    return details;
+  }
+
+  {
     const now = Date.now();
     // Recruiting runs all year, so the Monday job still updates it outside the season.
     const skipped = (reason: string) => withRecruiting({ ...details, skipped: reason });
@@ -414,6 +513,7 @@ const executeJob = async (job: Job, supabase: Db, apiKey: string, calls: CallCou
 
   if (job === "near-live") {
     Object.assign(details, await syncScoreboard(supabase, apiKey, calls, period, lookups));
+    Object.assign(details, await refreshResults(supabase, apiKey, calls, period, lookups));
     details.team_records = await updateTeamRecords(supabase, SEASON, lookups.fbsIds);
     details.pickem_graded = await gradePickem(supabase);
     return details;
@@ -434,17 +534,16 @@ const executeJob = async (job: Job, supabase: Db, apiKey: string, calls: CallCou
     details.season_type = resultsPeriod.seasonType;
   }
 
-  const fullSeason = job === "monday" || job === "manual";
+  const fullSeason = job === "monday";
   const { rows, count } = await syncGames(supabase, apiKey, calls, resultsPeriod, lookups, fullSeason);
   const gameIds = new Set(rows.map((game) => game.id));
   details.games = count;
   details.lines = await syncLines(supabase, apiKey, calls, resultsPeriod, gameIds);
 
-  if (["weekly", "monday", "manual"].includes(job)) {
+  if (["weekly", "monday"].includes(job)) {
     details.tv = await syncMedia(supabase, apiKey, calls, resultsPeriod, gameIds);
   }
-  const needsBoxscores = job === "weekly" || job === "manual" ||
-    (job === "winter" && (await completedWithoutBoxscore(supabase, [...gameIds])).length > 0);
+  const needsBoxscores = job === "weekly";
   if (needsBoxscores && rows.some((game) => game.status === "final")) {
     Object.assign(
       details,
@@ -454,24 +553,25 @@ const executeJob = async (job: Job, supabase: Db, apiKey: string, calls: CallCou
   details.team_records = await updateTeamRecords(supabase, SEASON, lookups.fbsIds);
   details.pickem_graded = await gradePickem(supabase);
 
-  if (["weekly", "winter"].includes(job) && needsBoxscores) {
+  // Weeknight games (daily) and bowls (winter) get their box scores as soon as they are final.
+  if (job === "daily-results" || job === "winter") {
+    Object.assign(details, await refreshResults(supabase, apiKey, calls, resultsPeriod, lookups));
+  }
+  if (job === "weekly" && needsBoxscores) {
     details.weekly_awards = await recomputeWeeklyAwards(supabase, SEASON, lookups.fbsIds, [
       { week: resultsPeriod.week, seasonType: resultsPeriod.seasonType },
     ]);
   }
-  if (["monday", "winter", "manual"].includes(job)) {
+  if (["monday", "winter"].includes(job)) {
     details.polls = await syncPolls(supabase, apiKey, calls, lookups);
   }
-  if (["monday", "manual"].includes(job)) {
+  if (job === "monday") {
     Object.assign(details, await syncSeasonStats(supabase, apiKey, calls, lookups));
     details.coaches = await syncCoaches(supabase, apiKey, calls, lookups);
     Object.assign(details, await recomputeHeisman(supabase, SEASON));
   }
-  if (job === "manual") {
-    details.weekly_awards = await recomputeWeeklyAwards(supabase, SEASON, lookups.fbsIds);
-  }
   // GameDay comes from Wikipedia, not CFBD; a failure never fails the job.
-  if (["weekly", "monday", "manual"].includes(job)) {
+  if (["weekly", "monday"].includes(job)) {
     try {
       Object.assign(details, await syncGameday(supabase));
     } catch (error) {
@@ -511,7 +611,16 @@ const getStatus = async (supabase: Db) => {
   }
   const lastUpdated = data.finished_at ?? data.started_at;
   const age = lastUpdated ? now - Date.parse(lastUpdated) : Infinity;
-  const overdue = seasonActive && age > 26 * 60 * 60 * 1000;
+  const { data: success, error: successError } = await supabase.from("update_log")
+    .select("finished_at")
+    .like("job", "live-2026-%")
+    .eq("status", "success")
+    .order("started_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (successError) throw new Error(`Could not read the last successful update: ${successError.message}`);
+  const lastSuccess = success?.finished_at ? Date.parse(success.finished_at) : null;
+  const overdue = seasonActive && (lastSuccess === null || missedScheduledUpdate(lastSuccess, now));
   const staleRun = data.status === "running" && age > 30 * 60 * 1000;
   return {
     state: data.status === "failed"
@@ -612,6 +721,19 @@ Deno.serve(async (request) => {
       reason: "This UTC schedule slot does not match the Berlin local-time schedule.",
     });
   }
+
+  // A run the platform stopped (for example at the time limit) never records
+  // its end; close it so it does not stay "running" forever.
+  const { error: staleError } = await supabase.from("update_log")
+    .update({
+      status: "failed",
+      finished_at: new Date().toISOString(),
+      error: "The update was stopped before it finished (time limit)",
+    })
+    .like("job", "live-2026-%")
+    .eq("status", "running")
+    .lt("started_at", new Date(Date.now() - 30 * 60 * 1000).toISOString());
+  if (staleError) console.error("Could not close stalled updates:", staleError.message);
 
   const { data: log, error: logError } = await supabase.from("update_log")
     .insert({ job: `live-2026-${job}`, trigger, status: "running" })

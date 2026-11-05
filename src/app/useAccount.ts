@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import type { Session } from '@supabase/supabase-js'
 import { supabase, type Profile } from '../lib/supabase'
 import type { LiveUpdateSnapshot } from '../types'
@@ -22,6 +23,9 @@ export function useAccount() {
   const [profileSaving, setProfileSaving] = useState(false)
   const [favoriteSaving, setFavoriteSaving] = useState(false)
   const [manualUpdateBusy, setManualUpdateBusy] = useState(false)
+  const [freshDataAt, setFreshDataAt] = useState<number | null>(null)
+  const queryClient = useQueryClient()
+  const lastUpdatedRef = useRef<string | null | undefined>(undefined)
   const [updateNowMessage, setUpdateNowMessage] = useState('')
   const [liveUpdate, setLiveUpdate] = useState<LiveUpdateSnapshot>({
     state: 'unavailable',
@@ -121,17 +125,40 @@ export function useAccount() {
     try {
       const response = await fetch(`${supabaseBaseUrl}/functions/v1/update-2026`, { headers: { apikey: supabaseAnonKey } })
       if (!response.ok) throw new Error(`Live update status request failed (${response.status})`)
-      setLiveUpdate(await response.json() as LiveUpdateSnapshot)
+      const snapshot = await response.json() as LiveUpdateSnapshot
+      setLiveUpdate(snapshot)
+      // Reload the data only when a new update has finished since the last check.
+      const previous = lastUpdatedRef.current
+      lastUpdatedRef.current = snapshot.last_updated
+      if (previous !== undefined && snapshot.last_updated && snapshot.last_updated !== previous) {
+        void queryClient.invalidateQueries()
+        setFreshDataAt(Date.now())
+      }
     } catch {
       setLiveUpdate((current) => ({ ...current, state: 'unavailable' }))
     }
-  }, [supabaseBaseUrl, supabaseAnonKey])
+  }, [supabaseBaseUrl, supabaseAnonKey, queryClient])
 
+  // The status check costs no API calls; it runs every two minutes and when
+  // the app comes back to the foreground.
   useEffect(() => {
     void refreshLiveStatus()
-    const interval = window.setInterval(() => void refreshLiveStatus(), 5 * 60 * 1000)
-    return () => window.clearInterval(interval)
+    const interval = window.setInterval(() => void refreshLiveStatus(), 2 * 60 * 1000)
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') void refreshLiveStatus()
+    }
+    document.addEventListener('visibilitychange', onVisible)
+    return () => {
+      window.clearInterval(interval)
+      document.removeEventListener('visibilitychange', onVisible)
+    }
   }, [refreshLiveStatus])
+
+  useEffect(() => {
+    if (freshDataAt === null) return
+    const timer = window.setTimeout(() => setFreshDataAt(null), 4000)
+    return () => window.clearTimeout(timer)
+  }, [freshDataAt])
 
   const run = async (busy: (value: boolean) => void, action: () => Promise<void>, fallback: string) => {
     busy(true)
@@ -274,6 +301,7 @@ export function useAccount() {
     manualUpdateBusy,
     updateNowMessage,
     liveUpdate,
+    freshData: freshDataAt !== null,
     signIn,
     sendPasswordReset,
     saveRecoveredPassword,

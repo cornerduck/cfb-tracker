@@ -90,6 +90,16 @@
   background: #241616; color: #F28C82; font-size: 13px;
 }
 .update-banner--overdue { border-color: #4A3F1E; background: #1D1A0F; color: #E8C547; }
+.update-banner--version { border-color: #1E3A2C; background: #0F1D16; color: #4CC38A; }
+.fresh-pill {
+  position: fixed; left: 50%; bottom: 24px; z-index: 60; transform: translateX(-50%);
+  padding: 8px 16px; border: 1px solid #1E3A2C; border-radius: 999px;
+  background: #0F1D16; color: #4CC38A; font-size: 12px; font-weight: 700; letter-spacing: 0.1em;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4); pointer-events: none;
+  animation: fresh-pill 4s ease forwards;
+}
+.shell--mobile .fresh-pill { bottom: calc(76px + env(safe-area-inset-bottom)); }
+@keyframes fresh-pill { 0% { opacity: 0; } 8%, 85% { opacity: 1; } 100% { opacity: 0; } }
 .update-banner .dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; flex-shrink: 0; }
 .update-banner button {
   margin-left: auto; padding: 4px 10px;
@@ -652,9 +662,24 @@
 
 /* top 25 / undefeated */
 .top25-window { width: min(1000px, 100%); }
+.performances-window { width: min(780px, 100%); }
 .top25-grid { display: grid; grid-template-columns: 1fr 1fr; grid-auto-flow: column; grid-template-rows: repeat(13, auto); gap: 0 40px; }
 .top25-row { display: flex; align-items: center; gap: 12px; padding: 0 10px; min-height: 48px; border: 0; border-bottom: 1px solid var(--row-line); background: none; text-align: left; }
 .top25-row.first { background: #1D2024; border-radius: 6px; }
+.perf-list { list-style: none; margin: 0; padding: 0; }
+.perf-row {
+  display: grid; grid-template-columns: 28px 40px minmax(0, 1fr) minmax(0, 220px); align-items: center; gap: 12px;
+  width: 100%; padding: 8px 10px; min-height: 60px;
+  border: 0; border-bottom: 1px solid var(--row-line); background: none; text-align: left; color: inherit;
+}
+.perf-row:hover { background: #16181B; }
+.perf-row.first { background: #1D2024; border-radius: 6px; }
+.perf-main { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.perf-name { display: flex; align-items: center; gap: 8px; font-size: 17px; font-weight: 700; letter-spacing: 0.02em; }
+.perf-badge { padding: 1px 6px; border-radius: 3px; background: #4CC38A; color: #0B0C0E; font-size: 11px; letter-spacing: 0.08em; }
+.perf-line { color: var(--text-2); }
+.perf-team { display: flex; align-items: center; gap: 8px; justify-content: flex-end; min-width: 0; }
+.perf-foot { margin-top: 12px; }
 .top25-name { font-size: 18px; font-weight: 700; }
 .top25-foot { margin-top: 10px; }
 .undefeated-window { width: min(1000px, 100%); }
@@ -782,6 +807,8 @@
   .game-summary-right { padding: 12px 16px; }
   .player-tables, .season-tables, .undefeated-top, .undefeated-bottom, .perfect-grid { grid-template-columns: 1fr; }
   .top25-grid { grid-template-columns: 1fr; grid-auto-flow: row; grid-template-rows: none; }
+  .perf-row { grid-template-columns: 22px 40px minmax(0, 1fr); row-gap: 4px; }
+  .perf-team { grid-column: 3; justify-content: flex-start; }
   .line-boxes strong { font-size: 16px; }
   .search-window { margin-top: 0; }
   .directory { grid-template-columns: 1fr; }

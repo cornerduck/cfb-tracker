@@ -100,20 +100,26 @@ Scheduled Supabase jobs. All times **Europe/Berlin**.
 
 | When | Job |
 |---|---|
-| Saturday 18:00 to Sunday 08:00, every 2 hours | Near-live scores (in progress and final) |
-| 08:00 the morning after Thursday and Friday games | Results of those games |
+| Saturday 18:00 to Sunday 08:00, every 2 hours | Near-live scores (in progress and final); box scores and the Heisman race as soon as games are final; weekly awards once every game of the week is final |
+| 08:00 the morning after Thursday and Friday games | Results and box scores of those games |
 | Sunday 10:00 | Final scores, box scores, player stats, closing lines, upsets, Undefeated Watch, weekly awards, GameDay result |
 | Monday 06:00 | AP and Coaches Poll, season stats, standings and race status, Heisman tracker, next week's games and lines, GameDay location, Pick'em slate |
 | Monday 06:00 (extra) | Recruiting: team class rankings and high school recruits of the current class year, transfer portal of the current portal season (also in the offseason; from November the next portal season as well) |
 | Wednesday 06:00 (November and December) | CFP ranking |
-| Daily 08:00 (1 December to the national title game) | Results, bracket, polls |
+| Daily 08:00 (December and January) | Results, box scores, bracket, polls, and recruiting and portal (early signing period and portal window) |
 
 - Each run writes to `update_log`. Target: under 400 API calls per month.
 - The current week always comes from the CFBD calendar, never hardcoded.
 - A failed run never deletes existing data.
-- **Update now** (manual): button in the failed-update banner and in Settings. Calls an Edge Function that runs
-  the full update. Allowed again 15 minutes after each use (enforced server-side).
-- **Update indicator** in the top bar: green dot = last run fine, yellow = a run is overdue, red = last run failed.
+- **Update now** (manual): button in the failed-update banner and in Settings. Refreshes the latest results only
+  (scores, box scores of new finals, Heisman race, weekly awards when the week is complete) so it stays inside the
+  Edge Function time limit; polls, season stats, coaches, GameDay and recruiting stay with the scheduled jobs.
+  Allowed again 15 minutes after each use (enforced server-side).
+- **Update indicator** in the top bar: green dot = last run fine, yellow = a scheduled slot has passed without a
+  successful run (45 minutes grace), red = last run failed. A run stopped by the platform is closed as failed by the next run.
+- **Fresh data:** the app checks the update status every two minutes and on returning to the foreground; when a new
+  update has finished it reloads its data and briefly shows "New data loaded".
+- **New version:** a new deploy is detected while the app is open and a banner offers to reload it.
 
 ---
 
@@ -136,7 +142,8 @@ Scheduled Supabase jobs. All times **Europe/Berlin**.
   Before the first CFP ranking the bracket is **projected** from the AP Poll and current conference leaders.
 - **Weekly awards** (Sunday): Upset of the Week (biggest spread won by an underdog), Game of the Week
   (closest margin, overtime breaks ties), Blowout of the Week (largest margin between FBS teams),
-  Performance of the Week (best individual line by a defined points formula).
+  Performance of the Week (best individual line by a defined points formula). The award also stores the top 20
+  performances of the week; the Home card opens a **Top Performances** window, each row opens the player profile (Back returns to the list).
 - **Top performers** in the game window: per game, the best player of either team in passing yards, rushing yards,
   receiving yards and tackles (sacks, then interceptions break ties) – four rows.
 - **Heisman tracker:** stat-based only. QB, RB, WR. Score = 80 % production (percentile vs same position:

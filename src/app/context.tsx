@@ -5,6 +5,7 @@ import type { Period, SeasonModel } from '../data/model'
 export type WindowSpec =
   | { type: 'game'; gameId: number; season?: number }
   | { type: 'player'; playerId: string; name?: string; teamId?: number | null; season?: number }
+  | { type: 'performances'; week: number; season?: number }
   | { type: 'top25' }
   | { type: 'undefeated' }
   | { type: 'gameday'; week?: number; season?: number }
