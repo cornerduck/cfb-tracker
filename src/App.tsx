@@ -14,6 +14,7 @@ import { shortDateTime } from './shared/format'
 import { AccountWindow, ErrorWindow, FavoritesWindow, SearchWindow, Top25Window, UndefeatedWindow } from './windows/SmallWindows'
 import { GameDayWindow } from './features/gameday/GameDayWindow'
 import { PerformancesWindow } from './windows/PerformancesWindow'
+import { RecapWindow } from './windows/RecapWindow'
 
 // Every screen except Home loads on first use.
 const Scores = lazy(() => import('./features/scores/Scores').then((module) => ({ default: module.Scores })))
@@ -207,6 +208,7 @@ function Windows({ spec }: { spec: WindowSpec | null }) {
     case 'game': return <SeasonScope year={spec.season}><GameWindow gameId={spec.gameId} /></SeasonScope>
     case 'player': return <SeasonScope year={spec.season}><PlayerWindow playerId={spec.playerId} name={spec.name} teamId={spec.teamId} /></SeasonScope>
     case 'performances': return <SeasonScope year={spec.season}><PerformancesWindow week={spec.week} /></SeasonScope>
+    case 'recap': return <RecapWindow periodKey={spec.periodKey} />
     case 'top25': return <Top25Window />
     case 'undefeated': return <UndefeatedWindow />
     case 'search': return <SearchWindow />

@@ -251,15 +251,26 @@ College GameDay tile for the selected week (campus photo, pennants with logo pla
 recent stops). After the game the GameDay tile and window switch to the final state (score, cover, top performers,
 guest pick result, box score link). Offseason Home: countdown in three boxes, champion banner, season recap,
 My Teams final, offseason calendar.
+A **Week N Recap** pill next to the Undefeated pill (mobile: above the awards) opens the recap of the last finished week;
+it carries a NEW tag until Tuesday night. It takes no space from the tiles.
 
 **Windows** – Game (Summary: box score, line, eight top performers, team stats with team names left/right
 of the centered heading; Player stats: both teams side by side, scroll together), Player (photo slot,
 this week, season, passing-by-game chart, next game, clickable game log), Top 25 (AP/Coaches/CFP, no points),
 College GameDay, Undefeated Watch, Favorites menu, Account menu, Search, failed-update banner.
+**Week Recap** window (weeks with weekly awards, browse with ‹ Week N): game of the week, week in numbers, upsets,
+top 5 performances (All → Top Performances), your teams with result and next game, Heisman race with moves against the
+week before, AP Poll moves (risers, fallers, new, dropped; once the poll after the week is out), your Pick'em, GameDay.
+Rows open the game, player or team page. No API calls.
 
 **Scores** – week bar incl. Conf Champ, Bowls, CFP; filters All / Top 25 / My Teams / Conference; games by kickoff slot;
 week in numbers, upsets, ranked losses. Conf Champ week: all title games in one grid with conference logos.
 Bowls by date with bowl name. CFP by round with seeds.
+**Watch Guide** (Scores filter, first on mobile): every game of the week rated 0 to 100 from data in the app (ranks at
+kickoff, CFP once out else AP, up to 35; spread up to 25; unbeaten team with 3+ wins 10; conference race, both teams at
+most one conference loss, 10; College GameDay 10; Top 5 team 10). Tiers Must Watch 75+, Worth It 50+, Background 20+;
+games under 20 hidden unless a favorite plays (Show more). Kickoff windows (new window after two hours) in the user's
+time zone; "Your Saturday" shows the best game of each window. A Week Recap button appears for finished weeks.
 
 **Rankings** – AP (with conference logos, Biggest Movers, In and out), Coaches (AP rank column, Biggest Disagreements),
 CFP (seeds, byes, auto bids, cut line, first four out; before the first release: countdown with German time only),

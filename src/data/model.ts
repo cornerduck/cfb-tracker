@@ -356,6 +356,13 @@ export class SeasonModel {
     return this.pollAt('AP', this.gameOrder(game))?.byTeam.get(teamId)?.rank ?? null
   }
 
+  // The ranking that counts at kickoff: the CFP ranking once it is out, else the AP Poll.
+  rankAtKickoff(teamId: number, game: Game) {
+    const order = this.gameOrder(game)
+    const poll = this.pollAt('CFP', order) ?? this.pollAt('AP', order)
+    return poll?.byTeam.get(teamId)?.rank ?? null
+  }
+
   apRankAfter(teamId: number, order: number) {
     return this.pollAfter('AP', order)?.byTeam.get(teamId)?.rank ?? null
   }

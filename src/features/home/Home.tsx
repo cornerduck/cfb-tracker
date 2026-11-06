@@ -10,6 +10,7 @@ import { shortDateTime } from '../../shared/format'
 import { Empty, Flame, Movement, Plate, PlayerAvatar, Tile } from '../../shared/ui'
 import { playerLine } from '../../shared/stats'
 import { GameDayTile } from './GameDayTile'
+import { recapIsNew, recapPeriods } from '../../windows/recap'
 import { OffseasonHome, offseasonState } from './Offseason'
 
 const AWARD_ORDER: WeeklyAward['award_type'][] = ['upset', 'game', 'blowout', 'performance']
@@ -263,9 +264,19 @@ function SeasonHome() {
     </Tile>
   )
 
+  // The recap of the last finished week, marked new until Tuesday night.
+  const recapPeriod = recapPeriods(model).at(-1) ?? null
+  const recapButton = recapPeriod && (
+    <button type="button" className="undefeated-pill recap-pill" onClick={() => openWindow({ type: 'recap', periodKey: recapPeriod.key })}>
+      <span className="cond">{recapPeriod.label.toUpperCase()} RECAP</span>
+      {recapIsNew(recapPeriod) && <span className="recap-new cond">NEW</span>}
+    </button>
+  )
+
   if (mobile) {
     return (
       <div className="home-mobile">
+        {recapButton}
         <section>
           <h2 className="section-title cond">{showingPreview ? 'GAMES TO WATCH' : 'WEEKLY AWARDS'}</h2>
           {awards.length ? <div className="scroll-row">{awards.map((award) => <AwardCard key={award.award_type} award={award} model={model} />)}</div>
@@ -296,6 +307,7 @@ function SeasonHome() {
       <div className="page-head">
         <h1 className="cond">{period?.label.toUpperCase() ?? 'PRESEASON'}</h1>
         <span className="grow" />
+        {recapButton}
         <button type="button" className="undefeated-pill" onClick={() => openWindow({ type: 'undefeated' })}>
           <span className="cond">UNDEFEATED WATCH</span>
           <span className="cond num">{unbeaten.length}</span>
