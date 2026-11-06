@@ -4,6 +4,7 @@ import AuthScreen from './AuthScreen'
 import PasswordRecoveryScreen from './PasswordRecoveryScreen'
 import { AppContext, type AppState, type WindowSpec, useApp } from './app/context'
 import { useAccount } from './app/useAccount'
+import { useNewVersion } from './app/useNewVersion'
 import { useSeasonModel, useSeasons } from './app/useSeasonData'
 import { SeasonScope } from './app/SeasonScope'
 import { supabaseConfigurationError } from './lib/supabase'
@@ -12,6 +13,7 @@ import { ErrorBox, Loading } from './shared/ui'
 import { shortDateTime } from './shared/format'
 import { AccountWindow, ErrorWindow, FavoritesWindow, SearchWindow, Top25Window, UndefeatedWindow } from './windows/SmallWindows'
 import { GameDayWindow } from './features/gameday/GameDayWindow'
+import { PerformancesWindow } from './windows/PerformancesWindow'
 
 // Every screen except Home loads on first use.
 const Scores = lazy(() => import('./features/scores/Scores').then((module) => ({ default: module.Scores })))
@@ -98,11 +100,23 @@ function Shell({ children }: { children: ReactNode }) {
   const statusDot = (
     <button type="button" className={`status-dot status-dot--${live.state}`} title={live.last_updated ? `Last update ${shortDateTime(live.last_updated, app.timeZone)}` : 'Live data status'} aria-label="Data update status" onClick={() => openWindow({ type: 'error' })}><span /></button>
   )
-  const bannerNode = banner && (
-    <div className={`update-banner update-banner--${live.state}`} role="status">
-      <span className="dot" />{banner}
-      <button type="button" className="cond" onClick={() => openWindow({ type: 'error' })}>UPDATE NOW</button>
-    </div>
+  const { newVersion, reload } = useNewVersion()
+  const bannerNode = (
+    <>
+      {newVersion && (
+        <div className="update-banner update-banner--version" role="status">
+          <span className="dot" />A new version of STRDYS is available.
+          <button type="button" className="cond" onClick={reload}>RELOAD</button>
+        </div>
+      )}
+      {banner && (
+        <div className={`update-banner update-banner--${live.state}`} role="status">
+          <span className="dot" />{banner}
+          <button type="button" className="cond" onClick={() => openWindow({ type: 'error' })}>UPDATE NOW</button>
+        </div>
+      )}
+      {account.freshData && <div className="fresh-pill cond" role="status">NEW DATA LOADED</div>}
+    </>
   )
 
   if (mobile) {
@@ -192,6 +206,7 @@ function Windows({ spec }: { spec: WindowSpec | null }) {
   switch (spec.type) {
     case 'game': return <SeasonScope year={spec.season}><GameWindow gameId={spec.gameId} /></SeasonScope>
     case 'player': return <SeasonScope year={spec.season}><PlayerWindow playerId={spec.playerId} name={spec.name} teamId={spec.teamId} /></SeasonScope>
+    case 'performances': return <SeasonScope year={spec.season}><PerformancesWindow week={spec.week} /></SeasonScope>
     case 'top25': return <Top25Window />
     case 'undefeated': return <UndefeatedWindow />
     case 'search': return <SearchWindow />

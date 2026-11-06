@@ -82,6 +82,8 @@ export const underdogWin = (
   return { winner, loser, winnerSpread, tier };
 };
 
+export const TOP_PERFORMANCES = 20;
+
 // Points formula for Performance of the Week, summed over a player's
 // categories in one game.
 export const performanceScore = (rows: PlayerGameRow[]) => {
@@ -227,12 +229,22 @@ export const computeWeeklyAwards = (
     rows.push(row);
     byPlayerGame.set(key, rows);
   }
-  let best: { rows: PlayerGameRow[]; result: ReturnType<typeof performanceScore> } | null = null;
-  for (const rows of byPlayerGame.values()) {
-    const result = performanceScore(rows);
-    if (!best || result.score > best.result.score) best = { rows, result };
-  }
-  if (best && best.result.score > 0) {
+  const ranked = [...byPlayerGame.values()]
+    .map((rows) => ({ rows, result: performanceScore(rows) }))
+    .filter((entry) => entry.result.score > 0)
+    .sort((a, b) => b.result.score - a.result.score);
+  const best = ranked[0];
+  // The best performances of the week for the Top Performances list.
+  const top = ranked.slice(0, TOP_PERFORMANCES).map(({ rows, result }) => ({
+    player_id: rows[0].player_id,
+    player_name: rows[0].player_name,
+    team_id: rows[0].team_id,
+    game_id: rows[0].game_id,
+    position: result.position,
+    score: Number(result.score.toFixed(2)),
+    line: result.line,
+  }));
+  if (best) {
     const first = best.rows[0];
     awards.push({
       season,
@@ -246,6 +258,7 @@ export const computeWeeklyAwards = (
         position: best.result.position,
         score: Number(best.result.score.toFixed(2)),
         line: best.result.line,
+        top,
       },
     });
   }

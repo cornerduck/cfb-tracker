@@ -123,6 +123,7 @@ Deno.test("weekly awards pick upset, closest game, blowout and performance", () 
   const players = [
     { game_id: 1, player_id: "p", player_name: "QB One", team_id: 2, category: "passing", stats: { "C/ATT": "25/31", YDS: "412", TD: "5", INT: "0" } },
     { game_id: 2, player_id: "k", player_name: "Punter", team_id: 3, category: "punting", stats: { YDS: "500" } },
+    { game_id: 2, player_id: "r", player_name: "RB Two", team_id: 3, category: "rushing", stats: { CAR: "20", YDS: "150", TD: "2" } },
   ];
   const awards = computeWeeklyAwards(2025, 6, games, spreads, players, fbs);
   const byType = Object.fromEntries(awards.map((award) => [award.award_type, award]));
@@ -131,6 +132,9 @@ Deno.test("weekly awards pick upset, closest game, blowout and performance", () 
   assertEquals(byType.game.game_id, 3);
   assertEquals(byType.blowout.game_id, 2);
   assertEquals(byType.performance.player_id, "p");
+  const top = (byType.performance.details as Record<string, unknown>).top as Array<Record<string, unknown>>;
+  assertEquals(top.map((entry) => entry.player_id), ["p", "r"]);
+  assertEquals(top[1].game_id, 2);
 });
 
 Deno.test("heisman weeks rank qualified players", () => {

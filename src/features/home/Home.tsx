@@ -69,7 +69,7 @@ function AwardCard({ award, model }: { award: WeeklyAward; model: SeasonModel })
   }
   const stunner = award.award_type === 'upset' && details.tier === 'stunner'
   const open = () => {
-    if (isPlayer && award.player_id) openWindow({ type: 'player', playerId: award.player_id, name: String(details.player_name ?? ''), teamId: Number(details.team_id) })
+    if (isPlayer) openWindow({ type: 'performances', week: award.week, season: award.season })
     else if (game) openWindow({ type: 'game', gameId: game.id })
   }
   return (
