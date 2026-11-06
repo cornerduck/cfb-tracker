@@ -6,9 +6,13 @@ import type { Game } from '../../data/types'
 import { GameTile, UPSET_LABEL } from '../../shared/GameTile'
 import { kickoffParts, longDay } from '../../shared/format'
 import { Empty, Pills, Plate, Tile } from '../../shared/ui'
+import { WatchGuide, WatchRules } from './WatchGuide'
+import { recapPeriods } from '../../windows/recap'
 
 type View = { key: string; kind: 'week' | 'confchamp' | 'bowls' | 'cfp'; label: string; top: string; bottom: string }
-const FILTERS = ['ALL FBS', 'TOP 25', 'MY TEAMS', 'CONFERENCE'] as const
+const FILTERS = ['ALL FBS', 'TOP 25', 'MY TEAMS', 'CONFERENCE', 'WATCH GUIDE'] as const
+// On the phone the Watch Guide comes first.
+const MOBILE_FILTERS = ['WATCH GUIDE', 'ALL FBS', 'TOP 25', 'MY TEAMS', 'CONFERENCE'] as const
 type Filter = typeof FILTERS[number]
 
 const isCfp = (game: Game) => Boolean(game.cfp_round)
@@ -121,6 +125,7 @@ export function Scores() {
   const fbsCount = games.length
 
   const open = (gameId: number) => openWindow({ type: 'game', gameId })
+  const hasRecap = Boolean(view && recapPeriods(model).some((item) => item.key === view.key))
 
   const weekBar = (
     <div className="week-bar" ref={barRef}>
@@ -145,14 +150,15 @@ export function Scores() {
 
   const filters = view && (view.kind === 'week') ? (
     <div className="filter-row">
-      <Pills items={FILTERS} value={filter} onChange={setFilter} />
+      <Pills items={mobile ? MOBILE_FILTERS : FILTERS} value={filter} onChange={setFilter} />
       {filter === 'CONFERENCE' && (
         <select className="select" aria-label="Conference" value={activeConference ?? ''} onChange={(event) => setConference(Number(event.target.value))}>
           {conferences.map((item) => <option key={item.id} value={item.id}>{confName(item)}</option>)}
         </select>
       )}
       <span className="grow" />
-      {!mobile && <span className="muted">{fbsCount} FBS games</span>}
+      {hasRecap && <button type="button" className="outline-button cond recap-link" onClick={() => openWindow({ type: 'recap', periodKey: view.key })}>{mobile ? 'RECAP' : 'WEEK RECAP'}</button>}
+      {!mobile && <span className="muted">{filter === 'WATCH GUIDE' ? `Times in ${timeZone.split('/').pop()?.replace(/_/g, ' ')}` : `${fbsCount} FBS games`}</span>}
     </div>
   ) : (
     <div className="filter-row"><span className="grow" /><span className="muted">{view?.label}</span></div>
@@ -205,6 +211,9 @@ export function Scores() {
         )) : <Empty>Seeds are set on Selection Day.</Empty>}
       </Tile>
     )
+  } else if (view.kind === 'week' && filter === 'WATCH GUIDE') {
+    content = <WatchGuide games={games} />
+    side = <WatchRules />
   } else {
     const sorted = [...visible].sort((a, b) => (Date.parse(a.start_time ?? '') || Infinity) - (Date.parse(b.start_time ?? '') || Infinity))
     const slots = new Map<string, Game[]>()
@@ -239,7 +248,7 @@ export function Scores() {
       <div className="scores-mobile">
         {weekBar}
         {filters}
-        {view?.kind === 'week' && (() => {
+        {view?.kind === 'week' && filter !== 'WATCH GUIDE' && (() => {
           const finals = games.filter((game) => game.status === 'final')
           return (
             <div className="mini-numbers">
