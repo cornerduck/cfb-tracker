@@ -100,7 +100,7 @@ Scheduled Supabase jobs. All times **Europe/Berlin**.
 
 | When | Job |
 |---|---|
-| Saturday 18:00 to Sunday 08:00, every 2 hours | Near-live scores (in progress and final); box scores and the Heisman race as soon as games are final; weekly awards once every game of the week is final |
+| Every 30 minutes (results watch) | Only when a game kicked off at least 3 hours ago and is not final yet (otherwise no API call and no log entry): scores of that week, box scores and the Heisman race for new finals, weekly awards once every game of the week is final. With `CFBD_LIVE_SCOREBOARD=true` (paid CFBD tier) it also follows games in progress through the live scoreboard |
 | 08:00 the morning after Thursday and Friday games | Results and box scores of those games |
 | Sunday 10:00 | Final scores, box scores, player stats, closing lines, upsets, Undefeated Watch, weekly awards, GameDay result |
 | Monday 06:00 | AP and Coaches Poll, season stats, standings and race status, Heisman tracker, next week's games and lines, GameDay location, Pick'em slate |
@@ -120,6 +120,17 @@ Scheduled Supabase jobs. All times **Europe/Berlin**.
 - **Fresh data:** the app checks the update status every two minutes and on returning to the foreground; when a new
   update has finished it reloads its data and briefly shows "New data loaded".
 - **New version:** a new deploy is detected while the app is open and a banner offers to reload it.
+
+### Push notifications
+
+- Web Push (VAPID). The key pair is created by the `push` Edge Function on first use and kept in `push_config`
+  (service role only). Devices are stored in `push_subscriptions` (own rows only), sent games in `push_sent`.
+- Settings card **Notifications** per device: Turn on (permission, subscription, one-time test notification),
+  Send test, Turn off. On iPhone and iPad only from the Home Screen app (iOS 16.4 or later).
+- Every 5 minutes (no API calls): **KICKOFF** at the scheduled time (not for TBD kickoffs) and **FINAL** (with OT and
+  UPSET when it applies) for games with a Top 25 team or a favorite team. Top 25 = AP Poll until the first CFP
+  ranking is out, then the CFP ranking, the latest release up to the game's week. One notification per game; the
+  final replaces the kickoff. A tap opens the game window.
 
 ---
 

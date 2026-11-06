@@ -198,6 +198,7 @@ export const mapGame = (
     away_line_scores: Array.isArray(game.awayLineScores) ? game.awayLineScores : null,
     home_line_scores: Array.isArray(game.homeLineScores) ? game.homeLineScores : null,
     start_time: optionalString(game.startDate),
+    start_time_tbd: game.startTimeTBD === true,
     venue: optionalString(game.venue),
     away_postgame_rank: integerValue(game.awayPostgameRank),
     home_postgame_rank: integerValue(game.homePostgameRank),
