@@ -33,6 +33,7 @@ import { syncRecruitingWeekly } from "../_shared/recruiting_sync.ts";
 const SEASON = 2026;
 const JOBS = [
   "near-live",
+  "watch",
   "daily-results",
   "weekly",
   "monday",
@@ -127,6 +128,8 @@ const scheduledJobMatchesBerlinTime = (job: Job, date: Date) => {
   const hour = Number(part("hour"));
   const minute = Number(part("minute"));
   const month = Number(part("month"));
+  // The results watch runs every 30 minutes and decides itself whether a call is needed.
+  if (job === "watch") return true;
   if (minute > 5) return false;
   switch (job) {
     case "near-live":
@@ -147,7 +150,8 @@ const scheduledJobMatchesBerlinTime = (job: Job, date: Date) => {
   }
 };
 
-const SCHEDULED_JOBS: Job[] = ["near-live", "daily-results", "weekly", "monday", "cfp", "winter"];
+// Jobs with fixed slots. The results watch only logs when it has work, so it never counts here.
+const SCHEDULED_JOBS: Job[] = ["daily-results", "weekly", "monday", "cfp", "winter"];
 
 // True when a scheduled update slot has passed since the last successful
 // update (with 45 minutes of grace for the run itself). Between Monday and
@@ -265,6 +269,10 @@ const syncScoreboard = async (
   period: SeasonPeriod,
   lookups: Lookups,
 ) => {
+  if (!liveScoreboardEnabled()) {
+    const { count } = await syncGames(supabase, apiKey, calls, period, lookups);
+    return { source: "games", games: count };
+  }
   let updates;
   try {
     updates = mapScoreboard(
@@ -366,6 +374,39 @@ const completedWithoutBoxscore = async (supabase: Db, gameIds: number[]) => {
   if (statsError) throw new Error(`Could not read stored box scores: ${statsError.message}`);
   const have = new Set((stats ?? []).map((row: JsonObject) => Number(row.game_id)));
   return finals.filter((id: number) => !have.has(id));
+};
+
+// The live scoreboard needs a paid CFBD tier. Without it every attempt is a
+// wasted call, so it is only used when the CFBD_LIVE_SCOREBOARD secret is "true".
+const liveScoreboardEnabled = () => Deno.env.get("CFBD_LIVE_SCOREBOARD") === "true";
+
+// A game usually lasts about three and a half hours; from three hours after
+// kickoff the watch checks whether it is final.
+const EXPECTED_GAME_MS = 3 * 60 * 60 * 1000;
+
+// Weeks with a game that should be over (or, with the live scoreboard, is
+// running) but is not final yet. Empty means the watch has nothing to do and
+// makes no API call.
+const watchPeriods = async (supabase: Db): Promise<SeasonPeriod[]> => {
+  const now = Date.now();
+  const { data, error } = await supabase.from("games")
+    .select("week,season_type")
+    .eq("season", SEASON)
+    .neq("status", "final")
+    .not("week", "is", null)
+    .gte("start_time", new Date(now - STALLED_GAME_MS).toISOString())
+    .lte("start_time", new Date(now - (liveScoreboardEnabled() ? 0 : EXPECTED_GAME_MS)).toISOString());
+  if (error) throw new Error(`Could not read games to watch: ${error.message}`);
+  const periods = new Map<string, SeasonPeriod>();
+  for (const row of (data ?? []) as Array<{ week: number; season_type: string }>) {
+    periods.set(`${row.season_type}-${row.week}`, {
+      week: row.week,
+      seasonType: row.season_type,
+      startDate: null,
+      endDate: null,
+    });
+  }
+  return [...periods.values()];
 };
 
 // All stored games of one week.
@@ -509,6 +550,20 @@ const executeJob = async (job: Job, supabase: Db, apiKey: string, calls: CallCou
     if (period.endDate && now - Date.parse(period.endDate) > 48 * 60 * 60 * 1000) {
       return await skipped("the 2026 season calendar has ended");
     }
+  }
+
+  // Results watch: only the weeks with games that should be over.
+  if (job === "watch") {
+    const periods = await watchPeriods(supabase);
+    details.weeks = periods.map((item) => item.week);
+    for (const item of periods) {
+      Object.assign(details, await syncScoreboard(supabase, apiKey, calls, item, lookups));
+      Object.assign(details, await refreshResults(supabase, apiKey, calls, item, lookups));
+    }
+    details.team_records = await updateTeamRecords(supabase, SEASON, lookups.fbsIds);
+    details.pickem_graded = await gradePickem(supabase);
+    Object.assign(details, await updateSeasonSummary(supabase, SEASON));
+    return details;
   }
 
   if (job === "near-live") {
@@ -720,6 +775,18 @@ Deno.serve(async (request) => {
       job,
       reason: "This UTC schedule slot does not match the Berlin local-time schedule.",
     });
+  }
+
+  // The results watch runs every 30 minutes but only logs (and calls CFBD)
+  // when a game should be over and is not final yet.
+  if (job === "watch") {
+    try {
+      if (!(await watchPeriods(supabase)).length) {
+        return response({ status: "skipped", job, reason: "No game is waiting for its final score." });
+      }
+    } catch (error) {
+      return response({ error: error instanceof Error ? error.message : "Could not check the games to watch" }, 500);
+    }
   }
 
   // A run the platform stopped (for example at the time limit) never records

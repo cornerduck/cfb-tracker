@@ -34,6 +34,8 @@ export default defineConfig({
       workbox: {
         globPatterns: ['**/*.{js,css,html,svg,woff2}'],
         navigateFallback: 'index.html',
+        // Push and notification click handlers (public/push-sw.js).
+        importScripts: ['push-sw.js'],
         // Logos and photos load on demand and are then kept on the device.
         runtimeCaching: [
           {

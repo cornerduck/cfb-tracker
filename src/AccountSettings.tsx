@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { type ReactNode, useState } from 'react'
 import type { LiveUpdateSnapshot } from './types'
 import type { Profile, TeamRecord } from './lib/supabase'
 
@@ -31,6 +31,7 @@ type AccountSettingsProps = {
   onUpdateNow: () => Promise<void>
   onSignOut: () => Promise<void>
   onDeleteAccount: () => Promise<void>
+  notifications?: ReactNode
 }
 
 function formatDate(value: string | null, timeZone: string) {
@@ -60,6 +61,7 @@ function AccountSettings({
   onUpdateNow,
   onSignOut,
   onDeleteAccount,
+  notifications,
 }: AccountSettingsProps) {
   const [displayName, setDisplayName] = useState(profile.display_name ?? '')
   const [timeZone, setTimeZone] = useState(profile.time_zone || 'Europe/Berlin')
@@ -158,8 +160,9 @@ function AccountSettings({
             <button type="button" className="primary-button cond" disabled={updating} onClick={() => void onUpdateNow()}>
               {updating ? 'UPDATING…' : 'UPDATE NOW'}
             </button>
-            <p>Runs a manual refresh of 2026 live-season data. Available again 15 minutes after each use.</p>
+            <p>Fetches the latest scores and box scores. Available again 15 minutes after each use.</p>
           </section>
+          {notifications}
         </div>
       </div>
       {(error || notice) && <p className={`settings-notice${error ? ' settings-notice--error' : ''}`} role={error ? 'alert' : 'status'}>{error || notice}</p>}

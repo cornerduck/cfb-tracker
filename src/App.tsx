@@ -255,6 +255,27 @@ function SignedInApp({ account }: { account: ReturnType<typeof useAccount> }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
+  // A tapped notification opens its game: at start through ?game=, in the
+  // open app through a message from the service worker.
+  const [pendingGame, setPendingGame] = useState<number | null>(() => {
+    const id = Number(new URLSearchParams(window.location.search).get('game'))
+    return Number.isInteger(id) && id > 0 ? id : null
+  })
+  useEffect(() => {
+    if (window.location.search) window.history.replaceState(null, '', window.location.pathname + window.location.hash)
+    const onMessage = (event: MessageEvent) => {
+      const data = event.data as { type?: string; gameId?: unknown } | null
+      if (data?.type === 'strdys-open-game' && Number(data.gameId) > 0) setPendingGame(Number(data.gameId))
+    }
+    navigator.serviceWorker?.addEventListener('message', onMessage)
+    return () => navigator.serviceWorker?.removeEventListener('message', onMessage)
+  }, [])
+  useEffect(() => {
+    if (pendingGame === null || !model) return
+    setWindowStack([{ type: 'game', gameId: pendingGame }])
+    setPendingGame(null)
+  }, [pendingGame, model])
+
   if (seasons.error || season.error) {
     return <main className="center-screen"><ErrorBox message={((seasons.error ?? season.error) as Error).message} onRetry={() => { void seasons.refetch(); void season.refetch() }} /></main>
   }

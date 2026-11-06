@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import AccountSettings from '../../AccountSettings'
 import { useApp } from '../../app/context'
 import { supabase } from '../../lib/supabase'
+import { NotificationsCard } from './NotificationsCard'
 
 const loadApiCalls = async () => {
   if (!supabase) return null
@@ -44,6 +45,7 @@ export function SettingsPage() {
       }}
       onSignOut={account.signOut}
       onDeleteAccount={account.deleteAccount}
+      notifications={<NotificationsCard />}
     />
   )
 }
