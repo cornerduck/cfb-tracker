@@ -255,11 +255,19 @@ export function useAccount() {
         setUpdateNowMessage(typeof body?.error === 'string' ? body.error : error.message)
         return false
       }
+      if (data?.status === 'partial') {
+        setUpdateNowMessage(`Update partly complete · ${data.api_calls_used ?? 0} API calls used. ${typeof data.error === 'string' ? data.error : ''}`.trim())
+        void refreshLiveStatus()
+        return false
+      }
       if (data?.status !== 'success') {
         setUpdateNowMessage(typeof data?.error === 'string' ? data.error : 'The update did not complete successfully.')
         return false
       }
-      setUpdateNowMessage(`Update complete · ${data.api_calls_used ?? 0} API calls used.`)
+      const caughtUp = Array.isArray(data.caught_up) && data.caught_up.length
+        ? ` Caught up the missed ${data.caught_up.map((job: string) => job === 'cfp' ? 'CFP' : 'Monday').join(' and ')} update.`
+        : ''
+      setUpdateNowMessage(`Update complete · ${data.api_calls_used ?? 0} API calls used.${caughtUp}`)
       void refreshLiveStatus()
       return true
     } catch (error) {

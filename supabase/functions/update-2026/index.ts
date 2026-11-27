@@ -464,6 +464,72 @@ const awardsNeedTopList = async (supabase: Db) => {
 const asObjectOrEmpty = (value: unknown): JsonObject =>
   value && typeof value === "object" && !Array.isArray(value) ? value as JsonObject : {};
 
+// Runs one step of an update. A failure is recorded in details.failed_steps
+// and does not stop the steps that follow.
+const runStep = async (details: JsonObject, name: string, step: () => Promise<void>) => {
+  try {
+    await step();
+    return true;
+  } catch (error) {
+    const message = error instanceof Error ? error.message : `${name} failed`;
+    const failed = Array.isArray(details.failed_steps) ? details.failed_steps as JsonObject[] : [];
+    details.failed_steps = [...failed, { step: name, error: message }];
+    console.error(`Update step ${name} failed:`, message);
+    return false;
+  }
+};
+
+const failedSteps = (details: JsonObject) =>
+  Array.isArray(details.failed_steps) ? details.failed_steps as Array<{ step: string; error: string }> : [];
+
+// Season stats, coaches and the Heisman race (Monday job and its catch-up).
+const syncMondayStats = async (
+  details: JsonObject,
+  supabase: Db,
+  apiKey: string,
+  calls: CallCounter,
+  lookups: Lookups,
+) => {
+  await runStep(details, "season-stats", async () => {
+    Object.assign(details, await syncSeasonStats(supabase, apiKey, calls, lookups));
+  });
+  await runStep(details, "coaches", async () => {
+    details.coaches = await syncCoaches(supabase, apiKey, calls, lookups);
+  });
+  await runStep(details, "heisman", async () => {
+    Object.assign(details, await recomputeHeisman(supabase, SEASON));
+  });
+};
+
+// Weekly jobs that "Update now" fetches again when their latest scheduled run
+// failed. A run is caught up once a successful manual update lists it in
+// details.caught_up, so each failure costs the extra calls only once.
+const CATCH_UP_JOBS = ["monday", "cfp"] as const;
+
+const missedJobs = async (supabase: Db) => {
+  const missed: string[] = [];
+  for (const job of CATCH_UP_JOBS) {
+    const { data, error } = await supabase.from("update_log")
+      .select("status,started_at")
+      .eq("job", `live-2026-${job}`)
+      .neq("status", "running")
+      .order("started_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (error) throw new Error(`Could not read the last ${job} update: ${error.message}`);
+    if (!data || data.status !== "failed") continue;
+    const { count, error: doneError } = await supabase.from("update_log")
+      .select("id", { count: "exact", head: true })
+      .eq("job", "live-2026-manual")
+      .eq("status", "success")
+      .gt("started_at", data.started_at)
+      .contains("details", { caught_up: [job] });
+    if (doneError) throw new Error(`Could not check the ${job} catch-up: ${doneError.message}`);
+    if (!count) missed.push(job);
+  }
+  return missed;
+};
+
 const executeJob = async (job: Job, supabase: Db, apiKey: string, calls: CallCounter) => {
   const period = await getCurrentPeriod(supabase);
   const lookups = await loadTeamLookups(supabase);
@@ -533,6 +599,21 @@ const executeJob = async (job: Job, supabase: Db, apiKey: string, calls: CallCou
     Object.assign(details, await refreshResults(supabase, apiKey, calls, resultsPeriod, lookups));
     details.team_records = await updateTeamRecords(supabase, SEASON, lookups.fbsIds);
     details.pickem_graded = await gradePickem(supabase);
+    // Catch up a failed Monday or CFP job: schedule, polls, season stats,
+    // coaches and Heisman (about 5 calls), polls only for CFP.
+    const missed = await missedJobs(supabase);
+    if (missed.length) {
+      if (missed.includes("monday")) {
+        await runStep(details, "schedule", async () => {
+          details.schedule = (await syncGames(supabase, apiKey, calls, period, lookups, true)).count;
+        });
+      }
+      await runStep(details, "polls", async () => {
+        details.polls = await syncPolls(supabase, apiKey, calls, lookups);
+      });
+      if (missed.includes("monday")) await syncMondayStats(details, supabase, apiKey, calls, lookups);
+      details.caught_up = missed;
+    }
     if (await awardsNeedTopList(supabase)) {
       details.weekly_awards_rebuilt = await recomputeWeeklyAwards(supabase, SEASON, lookups.fbsIds);
     }
@@ -575,7 +656,9 @@ const executeJob = async (job: Job, supabase: Db, apiKey: string, calls: CallCou
   }
 
   if (job === "cfp") {
-    details.polls = await syncPolls(supabase, apiKey, calls, lookups);
+    await runStep(details, "polls", async () => {
+      details.polls = await syncPolls(supabase, apiKey, calls, lookups);
+    });
     return details;
   }
 
@@ -589,41 +672,61 @@ const executeJob = async (job: Job, supabase: Db, apiKey: string, calls: CallCou
     details.season_type = resultsPeriod.seasonType;
   }
 
+  // Each step runs on its own: when CFBD answers one request with an error
+  // (for example HTTP 502), the other steps still run and save their data.
+  // Lines, TV and box scores need the games of the week, so they only run
+  // when the games step worked.
   const fullSeason = job === "monday";
-  const { rows, count } = await syncGames(supabase, apiKey, calls, resultsPeriod, lookups, fullSeason);
+  let rows: Awaited<ReturnType<typeof syncGames>>["rows"] = [];
+  const gamesSaved = await runStep(details, "games", async () => {
+    const result = await syncGames(supabase, apiKey, calls, resultsPeriod, lookups, fullSeason);
+    rows = result.rows;
+    details.games = result.count;
+  });
   const gameIds = new Set(rows.map((game) => game.id));
-  details.games = count;
-  details.lines = await syncLines(supabase, apiKey, calls, resultsPeriod, gameIds);
-
-  if (["weekly", "monday"].includes(job)) {
-    details.tv = await syncMedia(supabase, apiKey, calls, resultsPeriod, gameIds);
+  if (gamesSaved) {
+    await runStep(details, "lines", async () => {
+      details.lines = await syncLines(supabase, apiKey, calls, resultsPeriod, gameIds);
+    });
+    if (["weekly", "monday"].includes(job)) {
+      await runStep(details, "tv", async () => {
+        details.tv = await syncMedia(supabase, apiKey, calls, resultsPeriod, gameIds);
+      });
+    }
+    if (job === "weekly" && rows.some((game) => game.status === "final")) {
+      await runStep(details, "boxscores", async () => {
+        Object.assign(
+          details,
+          await syncBoxscores(supabase, apiKey, calls, resultsPeriod, gameIds, lookups),
+        );
+      });
+    }
   }
-  const needsBoxscores = job === "weekly";
-  if (needsBoxscores && rows.some((game) => game.status === "final")) {
-    Object.assign(
-      details,
-      await syncBoxscores(supabase, apiKey, calls, resultsPeriod, gameIds, lookups),
-    );
+  if (job === "weekly") {
+    await runStep(details, "weekly-awards", async () => {
+      details.weekly_awards = await recomputeWeeklyAwards(supabase, SEASON, lookups.fbsIds, [
+        { week: resultsPeriod.week, seasonType: resultsPeriod.seasonType },
+      ]);
+    });
   }
-  details.team_records = await updateTeamRecords(supabase, SEASON, lookups.fbsIds);
-  details.pickem_graded = await gradePickem(supabase);
+  await runStep(details, "team-records", async () => {
+    details.team_records = await updateTeamRecords(supabase, SEASON, lookups.fbsIds);
+    details.pickem_graded = await gradePickem(supabase);
+  });
 
   // Weeknight games (daily) and bowls (winter) get their box scores as soon as they are final.
   if (job === "daily-results" || job === "winter") {
-    Object.assign(details, await refreshResults(supabase, apiKey, calls, resultsPeriod, lookups));
-  }
-  if (job === "weekly" && needsBoxscores) {
-    details.weekly_awards = await recomputeWeeklyAwards(supabase, SEASON, lookups.fbsIds, [
-      { week: resultsPeriod.week, seasonType: resultsPeriod.seasonType },
-    ]);
+    await runStep(details, "results", async () => {
+      Object.assign(details, await refreshResults(supabase, apiKey, calls, resultsPeriod, lookups));
+    });
   }
   if (["monday", "winter"].includes(job)) {
-    details.polls = await syncPolls(supabase, apiKey, calls, lookups);
+    await runStep(details, "polls", async () => {
+      details.polls = await syncPolls(supabase, apiKey, calls, lookups);
+    });
   }
   if (job === "monday") {
-    Object.assign(details, await syncSeasonStats(supabase, apiKey, calls, lookups));
-    details.coaches = await syncCoaches(supabase, apiKey, calls, lookups);
-    Object.assign(details, await recomputeHeisman(supabase, SEASON));
+    await syncMondayStats(details, supabase, apiKey, calls, lookups);
   }
   // GameDay comes from Wikipedia, not CFBD; a failure never fails the job.
   if (["weekly", "monday"].includes(job)) {
@@ -635,7 +738,9 @@ const executeJob = async (job: Job, supabase: Db, apiKey: string, calls: CallCou
     }
   }
   await withRecruiting(details);
-  Object.assign(details, await updateSeasonSummary(supabase, SEASON));
+  await runStep(details, "season-summary", async () => {
+    Object.assign(details, await updateSeasonSummary(supabase, SEASON));
+  });
   return details;
 };
 
@@ -814,14 +919,29 @@ Deno.serve(async (request) => {
   const calls: CallCounter = { value: 0, endpoints: [] };
   try {
     const details = await executeJob(job, supabase, apiKey, calls);
+    // Some steps failed: the other steps are saved, but the run counts as
+    // failed so the app shows it and "Update now" can catch it up.
+    const failed = failedSteps(details);
+    const partialError = failed.length
+      ? `Some steps failed: ${failed.map((item) => `${item.step} (${item.error})`).join("; ")}`
+      : null;
     const { error } = await supabase.from("update_log").update({
-      status: "success",
+      status: partialError ? "failed" : "success",
       finished_at: new Date().toISOString(),
       api_calls_used: calls.value,
+      error: partialError,
       details: { job, api_endpoints: calls.endpoints, ...details },
     }).eq("id", log.id);
     if (error) throw new Error(`Could not finish live update log: ${error.message}`);
-    return response({ status: "success", season: SEASON, job, trigger, api_calls_used: calls.value, ...details });
+    return response({
+      status: partialError ? "partial" : "success",
+      season: SEASON,
+      job,
+      trigger,
+      api_calls_used: calls.value,
+      ...(partialError ? { error: partialError } : {}),
+      ...details,
+    });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unexpected live update failure";
     const { error: updateError } = await supabase.from("update_log").update({
